@@ -178,3 +178,48 @@ test('dashboard exposes whey setup, complete backup, and install controls', () =
   assert.match(controller, /navigator\.serviceWorker/);
   assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/home\.js["']/i);
 });
+
+test('manifest defines installable relative-scope application', () => {
+  const manifest = JSON.parse(read('manifest.webmanifest'));
+  assert.equal(manifest.name, 'GTA Nutrition Plan');
+  assert.equal(manifest.short_name, 'GTA Fuel Log');
+  assert.equal(manifest.start_url, './');
+  assert.equal(manifest.scope, './');
+  assert.equal(manifest.display, 'standalone');
+  assert.match(manifest.theme_color, /^#[0-9a-f]{6}$/i);
+  assert.match(manifest.background_color, /^#[0-9a-f]{6}$/i);
+  assert.deepEqual(manifest.icons.map((icon) => icon.sizes), ['192x192', '512x512']);
+  for (const icon of manifest.icons) {
+    assert.equal(fs.existsSync(path.join(root, icon.src)), true, `missing ${icon.src}`);
+  }
+});
+
+test('service worker precaches every shipped application asset', () => {
+  const worker = read('sw.js');
+  const expected = [
+    './', './index.html', './quick-start.html', './shopping.html', './tracker.html',
+    './plan.html', './cooking.html', './assets/styles.css', './assets/common.js',
+    './assets/core.js', './assets/shopping-state.js', './assets/backup.js',
+    './assets/shopping.js', './assets/tracker.js', './assets/home.js',
+    './icons/icon-192.png', './icons/icon-512.png', './manifest.webmanifest',
+    './GTA_16_Week_Nutrition_Plan.pdf', './Mothers_Sunday_Cooking_Sheet.pdf',
+    './Quick_Start_Card.pdf',
+  ];
+  assert.match(worker, /gta-nutrition-v1/);
+  for (const asset of expected) {
+    assert.match(worker, new RegExp(`['"]${asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`), `cache omits ${asset}`);
+    if (asset !== './') assert.equal(fs.existsSync(path.join(root, asset.slice(2))), true, `missing ${asset}`);
+  }
+});
+
+test('every page exposes install metadata', () => {
+  for (const page of pages) {
+    const html = read(page);
+    assert.match(html, /<link\s+rel=["']manifest["'][^>]*href=["']manifest\.webmanifest["']/i);
+    assert.match(html, /<link\s+rel=["']icon["'][^>]*href=["']icons\/icon-192\.png["']/i);
+    assert.match(html, /<link\s+rel=["']apple-touch-icon["'][^>]*href=["']icons\/icon-192\.png["']/i);
+    assert.match(html, /<meta\s+name=["']theme-color["'][^>]*content=["']#[0-9a-f]{6}["']/i);
+  }
+  assert.equal(fs.existsSync(path.join(root, 'README.md')), true);
+  assert.equal(fs.existsSync(path.join(root, 'README.txt')), false);
+});
