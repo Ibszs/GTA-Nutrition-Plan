@@ -105,6 +105,43 @@ export function validateWheyState(state) {
   return clone(state);
 }
 
+export function createDefaultTrackerState(startDate) {
+  const state = {
+    version: 2,
+    meta: {
+      startDate,
+      targetCalories: '3300',
+      targetProtein: '175',
+      goalMin: '190',
+      goalMax: '195',
+      weeksRemaining: '14',
+      waistBaseline: '',
+      waistCurrent: '',
+      priorOver: false,
+    },
+    rows: Array.from({ length: 14 }, () => ({
+      weight: '',
+      calories: '',
+      protein: '',
+      sleep: '',
+      training: '',
+      gi: '',
+      note: '',
+    })),
+  };
+  return validateTrackerState(state);
+}
+
+export function createDefaultWheyState() {
+  return {
+    version: 1,
+    scoopCalories: '',
+    scoopProtein: '',
+    scoopCarbs: '',
+    scoopFat: '',
+  };
+}
+
 function validateBackupDocument(document) {
   if (!document || typeof document !== 'object' || Array.isArray(document)) {
     throw new TypeError('Backup must be an object.');
@@ -150,4 +187,3 @@ export function parseBackup(text) {
   }
   return validateBackupDocument(parsed);
 }
-

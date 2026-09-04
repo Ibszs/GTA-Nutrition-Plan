@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   buildBackup,
+  createDefaultTrackerState,
+  createDefaultWheyState,
   parseBackup,
   validateTrackerState,
   validateWheyState,
@@ -113,3 +115,12 @@ test('validateWheyState rejects negative and unsupported values', () => {
   assert.throws(() => validateWheyState(future), /whey version/i);
 });
 
+test('default interactive states match validated current schemas', () => {
+  const tracker = createDefaultTrackerState('2026-09-03');
+  const whey = createDefaultWheyState();
+
+  assert.deepEqual(validateTrackerState(tracker), tracker);
+  assert.deepEqual(validateWheyState(whey), whey);
+  assert.equal(tracker.rows.length, 14);
+  assert.equal(tracker.meta.startDate, '2026-09-03');
+});

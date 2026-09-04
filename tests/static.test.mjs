@@ -136,3 +136,45 @@ test('shopping page exposes complete editable-list controls', () => {
   assert.doesNotMatch(controller, /\.innerHTML\s*=/);
   assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/shopping\.js["']/i);
 });
+
+test('tracker exposes corrected goals, labeled rows, export, and module controller', () => {
+  const html = read('tracker.html');
+  const controller = read('assets/tracker.js');
+
+  for (const id of [
+    'trackerStorageNotice', 'startDate', 'targetCalories', 'targetProtein',
+    'goalMin', 'goalMax', 'weeksRemaining', 'waistBaseline', 'waistCurrent',
+    'priorOver', 'trackerRows', 'calorieAdherence', 'proteinAdherence',
+    'trackerDecision', 'trendChart', 'downloadCsvButton', 'clearTrackerButton',
+    'trackerBackupLink',
+  ]) {
+    assert.match(html, new RegExp(`\\bid=["']${id}["']`, 'i'), `missing #${id}`);
+  }
+
+  assert.doesNotMatch(html, /id=["']targetFinish["']/i);
+  assert.match(controller, /buildLocalDates/);
+  assert.match(controller, /dataset\.label|data-label/i);
+  assert.match(controller, /calculateTracker/);
+  assert.match(controller, /gtaNutrition\.tracker\.v2/);
+  assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/tracker\.js["']/i);
+});
+
+test('dashboard exposes whey setup, complete backup, and install controls', () => {
+  const html = read('index.html');
+  const controller = read('assets/home.js');
+
+  for (const id of [
+    'wheyCalories', 'wheyProtein', 'wheyCarbs', 'wheyFat', 'wheyResult',
+    'homeStorageNotice', 'installButton', 'exportBackupButton', 'importBackupInput',
+    'homeStatus', 'shoppingSummary', 'trackerSummary',
+  ]) {
+    assert.match(html, new RegExp(`\\bid=["']${id}["']`, 'i'), `missing #${id}`);
+  }
+
+  assert.match(controller, /beforeinstallprompt/);
+  assert.match(controller, /calculateWheyLabel/);
+  assert.match(controller, /buildBackup/);
+  assert.match(controller, /parseBackup/);
+  assert.match(controller, /navigator\.serviceWorker/);
+  assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/home\.js["']/i);
+});

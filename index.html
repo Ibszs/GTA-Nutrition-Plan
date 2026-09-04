@@ -69,13 +69,58 @@
       </div>
     </section>
 
+    <section class="panel" aria-labelledby="summary-title">
+      <div class="eyebrow">This device</div>
+      <h2 id="summary-title">Saved progress</h2>
+      <div class="grid">
+        <div class="card span-6"><b>Shopping</b><p id="shoppingSummary">Loading…</p></div>
+        <div class="card span-6"><b>Tracker</b><p id="trackerSummary">Loading…</p></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="whey-title">
+      <div class="eyebrow">Required once per tub</div>
+      <h2 id="whey-title">Whey label setup</h2>
+      <p>Enter values printed for one scoop on your current DIESEL tub. Calculator corrects the breakfast honey when practical; larger corrections use oil.</p>
+      <form class="form-grid" id="wheyForm">
+        <label class="span-3" for="wheyCalories">Calories
+          <input id="wheyCalories" type="number" inputmode="decimal" min="0" step="0.1" required>
+        </label>
+        <label class="span-3" for="wheyProtein">Protein (g)
+          <input id="wheyProtein" type="number" inputmode="decimal" min="0" step="0.1" required>
+        </label>
+        <label class="span-3" for="wheyCarbs">Carbohydrate (g)
+          <input id="wheyCarbs" type="number" inputmode="decimal" min="0" step="0.1" required>
+        </label>
+        <label class="span-3" for="wheyFat">Fat (g)
+          <input id="wheyFat" type="number" inputmode="decimal" min="0" step="0.1" required>
+        </label>
+      </form>
+      <div class="result" id="wheyResult" role="status">Enter all four label values.</div>
+    </section>
+
+    <section class="panel" id="backup" aria-labelledby="backup-title">
+      <div class="eyebrow">Move between phones</div>
+      <h2 id="backup-title">Back up everything</h2>
+      <p>Shopping edits, checks, tracker entries and whey values stay in each browser. Export one file to move or protect them.</p>
+      <div class="button-row">
+        <button class="secondary" id="exportBackupButton" type="button">Export all data</button>
+        <label class="button ghost" for="importBackupInput">Import all data</label>
+        <input class="visually-hidden" id="importBackupInput" type="file" accept="application/json,.json">
+      </div>
+      <p class="status-line" id="homeStatus" aria-live="polite"></p>
+    </section>
+
     <section class="panel" aria-labelledby="phone-title">
       <div class="eyebrow">Phone access</div>
       <h2 id="phone-title">Install one link</h2>
       <p><b>iPhone or iPad:</b> open the published link in Safari, tap Share, then Add to Home Screen.</p>
       <p><b>Android:</b> open the link in Chrome, open the menu, then tap Install app or Add to Home screen.</p>
       <p class="small">Open once while online. App files then remain available offline. Shopping and tracker entries stay on each device until exported.</p>
+      <button id="installButton" type="button" hidden>Install app</button>
     </section>
+
+    <div class="storage-notice" id="homeStorageNotice" data-mode="persistent" role="status">Shopping, tracker and whey values save in this browser.</div>
 
     <div class="callout warn">
       <b>Before day one:</b> read calories, carbohydrate and fat per scoop from the physical DIESEL tub. Use the setup calculator added to this dashboard before following the corrected target.
@@ -84,5 +129,6 @@
 
   <footer class="site-footer">Built for personal use. Prices remain location-sensitive snapshots. Check package labels and current shelf prices.</footer>
   <script type="module" src="assets/common.js"></script>
+  <script type="module" src="assets/home.js"></script>
 </body>
 </html>

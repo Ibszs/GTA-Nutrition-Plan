@@ -631,10 +631,15 @@ tbody tr:last-child td {
   background: var(--card);
 }
 
-.controls,
-.form-grid {
+.controls {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -808,6 +813,37 @@ button.danger-button {
 .status-line[data-error="true"] {
   color: var(--red);
   font-weight: 700;
+}
+
+.checkbox-field {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  color: var(--ink);
+}
+
+.checkbox-field input {
+  width: 22px;
+  height: 22px;
+  min-height: 22px;
+  margin: 0;
+  accent-color: var(--teal);
+}
+
+.adherence-grid {
+  margin: 12px 0;
+}
+
+.tracker-table input,
+.tracker-table select {
+  min-width: 76px;
+  margin: 0;
+}
+
+.tracker-table td:first-child {
+  white-space: nowrap;
 }
 
 .visually-hidden {
@@ -990,9 +1026,14 @@ dialog::backdrop {
     border-bottom: 1px dashed #aebebd;
   }
 
-  .controls,
-  .form-grid {
+  .controls {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .form-grid > .span-3,
+  .form-grid > .span-6,
+  .form-grid > .span-12 {
+    grid-column: 1 / -1;
   }
 
   .source-list {
@@ -1029,12 +1070,72 @@ dialog::backdrop {
     grid-column: 2;
     justify-content: flex-start;
   }
+
+  .tracker-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .tracker-table,
+  .tracker-table tbody,
+  .tracker-table tr,
+  .tracker-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .tracker-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tracker-table tr {
+    margin: 0 0 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-top: 5px solid var(--teal);
+    border-radius: 11px;
+    background: var(--card);
+    box-shadow: 0 4px 14px rgb(18 54 75 / 5%);
+  }
+
+  .tracker-table td,
+  .tracker-table tbody tr:nth-child(even) td {
+    display: grid;
+    grid-template-columns: 105px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--line);
+    background: transparent;
+  }
+
+  .tracker-table td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    font-family: var(--utility);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .tracker-table td:first-child {
+    color: var(--navy);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .tracker-table td:last-child {
+    border-bottom: 0;
+  }
 }
 
 @media (max-width: 460px) {
   .route-strip,
-  .controls,
-  .form-grid {
+  .controls {
     grid-template-columns: 1fr;
   }
 
