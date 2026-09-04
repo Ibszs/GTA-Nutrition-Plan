@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>$160 Baseline Shopping Checklist</title>
-  <meta name="description" content="$160 Baseline Shopping Checklist within the GTA Nutrition Plan.">
+  <title>Editable Shopping List</title>
+  <meta name="description" content="Editable, saved shopping list for the GTA Nutrition Plan.">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body class="shopping-page">
@@ -20,45 +20,83 @@
       <a href="cooking.html">Sunday Prep</a>
     </nav>
   </header>
-  <main class="wrap" id="main-content"><header class="hero"><div class="kicker">Tap while shopping</div><h1>$160 baseline checklist</h1><p>Costco Burlington + Food Basics Milton; Iqbal Erin Mills only for lentils and spice restocks.</p></header>
-<div class="progress"><div class="progress-row"><b id="counter">0 of 0 items</b><button id="reset">Reset</button></div><div class="bar"><i id="bar"></i></div></div>
-<div class="note"><b>Packaged-item rule:</b> read the physical ingredient list before buying yogurt, milk, peanut butter, frozen vegetables, raisins, honey or supplements. Reject pork gelatin, lard, fish/oyster sauce, anchovy, beef/blended stock and ambiguous animal enzymes.</div>
-<section class="store"><h2>Costco - Burlington</h2>
-<div class="item"><input type="checkbox" id="i1"><label for="i1">Halal boneless skinless chicken thighs<small>1 pack, about 2.1 kg</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i2"><label for="i2">Thai Hom Mali jasmine rice<small>1 bag, 8 kg</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i3"><label for="i3">Oikos PRO plain Greek yogurt<small>2 x 750 g</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i4"><label for="i4">Plain large-flake rolled oats<small>1 bag, 4.54 kg</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i5"><label for="i5">Natural peanut butter<small>2 x 1 kg; buy only if ingredient list passes</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i6"><label for="i6">Extra virgin olive oil<small>3 L; one-ingredient label</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i7"><label for="i7">Frozen mixed vegetables<small>2.5 kg; no sauce or seasoning</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i8"><label for="i8">100% pure liquid honey<small>3 x 750 g</small></label><span class="badge check">LABEL</span></div></section>
-<section class="store"><h2>Food Basics - Milton</h2>
-<div class="item"><input type="checkbox" id="i9"><label for="i9">Large eggs<small>30</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i10"><label for="i10">Beatrice 2% milk<small>4 L</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i11"><label for="i11">Bananas<small>about 1 kg</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i12"><label for="i12">Natural seedless raisins<small>750 g</small></label><span class="badge check">LABEL</span></div>
-<div class="item"><input type="checkbox" id="i13"><label for="i13">Plain ground turkey<small>smallest 400-500 g pack; trial only</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i14"><label for="i14">Onions<small>1 small bag</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i15"><label for="i15">Lemons<small>2</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i16"><label for="i16">Fresh garlic<small>1 bulb</small></label><span class="badge">PLAIN</span></div></section>
-<section class="store"><h2>Iqbal Foods - Erin Mills</h2>
-<div class="item"><input type="checkbox" id="i17"><label for="i17">Plain dry lentils<small>about 1.8 kg</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i18"><label for="i18">Plain cumin<small>1 pack only if needed</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i19"><label for="i19">Plain paprika<small>1 pack only if needed</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i20"><label for="i20">Plain turmeric<small>1 pack only if needed</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i21"><label for="i21">Salt<small>1 pack only if needed</small></label><span class="badge">PLAIN</span></div>
-<div class="item"><input type="checkbox" id="i22"><label for="i22">Black pepper<small>1 pack only if needed</small></label><span class="badge">PLAIN</span></div></section>
-<div class="cost"><b>Budget interpretation:</b> zero-pantry first cart is about $232.72 because bulk staples carry forward. Baseline food actually consumed is estimated around $104.60 including the restaurant meal and excluding owned whey. Keep a $160 weekly envelope; do not treat unused room as a spending target.</div>
-</main>
+
+  <main class="wrap" id="main-content">
+    <header class="hero">
+      <div class="kicker">Tap while shopping</div>
+      <h1>Cart changes with real life.</h1>
+      <p>Edit stores, items, quantities and notes. Checks and edits save on this device.</p>
+    </header>
+
+    <div class="progress">
+      <div class="progress-row">
+        <b id="shoppingCounter">0 of 0 items</b>
+        <button class="ghost" id="clearChecksButton" type="button">Clear checks</button>
+      </div>
+      <div class="bar" aria-hidden="true"><i id="shoppingBar"></i></div>
+    </div>
+
+    <div class="storage-notice" id="shoppingStorageNotice" data-mode="persistent" role="status">Shopping edits save in this browser.</div>
+
+    <section aria-labelledby="list-tools-title">
+      <h2 id="list-tools-title">List tools</h2>
+      <div class="button-row">
+        <button id="addStoreButton" type="button">Add store</button>
+        <button class="secondary" id="copyListButton" type="button">Copy list</button>
+        <button class="ghost" id="exportShoppingButton" type="button">Export shopping JSON</button>
+        <label class="button ghost" for="importShoppingInput">Import shopping JSON</label>
+        <input class="visually-hidden" id="importShoppingInput" type="file" accept="application/json,.json">
+        <button class="danger-button" id="restoreDefaultsButton" type="button">Restore supplied list</button>
+      </div>
+      <p class="status-line" id="shoppingStatus" aria-live="polite"></p>
+    </section>
+
+    <div class="note"><b>Packaged-item rule:</b> read physical ingredient list before buying yogurt, milk, peanut butter, frozen vegetables, raisins, honey or supplements. Reject pork gelatin, lard, fish or oyster sauce, anchovy, beef or blended stock, and ambiguous animal enzymes.</div>
+    <div id="stores" aria-live="polite"></div>
+    <div class="cost"><b>Budget interpretation:</b> zero-pantry first cart is about $232.72 because bulk staples carry forward. Baseline food consumed is estimated around $104.60 including restaurant meal and excluding owned whey. Keep a $160 weekly envelope; unused room is not a spending target.</div>
+  </main>
+
+  <dialog id="storeDialog" aria-labelledby="storeDialogTitle">
+    <form class="dialog-body" id="storeForm">
+      <h2 id="storeDialogTitle">Add store</h2>
+      <input id="storeId" name="storeId" type="hidden">
+      <label for="storeName">Store name</label>
+      <input id="storeName" name="storeName" required maxlength="120" autocomplete="organization">
+      <div class="button-row">
+        <button type="submit">Save store</button>
+        <button class="ghost" id="cancelStoreButton" type="button">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="itemDialog" aria-labelledby="itemDialogTitle">
+    <form class="dialog-body" id="itemForm">
+      <h2 id="itemDialogTitle">Add item</h2>
+      <input id="itemStoreId" name="storeId" type="hidden">
+      <input id="itemId" name="itemId" type="hidden">
+      <div class="form-grid">
+        <label class="span-12" for="itemName">Item name
+          <input id="itemName" name="name" required maxlength="160">
+        </label>
+        <label class="span-6" for="itemQuantity">Quantity
+          <input id="itemQuantity" name="quantity" maxlength="100" placeholder="1 pack">
+        </label>
+        <label class="span-6" for="itemTag">Tag
+          <input id="itemTag" name="tag" maxlength="24" placeholder="PLAIN or LABEL">
+        </label>
+        <label class="span-12" for="itemNote">Note
+          <textarea id="itemNote" name="note" maxlength="300"></textarea>
+        </label>
+      </div>
+      <div class="button-row">
+        <button type="submit">Save item</button>
+        <button class="ghost" id="cancelItemButton" type="button">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
   <footer class="site-footer">Built for personal use. Check package labels and current shelf prices.</footer>
-  <script>
-const key='gtaShoppingChecklistV1';
-const boxes=[...document.querySelectorAll('input[type="checkbox"]')];
-const storage=(()=>{try{const k='__probe';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage}catch(_){const m=new Map();return{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)}}})();
-function render(){const done=boxes.filter(b=>b.checked).length;document.getElementById('counter').textContent=`${done} of ${boxes.length} items`;document.getElementById('bar').style.width=`${done/boxes.length*100}%`;boxes.forEach(b=>b.closest('.item').classList.toggle('checked',b.checked));storage.setItem(key,JSON.stringify(boxes.map(b=>b.checked)))}
-try{const saved=JSON.parse(storage.getItem(key)||'[]');boxes.forEach((b,i)=>b.checked=Boolean(saved[i]))}catch(_){}
-boxes.forEach(b=>b.addEventListener('change',render));document.getElementById('reset').addEventListener('click',()=>{if(confirm('Clear all checked items?')){boxes.forEach(b=>b.checked=false);storage.removeItem(key);render()}});render();
-</script>
   <script type="module" src="assets/common.js"></script>
+  <script type="module" src="assets/shopping.js"></script>
 </body>
 </html>

@@ -101,3 +101,38 @@ test('every local link target and fragment resolves with exact filename case', (
     }
   }
 });
+
+test('shopping page exposes complete editable-list controls', () => {
+  const html = read('shopping.html');
+  const controller = read('assets/shopping.js');
+
+  for (const id of [
+    'shoppingCounter',
+    'shoppingBar',
+    'shoppingStorageNotice',
+    'stores',
+    'addStoreButton',
+    'clearChecksButton',
+    'restoreDefaultsButton',
+    'copyListButton',
+    'exportShoppingButton',
+    'importShoppingInput',
+    'storeDialog',
+    'storeForm',
+    'itemDialog',
+    'itemForm',
+  ]) {
+    assert.match(html, new RegExp(`\\bid=["']${id}["']`, 'i'), `missing #${id}`);
+  }
+
+  for (const action of ['rename-store', 'delete-store', 'add-item', 'edit-item', 'delete-item']) {
+    assert.match(controller, new RegExp(`data-action["', )]+${action}|${action}`, 'i'), `missing ${action} action`);
+  }
+
+  assert.match(controller, /confirm\([^)]*Delete store/i);
+  assert.match(controller, /confirm\([^)]*Delete item/i);
+  assert.match(controller, /confirm\([^)]*Restore default/i);
+  assert.match(controller, /\.textContent\s*=/);
+  assert.doesNotMatch(controller, /\.innerHTML\s*=/);
+  assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/shopping\.js["']/i);
+});

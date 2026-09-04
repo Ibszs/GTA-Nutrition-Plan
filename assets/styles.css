@@ -759,13 +759,65 @@ button.danger-button {
 
 .store h2 {
   margin: 0;
-  padding: 13px 15px;
   border: 0;
-  background: var(--navy);
   color: white;
   font-family: var(--body);
   font-size: 18px;
   letter-spacing: 0;
+}
+
+.store-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--navy);
+}
+
+.store-actions,
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.store-actions button,
+.item-actions button {
+  min-height: 36px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.store-actions .ghost,
+.item-actions .ghost {
+  background: white;
+}
+
+.empty,
+.status-line {
+  min-height: 24px;
+  color: var(--muted);
+}
+
+.empty {
+  padding: 4px 14px 12px;
+}
+
+.status-line[data-error="true"] {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
 }
 
 .item {
@@ -959,6 +1011,24 @@ dialog::backdrop {
   .progress {
     top: 100px;
   }
+
+  .store-heading {
+    display: block;
+  }
+
+  .store-actions {
+    justify-content: flex-start;
+    margin-top: 9px;
+  }
+
+  .item {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .item-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 460px) {
@@ -1058,4 +1128,3 @@ dialog::backdrop {
     margin: 0.45in;
   }
 }
-
