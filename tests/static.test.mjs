@@ -223,3 +223,15 @@ test('every page exposes install metadata', () => {
   assert.equal(fs.existsSync(path.join(root, 'README.md')), true);
   assert.equal(fs.existsSync(path.join(root, 'README.txt')), false);
 });
+
+test('shopping action buttons retain 44-pixel touch targets', () => {
+  const styles = read('assets/styles.css');
+  assert.match(styles, /\.store-actions button,\s*\n\.item-actions button\s*\{[^}]*min-height:\s*44px/s);
+});
+
+test('tracker never persists an invalid intermediate form state', () => {
+  const controller = read('assets/tracker.js');
+  assert.match(controller, /function save\(\)[\s\S]*?validateTrackerState\(state\)[\s\S]*?saveJson/);
+  assert.match(controller, /catch \(_\) \{\s*return false;/);
+  assert.match(controller, /metaFields\.forEach\([^\n]*addEventListener\('input', updateMeta\)/);
+});

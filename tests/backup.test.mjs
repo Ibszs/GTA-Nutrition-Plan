@@ -105,6 +105,13 @@ test('validateTrackerState rejects executable-shaped row values', () => {
   assert.throws(() => validateTrackerState(tracker), /tracker row/i);
 });
 
+test('validateTrackerState rejects an inverted goal range', () => {
+  const tracker = trackerState();
+  tracker.meta.goalMin = '190';
+  tracker.meta.goalMax = '180';
+  assert.throws(() => validateTrackerState(tracker), /minimum cannot exceed goal maximum/i);
+});
+
 test('validateWheyState rejects negative and unsupported values', () => {
   const negative = wheyState();
   negative.scoopCalories = '-1';

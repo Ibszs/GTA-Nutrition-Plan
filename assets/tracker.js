@@ -30,8 +30,15 @@ function loadState() {
 }
 
 function save() {
-  saveJson(storage, STORAGE_KEY, state);
+  let validState;
+  try {
+    validState = validateTrackerState(state);
+  } catch (_) {
+    return false;
+  }
+  saveJson(storage, STORAGE_KEY, validState);
   window.dispatchEvent(new CustomEvent('gta-data-changed', { detail: { section: 'tracker' } }));
+  return true;
 }
 
 function node(tag, text) {
@@ -253,8 +260,7 @@ elements.trackerRows.addEventListener('change', (event) => {
   calculate();
 });
 
-metaFields.forEach((field) => elements[field].addEventListener('change', updateMeta));
-elements.startDate.addEventListener('input', updateMeta);
+metaFields.forEach((field) => elements[field].addEventListener('input', updateMeta));
 
 function csvCell(value) {
   const text = String(value ?? '');

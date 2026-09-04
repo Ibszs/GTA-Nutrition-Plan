@@ -60,6 +60,9 @@ export function validateTrackerState(state) {
       throw new TypeError(`Tracker ${field} must be a positive number.`);
     }
   }
+  if (Number(state.meta.goalMin) > Number(state.meta.goalMax)) {
+    throw new RangeError('Goal minimum cannot exceed goal maximum.');
+  }
   for (const field of ['weeksRemaining', 'waistBaseline', 'waistCurrent']) {
     if (!validNumberText(state.meta[field])) {
       throw new TypeError(`Tracker ${field} must be a non-negative number.`);
