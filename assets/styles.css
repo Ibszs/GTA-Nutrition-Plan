@@ -175,3 +175,45 @@ dialog[open]{animation:sheet-in .2s ease-out}dialog::backdrop{background:#1d1d1f
 @media(max-width:760px){.nutrition-summary b{font-size:19px}.nutrition-summary{gap:5px}.menu-summary>label{grid-column:span 12}.menu-summary select{width:100%}.recipe-filters input{font-size:16px}}
 
 @media(max-width:760px){#plannedGroceries .week-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:17px}#plannedGroceries .week-toolbar label{min-width:0;max-width:none}#plannedGroceries .week-toolbar .button,#plannedGroceries .week-toolbar button{font-size:12px;width:100%;padding:10px}#plannedGroceries .week-toolbar input,#plannedGroceries .week-toolbar select{font-size:14px}}
+
+/* Phone fitting: preserve readable text inside cards as well as the page width. */
+.mobile-plan-picker{display:none}
+@media(max-width:760px){
+  html{scroll-padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  .wrap{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+  main *,dialog *{min-inline-size:0}
+  main p,main li,main h1,main h2,main h3,summary,dialog p,dialog li{overflow-wrap:break-word}
+  .hero h1,.section-heading h2{text-wrap:balance}.hero h1{font-size:clamp(30px,8.8vw,36px)}
+  .hero:has(.personal-toggle){padding-right:0}.hero:has(.personal-toggle) .kicker{padding-right:45px}.personal-toggle{top:-10px}
+  .form-grid{align-items:end}.form-grid label{line-height:1.5}
+  input:not([type=checkbox]),select,textarea,.tracker-table input,.tracker-table select,.shop-row input[type=number],#plannedGroceries .week-toolbar input,#plannedGroceries .week-toolbar select,#dayPlan{font-size:16px;min-height:48px;max-width:100%;min-inline-size:0}
+  input[type=date],input[type=datetime-local]{display:block;width:100%;-webkit-min-logical-width:0}
+  input::-webkit-date-and-time-value{text-align:left;min-width:0}
+  .form-grid>label:has(input[type=date]),.form-grid>label:has(input[type=datetime-local]),.training-page #sessionForm>label:has(input[type=date]){grid-column:1 / -1}
+  #todayWeek{grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;border:0;background:transparent;gap:7px}
+  #todayWeek .week-cell{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 4px;min-height:90px}
+  #todayWeek .week-cell.today{background:var(--soft)}#todayWeek .week-cell b{font-size:12px;line-height:1.4}#todayWeek .week-cell span{font-size:10px;line-height:1.5}
+  .training-page .week-day{padding:12px 4px}.training-page .week-day strong{font-size:13px;letter-spacing:-.3px;white-space:nowrap}.training-page .week-day>.small:last-child{font-size:10px}
+  .training-page .exercise-card summary{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .section-heading{flex-wrap:wrap;align-items:center;gap:9px}.section-heading h2{flex:1 1 200px;font-size:22px}.section-heading a{min-height:44px;display:inline-flex;align-items:center}
+  .button-row{gap:10px}.button-row>button,.button-row>a.button,.button-row>label.button{flex:1 1 auto;max-width:100%;min-height:46px;white-space:normal;text-align:center}
+  #personalForm .button-row{margin:4px 0}.sheet-header{gap:12px;padding:20px 18px 16px}.sheet-header h2{font-size:23px}.sheet-content{padding:20px 18px calc(26px + env(safe-area-inset-bottom))}
+  dialog{max-height:calc(100dvh - max(16px,env(safe-area-inset-top)));scroll-padding-top:100px}dialog:focus-within{scroll-padding-bottom:20px}
+  .desktop-plan-picker{display:none}.mobile-plan-picker{display:block}
+  #chooseDayPlan{width:100%;justify-content:space-between;gap:14px;text-align:left;font-size:16px;font-weight:500;line-height:1.5;background:#fff;color:var(--ink);border:1px solid var(--line);padding:13px 14px;margin-top:5px}#selectedPlanName{overflow-wrap:break-word}#chooseDayPlan>span:last-child{flex:none}
+  .recipe-filters{display:grid;grid-template-columns:1fr;gap:12px}
+  #plannedGroceries .week-toolbar{grid-template-columns:1fr 1fr}#plannedGroceries .week-toolbar>label{grid-column:1 / -1}
+  .shop-legend{flex-wrap:wrap;gap:4px 12px;font-size:11px}.shop-row{grid-template-columns:24px minmax(0,1fr) 82px;gap:9px;padding:15px 12px}.shop-row .food-name{font-size:14px}.shop-row label.stock{font-size:11px}.shop-row .buy{overflow-wrap:anywhere}
+  .metric{padding:16px 12px}.metric b{font-size:23px;overflow-wrap:anywhere}.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px}.mini-stats div{padding-right:12px}.mini-stats div:last-child{border-right:0}
+  .tracker-table td{grid-template-columns:80px minmax(0,1fr)}.tracker-table td:first-child{white-space:normal}.tracker-table tr{padding:12px}.tracker-table td:before{font-size:12px}
+  .mobile-cards,.mobile-cards tbody,.mobile-cards tr,.mobile-cards td{display:block;width:100%}
+  .mobile-cards thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .mobile-cards tr+tr{border-top:1px solid var(--line)}.mobile-cards td{padding:13px 16px;border:0;font-size:14px;line-height:1.7}.mobile-cards td:first-child{padding-bottom:0;font-size:15px;font-weight:650;color:var(--teal-dark)}.mobile-cards td+td{padding-top:8px}
+  .research-copy{max-width:100%}.research-copy details,.panel details{padding:15px}.research-copy ul,.research-copy ol,main>section>ol{padding-left:22px}main li+li{margin-top:10px}
+  .phase-strip{grid-template-columns:1fr}.site-footer{display:flex;flex-wrap:wrap;gap:4px 14px;padding-top:12px}.site-footer>a{display:inline-flex;align-items:center;min-height:44px;margin:0;font-size:12px}.site-footer>p{flex-basis:100%}
+}
+@media(max-width:360px){
+ .panel,.card,.recipe{padding:17px}.training-feature,.next-meal{padding:22px}.form-grid>.span-3,.form-grid>.span-6{grid-column:1 / -1}.training-page #sessionForm>.span-3{grid-column:1 / -1}
+ #todayWeek{grid-template-columns:repeat(3,minmax(0,1fr))}.nutrition-summary b{font-size:17px}.nutrition-summary span{font-size:10px}.meal-jumps{flex-wrap:wrap}.meal-jumps a,.meal-jumps button{flex:1 1 auto;text-align:center}.sheet-header h2{font-size:22px}
+ .training-page .rest-timer>.button-row{grid-template-columns:repeat(2,minmax(0,1fr))}.training-page .exercise-card>.button-row>.button{flex-basis:100%}
+}

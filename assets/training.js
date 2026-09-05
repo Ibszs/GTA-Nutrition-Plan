@@ -47,6 +47,7 @@ function selectedWeek() {
   try { return getWeek(state.startDate, $('workoutDate').value); } catch (_) { return 1; }
 }
 function renderOverview() {
+  $('sessionFocus').textContent=SESSIONS.find(s=>s.id===$('sessionSelect').value)?.focus??'';
   const week = selectedWeek();
   const prescription = getPrescription(week, $('lighterSession').checked);
   $('phaseSummary').textContent = `Week ${week} · ${prescription.phase}. ${prescription.note}${prescription.checkpoint ? ' Review performance, fatigue, soreness and sleep this week.' : ''}`;
@@ -219,7 +220,7 @@ function syncForm() {
     $('sessionSelect').value = (next ?? SESSIONS[0]).id;
   }
 }
-SESSIONS.forEach(s => { const option = element('option', `${s.name} — ${s.focus}`); option.value = s.id; $('sessionSelect').append(option); });
+SESSIONS.forEach(s => { const option = element('option', s.name); option.value = s.id; $('sessionSelect').append(option); });
 $('blockStart').addEventListener('change', () => {
   if (state.draft || state.sessions.length) return;
   if (!isRealDate($('blockStart').value)) { error('Choose a valid block start date.'); return; }

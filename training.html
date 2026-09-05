@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Train · Form &amp; Fuel</title>
   <meta name="description" content="Your four-day training plan, saved sets, rest timer and sixteen-week progress journal.">
   <meta name="theme-color" content="#f5f5f7">
@@ -32,7 +32,7 @@
         <label class="span-3" for="workoutDate">Workout date<input id="workoutDate" type="date" required></label>
         <label class="span-3" for="sessionSelect">Session<select id="sessionSelect" required></select></label>
         <label class="span-3" for="loadUnit">Load unit<select id="loadUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></label>
-        <label class="checkbox-field span-12" for="lighterSession"><input id="lighterSession" type="checkbox">Lighter session: about half the sets, 4 RIR</label>
+        <p id="sessionFocus" class="small span-12"></p><label class="checkbox-field span-12" for="lighterSession"><input id="lighterSession" type="checkbox">Lighter session: about half the sets, 4 RIR</label>
         <p class="small span-12">Use a lighter 5–7 days when performance repeatedly drops alongside unusual fatigue or soreness. Reviews in weeks 4, 8 and 12 are check-ins, not automatic deloads.</p>
         <div class="span-12 button-row"><button class="button" type="submit" id="beginSession">Start session</button></div>
       </form>

@@ -41,7 +41,7 @@ function renderMenu(){
   const menu=dayMenu(state,selectedDate);
   $('selectedDayTitle').textContent=prettyDate(selectedDate);
   $('mealCompletion').textContent=`${menu.day.done.length} of 6 eaten`;
-  $('dayPlan').value=menu.plan.id;$('fillPlan').value=menu.plan.id;
+  $('dayPlan').value=menu.plan.id;$('selectedPlanName').textContent=menu.plan.name;$('fillPlan').value=menu.plan.id;
   $('dayDescription').textContent=menu.plan.description;
   const nutrition=menuNutrition(menu,wheyLabel(storage));
   $('dayMacros').replaceChildren();
@@ -136,3 +136,5 @@ function openSwap(index){
   $('swapDialog').showModal();$('swapTitle').focus();
 }
 $('browsePlans').addEventListener('click',()=>{$('plansDialog').showModal();$('plansTitle').focus();});
+
+$('chooseDayPlan').addEventListener('click',()=>{$('plansDialog').showModal();$('plansTitle').focus();});
