@@ -47,35 +47,13 @@ test('buildLocalDates rejects impossible calendar dates', () => {
   assert.throws(() => buildLocalDates('2026-02-30', 14), /valid local date/i);
 });
 
-test('calculateWheyLabel uses honey inside allowed range', () => {
-  assert.deepEqual(calculateWheyLabel({
-    scoopCalories: 120,
-    scoopProtein: 25,
-    scoopCarbs: 2,
-    scoopFat: 1,
-  }), {
-    uncorrectedCalories: 3306,
-    differenceCalories: -6,
-    method: 'honey',
-    honeyGrams: 18,
-    oilAdjustmentGrams: null,
-    dailyProteinGrams: 176.7,
-    dailyCarbGrams: 427.3,
-    dailyFatGrams: 101.6,
-  });
-});
-
-test('calculateWheyLabel uses oil when honey leaves allowed range', () => {
-  const result = calculateWheyLabel({
-    scoopCalories: 250,
-    scoopProtein: 25,
-    scoopCarbs: 2,
-    scoopFat: 1,
-  });
-
-  assert.equal(result.method, 'oil');
-  assert.equal(result.honeyGrams, 20);
-  assert.equal(result.oilAdjustmentGrams, -15.4);
+test('whey label updates the original meal estimate without secretly changing portions', () => {
+  const empty=calculateWheyLabel({scoopCalories:0,scoopProtein:0,scoopCarbs:0,scoopFat:0});
+  const actual=calculateWheyLabel({scoopCalories:120,scoopProtein:25,scoopCarbs:2,scoopFat:1});
+  assert.equal(actual.dailyCalories-empty.dailyCalories,120);
+  assert.equal(actual.dailyProteinGrams-empty.dailyProteinGrams,25);
+  assert.equal(actual.dailyCarbGrams-empty.dailyCarbGrams,2);
+  assert.equal(actual.dailyFatGrams-empty.dailyFatGrams,1);
 });
 
 test('calculateWheyLabel rejects negative label values', () => {
@@ -99,66 +77,72 @@ test('calculateTracker requests more data when fewer than twelve calorie days ex
   assert.equal(result.calorieEntries, 11);
 });
 
-test('calculateTracker removes module after repeated projection above configured maximum', () => {
+test('calculateTracker flags rapid gain even if a deadline projection looks acceptable', () => {
   const result = calculateTracker(trackerInput({
     rows: completeRows(170, 172),
     priorOver: true,
   }));
 
   assert.equal(result.projection, 200);
-  assert.equal(result.decisionCode, 'remove-module');
+  assert.equal(result.decisionCode, 'review-fast');
 });
 
-test('calculateTracker holds first projection above configured maximum', () => {
+test('calculateTracker reviews a rapid first trend without automatically changing calories', () => {
   const result = calculateTracker(trackerInput({ rows: completeRows(170, 172) }));
 
-  assert.equal(result.decisionCode, 'first-over');
+  assert.equal(result.decisionCode, 'review-fast');
 });
 
-test('calculateTracker adds module when slow pace projects below configured minimum', () => {
+test('calculateTracker suggests a modest increase for a consistently slow trend', () => {
   const result = calculateTracker(trackerInput({ rows: completeRows(170, 170.4) }));
 
   assert.equal(result.projection, 176);
-  assert.equal(result.decisionCode, 'add-module');
+  assert.equal(result.decisionCode, 'review-slow');
 });
 
-test('calculateTracker holds when pace projects inside configured range', () => {
+test('calculateTracker does not endorse rapid gain to satisfy a finish target', () => {
   const result = calculateTracker(trackerInput());
 
   assert.equal(result.firstAverage, 170);
   assert.equal(result.secondAverage, 171.5);
   assert.equal(result.weeklyRate, 1.5);
   assert.equal(result.projection, 192.5);
-  assert.equal(result.decisionCode, 'hold-range');
+  assert.equal(result.decisionCode, 'review-fast');
 });
 
-test('calculateTracker holds fast pace that remains below configured maximum', () => {
+test('calculateTracker reviews fast pace even when projected finish is below goal', () => {
   const result = calculateTracker(trackerInput({
     rows: completeRows(170, 171.6),
     weeksRemaining: 10,
   }));
 
   assert.equal(result.projection, 187.6);
-  assert.equal(result.decisionCode, 'hold-fast');
+  assert.equal(result.decisionCode, 'review-fast');
 });
 
-test('calculateTracker returns review fallback for valid uncovered combination', () => {
+test('calculateTracker holds a modest trend independent of an ambitious goal', () => {
   const result = calculateTracker(trackerInput({
     rows: completeRows(170, 170.5),
   }));
 
-  assert.equal(result.decisionCode, 'hold-review');
-  assert.match(result.decisionText, /review/i);
+  assert.equal(result.decisionCode, 'hold-range');
 });
 
-test('calculateTracker uses configured goal range instead of hidden constants', () => {
+test('calculateTracker keeps goal projection informational', () => {
   const result = calculateTracker(trackerInput({
     rows: completeRows(170, 171.5),
     goalMin: 180,
     goalMax: 190,
   }));
 
-  assert.equal(result.decisionCode, 'first-over');
+  assert.equal(result.decisionCode, 'review-fast');
+});
+
+test('calorie adherence has both a lower and upper bound', () => {
+  const rows=completeRows(170,170.5).map(row=>({...row,calories:5000}));
+  const result=calculateTracker(trackerInput({rows}));
+  assert.equal(result.calorieAdherentDays,0);
+  assert.equal(result.decisionCode,'collect-more');
 });
 
 test('calculateTracker reports protein adherence independently', () => {

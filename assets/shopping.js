@@ -1,3 +1,4 @@
+import { confirmAction } from './common.js';
 import {
   addItem,
   addStore,
@@ -171,7 +172,7 @@ elements.stores.addEventListener('change', (event) => {
   );
 });
 
-elements.stores.addEventListener('click', (event) => {
+elements.stores.addEventListener('click', async (event) => {
   const control = event.target.closest('[data-action]');
   if (!control || control.dataset.action === 'toggle-item') return;
   const { action, storeId, itemId } = control.dataset;
@@ -181,10 +182,10 @@ elements.stores.addEventListener('click', (event) => {
   if (action === 'add-item') openItemDialog(storeId);
   if (action === 'rename-store') openStoreDialog(storeId);
   if (action === 'edit-item') openItemDialog(storeId, itemId);
-  if (action === 'delete-store' && window.confirm(`Delete store “${store.name}” and its ${store.items.length} items?`)) {
+  if (action === 'delete-store' && await confirmAction(`Delete store “${store.name}” and its ${store.items.length} items?`)) {
     update((current) => removeStore(current, storeId), `Deleted ${store.name}.`);
   }
-  if (action === 'delete-item' && window.confirm(`Delete item “${item.name}”?`)) {
+  if (action === 'delete-item' && await confirmAction(`Delete item “${item.name}”?`)) {
     update((current) => removeItem(current, storeId, itemId), `Deleted ${item.name}.`);
   }
 });
@@ -220,17 +221,17 @@ elements.itemForm.addEventListener('submit', (event) => {
   closeDialog(elements.itemDialog);
 });
 
-elements.addStoreButton.addEventListener('click', () => openStoreDialog());
-elements.cancelStoreButton.addEventListener('click', () => closeDialog(elements.storeDialog));
-elements.cancelItemButton.addEventListener('click', () => closeDialog(elements.itemDialog));
+elements.addStoreButton.addEventListener('click', async () => openStoreDialog());
+elements.cancelStoreButton.addEventListener('click', async () => closeDialog(elements.storeDialog));
+elements.cancelItemButton.addEventListener('click', async () => closeDialog(elements.itemDialog));
 
-elements.clearChecksButton.addEventListener('click', () => {
-  if (!window.confirm('Clear every checked item? List edits stay intact.')) return;
+elements.clearChecksButton.addEventListener('click', async () => {
+  if (!await confirmAction('Clear every checked item? List edits stay intact.')) return;
   update(clearChecks, 'All checks cleared.');
 });
 
-elements.restoreDefaultsButton.addEventListener('click', () => {
-  if (!window.confirm('Restore default supplied shopping list? Current edits will be replaced.')) return;
+elements.restoreDefaultsButton.addEventListener('click', async () => {
+  if (!await confirmAction('Restore default supplied shopping list? Current edits will be replaced.')) return;
   state = createDefaultShoppingState();
   save();
   render();
@@ -244,7 +245,7 @@ elements.copyListButton.addEventListener('click', async () => {
   else setStatus('Copy unavailable in this browser.', true);
 });
 
-elements.exportShoppingButton.addEventListener('click', () => {
+elements.exportShoppingButton.addEventListener('click', async () => {
   const exported = `${JSON.stringify(state, null, 2)}\n`;
   if (downloadText('GTA-Shopping-List.json', exported, 'application/json')) setStatus('Shopping JSON exported.');
   else setStatus('Export unavailable in this browser.', true);
@@ -256,7 +257,7 @@ elements.importShoppingInput.addEventListener('change', async () => {
   if (!file) return;
   try {
     const imported = validateShoppingState(JSON.parse(await file.text()));
-    if (!window.confirm(`Replace shopping list with “${file.name}”?`)) return;
+    if (!await confirmAction(`Replace shopping list with “${file.name}”?`)) return;
     state = imported;
     save();
     render();

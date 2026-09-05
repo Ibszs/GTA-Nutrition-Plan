@@ -1,34 +1,39 @@
-# GTA Nutrition Plan
+# Form & Fuel
 
-Personal, phone-first nutrition control centre. It combines supplied 16-week meal guidance with editable shopping, Sunday preparation, whey-label correction, and a saved fourteen-day response tracker.
+A personal, offline-capable training and nutrition journal.
 
-## Open it
+Open the app: https://ibszs.github.io/GTA-Nutrition-Plan/
 
-Published app: <https://ibszs.github.io/GTA-Nutrition-Plan/>
+## Open the local preview
 
-On iPhone or iPad, open that link in Safari, tap Share, then **Add to Home Screen**. On Android, open it in Chrome, open the browser menu, then choose **Install app** or **Add to Home screen**.
-
-Open every page once while online. The app shell and supplied PDFs then work offline. New browser requests, first-time files, and GitHub availability still require a connection.
-
-## Saved data and phone moves
-
-Shopping edits, checks, tracker entries, and whey values use browser storage. They do not leave the device and do not sync automatically. Browser-data clearing removes them.
-
-Use **Home → Back up everything → Export all data** before changing phones or clearing browser data. Move the downloaded JSON file to the other device, then use **Import all data**. Import validates all three sections before replacing saved values.
-
-Shopping also supports list-only text copy and JSON export/import. Tracker supports CSV export.
-
-## Local launch
-
-This is a dependency-free static app. Serve the repository over HTTP; service workers do not run from a direct `file://` opening.
+From this directory in PowerShell:
 
 ```powershell
-python -m http.server 4173 --bind 127.0.0.1
+python -m http.server 4191 --bind 127.0.0.1
 ```
 
-Then open <http://127.0.0.1:4173/>.
+Open http://127.0.0.1:4191/. Keep the terminal running. No dependencies or build step are required.
 
-## Tests
+## Use it
+
+- **Today:** next session, next meal, weekly rhythm and quick morning weight/sleep entry.
+- **Train:** four gym sessions per week across 16 weeks. One exercise at a time; load, reps, reps in reserve (RIR), clean technique and done checks; last matching exercise/setup; copy previous numbers; resumable drafts, partial sessions, history and rest timer.
+- **Meals:** seven complete day templates, 21 recipes, seven-day calendar, swaps and serving quantities. The original meal quantities remain available. Three new templates estimate 3,500–3,600 kcal and 90–95 g fat with the default whey assumption.
+- **Shop:** ingredients from the chosen week, manual pantry subtraction, store/aisle grouping and saved checkboxes. Existing custom shopping lists remain editable under the separate disclosure.
+- **Progress:** one day at a time or all 14 days, weekly averages, contextual calorie feedback, archived periods and CSV export. The first date locks once entries exist to keep their dates intact.
+- **Guides:** the full training/nutrition rationale and sources, cooking and food safety, and original meal card. Legacy PDFs are historical references with superseded guidance.
+
+## Saved data
+
+Everything stays in this browser; devices and different URL origins have separate records. No automatic sync. Browser-data clearing removes records. Use **Today → Backup & settings → Export all data** before moving devices or clearing storage. Version-2 JSON includes training, meal calendar/pantry, custom shopping, progress/history and whey label. Older version-1 imports retain newer training/planner data. Imports validate before writing, with rollback on write failure. Storage failures show a notice; temporary changes must be exported from their current page where supported.
+
+Actual package labels override estimates. Enter your whey label in Today. Grocery dry/raw/cooked quantities follow each ingredient label; pantry stock is manual and is not depleted when checking off a meal.
+
+## Install and offline use
+
+Open the HTTPS app link in Safari and use Share → Add to Home Screen, or use Chrome’s Install app option. The first successful online visit precaches the app. External research links need a connection. A local laptop preview is not available on a phone via the phone’s localhost.
+
+## Verify
 
 Node.js 22 or newer:
 
@@ -36,12 +41,10 @@ Node.js 22 or newer:
 npm test
 ```
 
-Tests cover nutrition calculations, date handling, editable shopping transforms, backup validation, links, page structure, PWA metadata, and offline asset completeness.
+Tests cover progression, completed-set validity, history isolation, food totals, calendar dates, pantry aggregation, backup migration/rollback, tracker feedback, shared navigation and offline asset completeness. No root build command exists.
 
-## Deployment
+Increment `CACHE_NAME` in `sw.js` for each published update. Keep generated browser data out of Git. This is a personal planning tool; the 195 lb goal is an aspiration, not a deadline used to force calorie increases.
 
-GitHub Pages serves `main` from repository root. No build command or runtime dependency is required. After changing a cached file, increment `CACHE_NAME` in `sw.js` so installed copies refresh.
+## Personal log
 
-## Boundaries
-
-This project is for personal organization. Package labels and current shelf prices override saved text. Nutrition and weight tools support the supplied plan; they do not replace clinician advice.
+Tap the small eye at the top right of Today. Tap the crossed eye, press Escape, or tap the backdrop to hide it. The log starts hidden on every page load. This discreet popup records actual timestamps, amount, optional site and notes, with edit/delete and an 84-hour reference from the newest entry. It is not password-protected or encrypted. Complete backups include an existing personal log; older backups without the section leave it intact. The separate personal-log download is a readable archive; use the complete backup for app import. No automatic entries or background notifications.

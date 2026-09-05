@@ -1,12 +1,12 @@
 {
-  "name": "GTA Nutrition Plan",
-  "short_name": "GTA Fuel Log",
-  "description": "Personal meal, shopping, preparation and fourteen-day progress tools.",
+  "name": "Form & Fuel - Personal Training Journal",
+  "short_name": "Form & Fuel",
+  "description": "Your 16-week training, meals, groceries and progress journal.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f5ed",
-  "theme_color": "#12364b",
+  "background_color": "#f5f5f7",
+  "theme_color": "#f5f5f7",
   "icons": [
     {
       "src": "icons/icon-192.png",

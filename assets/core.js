@@ -1,11 +1,4 @@
-const BASE_CALORIES = 3186;
-const BASE_PROTEIN = 151.7;
-const BASE_CARBS = 425.3;
-const BASE_FAT = 100.6;
-const TARGET_CALORIES = 3300;
-const DEFAULT_HONEY_GRAMS = 20;
-const HONEY_CALORIES_PER_GRAM = 3.04;
-const OIL_CALORIES_PER_GRAM = 8.84;
+import { dayNutrition } from './food-data.js';
 
 function round(value, digits = 1) {
   return Number(value.toFixed(digits));
@@ -80,20 +73,12 @@ export function calculateWheyLabel(input) {
   const scoopProtein = requireNonNegative(input?.scoopProtein, 'Scoop protein');
   const scoopCarbs = requireNonNegative(input?.scoopCarbs, 'Scoop carbohydrate');
   const scoopFat = requireNonNegative(input?.scoopFat, 'Scoop fat');
-  const uncorrectedCalories = BASE_CALORIES + scoopCalories;
-  const differenceCalories = TARGET_CALORIES - uncorrectedCalories;
-  const calculatedHoney = DEFAULT_HONEY_GRAMS + differenceCalories / HONEY_CALORIES_PER_GRAM;
-  const useHoney = calculatedHoney >= 5 && calculatedHoney <= 40;
-
+  const total=dayNutrition('original',{kcal:scoopCalories,protein:scoopProtein,carbs:scoopCarbs,fat:scoopFat});
   return {
-    uncorrectedCalories: round(uncorrectedCalories, 0),
-    differenceCalories: round(differenceCalories, 0),
-    method: useHoney ? 'honey' : 'oil',
-    honeyGrams: useHoney ? round(calculatedHoney, 0) : DEFAULT_HONEY_GRAMS,
-    oilAdjustmentGrams: useHoney ? null : round(differenceCalories / OIL_CALORIES_PER_GRAM, 1),
-    dailyProteinGrams: round(BASE_PROTEIN + scoopProtein, 1),
-    dailyCarbGrams: round(BASE_CARBS + scoopCarbs, 1),
-    dailyFatGrams: round(BASE_FAT + scoopFat, 1),
+    dailyCalories:round(total.kcal,1),
+    dailyProteinGrams:round(total.protein,1),
+    dailyCarbGrams:round(total.carbs,1),
+    dailyFatGrams:round(total.fat,1),
   };
 }
 
@@ -128,7 +113,7 @@ export function calculateTracker(input) {
   const projectionRaw = secondAverageRaw + weeklyRateRaw * weeksRemaining;
   const loggedCalories = rows.map((row) => row.calories).filter(Number.isFinite);
   const loggedProtein = rows.map((row) => row.protein).filter(Number.isFinite);
-  const calorieAdherentDays = loggedCalories.filter((value) => value >= targetCalories * 0.9).length;
+  const calorieAdherentDays = loggedCalories.filter((value) => value >= targetCalories * 0.9 && value <= targetCalories * 1.1).length;
   const proteinAdherentDays = loggedProtein.filter((value) => value >= targetProtein).length;
   const calorieAdherence = loggedCalories.length ? calorieAdherentDays / loggedCalories.length : 0;
   const proteinAdherence = loggedProtein.length ? proteinAdherentDays / loggedProtein.length : 0;
@@ -153,26 +138,15 @@ export function calculateTracker(input) {
   } else if (!Number.isFinite(weeklyRateRaw) || !Number.isFinite(projectionRaw)) {
     decisionCode = 'collect-more';
     decisionText = 'HOLD - collect seven more days. Trend is ambiguous.';
-  } else if (projectionRaw > goalMax && Boolean(input.priorOver)) {
-    decisionCode = 'remove-module';
-    decisionText = `REMOVE the most recently added 250-kcal module. Two consecutive projections exceed ${goalMax} lb.`;
-  } else if (projectionRaw > goalMax) {
-    decisionCode = 'first-over';
-    decisionText = `HOLD. This is the first projection above ${goalMax} lb; review again in seven days.`;
-  } else if (weeklyRateRaw < 0.5 && projectionRaw < goalMin) {
-    decisionCode = 'add-module';
-    decisionText = 'ADD one +250-kcal module. Rice Drive is the default; PB-Honey if stomach volume is the limiter.';
-  } else if (
-    weeklyRateRaw >= 0.5
-    && weeklyRateRaw <= 1.5
-    && projectionRaw >= goalMin
-    && projectionRaw <= goalMax
-  ) {
+  } else if (weeklyRateRaw > firstAverageRaw * 0.005) {
+    decisionCode = 'review-fast';
+    decisionText = 'Gain is faster than the lean-gain planning band. Check water shifts, waist and training. If this persists across another review, consider about 100–150 kcal less per day. No automatic change.';
+  } else if (weeklyRateRaw < firstAverageRaw * 0.0025) {
+    decisionCode = 'review-slow';
+    decisionText = 'Gain is below the planning band. If this persists for two consistent weeks and recovery is good, consider about 100–150 kcal more per day. First check missed food and unusually active days.';
+  } else {
     decisionCode = 'hold-range';
-    decisionText = 'HOLD intake. Weight trend projects into the configured target range.';
-  } else if (weeklyRateRaw > 1.5 && projectionRaw <= goalMax) {
-    decisionCode = 'hold-fast';
-    decisionText = `HOLD and report body-composition direction. Projection remains at or below ${goalMax} lb.`;
+    decisionText = 'Hold intake. The trend is in the 0.25–0.5% weekly planning band; favor the lower end and review waist, training and comfort. The finish projection is not a muscle-gain forecast.';
   }
 
   return {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Editable Shopping List</title>
+  <title>Shop · Form &amp; Fuel</title>
   <meta name="description" content="Editable, saved shopping list for the GTA Nutrition Plan.">
   <meta name="theme-color" content="#12364b">
   <link rel="manifest" href="manifest.webmanifest">
@@ -12,25 +12,12 @@
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body class="shopping-page">
-  <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header">
-    <a class="brand" href="index.html"><span class="brand-mark">GTA</span>Fuel Log</a>
-    <nav class="site-nav" aria-label="Primary navigation">
-      <a href="index.html">Home</a>
-      <a href="quick-start.html">Today</a>
-      <a href="shopping.html" aria-current="page">Shopping</a>
-      <a href="tracker.html">Tracker</a>
-      <a href="plan.html">Plan</a>
-      <a href="cooking.html">Sunday Prep</a>
-    </nav>
-  </header>
+  <a class="skip-link" href="#main-content">Skip to main content</a><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">GTA</span><span>Form &amp; Fuel<small>YOUR TRAINING JOURNAL</small></span></a><nav class="site-nav" aria-label="Primary navigation"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Today</span></a><a href="training.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 5v14M3 8v8M17 5v14M21 8v8M7 12h10"/></svg><span>Train</span></a><a href="meals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3v7m3-7v7m-6-7v7h6M5 10v11M17 3v18m0-18c-5 4-5 9 0 9"/></svg><span>Meals</span></a><a href="shopping.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18l-2 14H5zM8 7V5a4 4 0 0 1 8 0v2"/></svg><span>Shop</span></a><a href="tracker.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3v18h18M6 16l5-5 4 2 5-8"/></svg><span>Progress</span></a></nav><div class="side-bottom"><a href="plan.html">The 16-week guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meal plan</a><a href="index.html#backup">Backup &amp; settings</a><p>One session. One meal.<br>A little stronger, every week.</p></div></header>
 
   <main class="wrap" id="main-content">
-    <header class="hero">
-      <div class="kicker">Tap while shopping</div>
-      <h1>Cart changes with real life.</h1>
-      <p>Edit stores, items, quantities and notes. Checks and edits save on this device.</p>
-    </header>
+    <header class="hero"><div class="kicker">FROM YOUR MENU TO YOUR CART</div><h1>Buy what the week needs.</h1><p>Your selected meals become one list. Check your kitchen, enter what you have, then shop the difference.</p></header>
+<section id="plannedGroceries"><div class="week-toolbar"><label>Week containing<input id="shopWeek" type="date"></label><label>Group by<select id="shopGroup"><option value="category">Grocery aisle</option><option value="store">Suggested store</option></select></label><a class="button ghost" href="meals.html">Edit meals</a><button id="copyPlannedGroceries" class="secondary">Copy this list</button></div><div class="shop-legend"><span id="plannedSummary"></span><span>Required → have now → to buy</span></div><p class="small">Quantities are for one person and all seven selected days. “Have now” is a manual stock check; eating meals does not subtract inventory. Recheck it each trip. Buy the next practical package size.</p><div id="generatedGroceries"></div><p id="plannedStatus" class="status-line" role="status"></p><div class="callout"><b>Three useful stops.</b> Costco for bulk staples; Food Basics for dairy and produce; Iqbal when lentils or spices need restocking. Store assignments are suggestions. Current prices and availability have not been checked.</div></section>
+<details id="customLists"><summary>Your editable store lists &amp; extras</summary><p class="small">These are your saved shopping lists, kept separate from the menu calculation above. Use them for household extras or store notes; avoid buying the same item twice. The old starter list describes pack sizes, not this week's required amount.</p>
 
     <div class="progress">
       <div class="progress-row">
@@ -58,7 +45,7 @@
     <div class="note"><b>Packaged-item rule:</b> read physical ingredient list before buying yogurt, milk, peanut butter, frozen vegetables, raisins, honey or supplements. Reject pork gelatin, lard, fish or oyster sauce, anchovy, beef or blended stock, and ambiguous animal enzymes.</div>
     <div id="stores" aria-live="polite"></div>
     <div class="cost"><b>Budget interpretation:</b> zero-pantry first cart is about $232.72 because bulk staples carry forward. Baseline food consumed is estimated around $104.60 including restaurant meal and excluding owned whey. Keep a $160 weekly envelope; unused room is not a spending target.</div>
-  </main>
+  </details></main>
 
   <dialog id="storeDialog" aria-labelledby="storeDialogTitle">
     <form class="dialog-body" id="storeForm">
@@ -101,6 +88,6 @@
 
   <footer class="site-footer">Built for personal use. Check package labels and current shelf prices.</footer>
   <script type="module" src="assets/common.js"></script>
-  <script type="module" src="assets/shopping.js"></script>
+  <script type="module" src="assets/shopping.js"></script><script type="module" src="assets/groceries.js"></script>
 </body>
 </html>

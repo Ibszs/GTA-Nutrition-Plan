@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>14-Day Intake-Response Tracker</title>
+  <title>Progress · Form &amp; Fuel</title>
   <meta name="description" content="Responsive fourteen-day weight, calorie, protein and wellbeing tracker.">
   <meta name="theme-color" content="#12364b">
   <link rel="manifest" href="manifest.webmanifest">
@@ -12,30 +12,19 @@
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body class="tracker-page">
-  <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header">
-    <a class="brand" href="index.html"><span class="brand-mark">GTA</span>Fuel Log</a>
-    <nav class="site-nav" aria-label="Primary navigation">
-      <a href="index.html">Home</a>
-      <a href="quick-start.html">Today</a>
-      <a href="shopping.html">Shopping</a>
-      <a href="tracker.html" aria-current="page">Tracker</a>
-      <a href="plan.html">Plan</a>
-      <a href="cooking.html">Sunday Prep</a>
-    </nav>
-  </header>
+  <a class="skip-link" href="#main-content">Skip to main content</a><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">GTA</span><span>Form &amp; Fuel<small>YOUR TRAINING JOURNAL</small></span></a><nav class="site-nav" aria-label="Primary navigation"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Today</span></a><a href="training.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 5v14M3 8v8M17 5v14M21 8v8M7 12h10"/></svg><span>Train</span></a><a href="meals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3v7m3-7v7m-6-7v7h6M5 10v11M17 3v18m0-18c-5 4-5 9 0 9"/></svg><span>Meals</span></a><a href="shopping.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18l-2 14H5zM8 7V5a4 4 0 0 1 8 0v2"/></svg><span>Shop</span></a><a href="tracker.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3v18h18M6 16l5-5 4 2 5-8"/></svg><span>Progress</span></a></nav><div class="side-bottom"><a href="plan.html">The 16-week guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meal plan</a><a href="index.html#backup">Backup &amp; settings</a><p>One session. One meal.<br>A little stronger, every week.</p></div></header>
 
   <main class="wrap" id="main-content">
     <header class="hero">
       <div class="kicker">Fourteen-day feedback loop</div>
       <h1>Trend beats one weigh-in.</h1>
-      <p>Log mornings and intake. Decisions use weekly averages, adherence and your configured finish range.</p>
+      <p>Log mornings and intake. Compare weekly averages, food consistency and how you feel. Your finish weight is a reference, not a reason to rush.</p>
     </header>
 
     <div class="storage-notice" id="trackerStorageNotice" data-mode="persistent" role="status">Tracker saves in this browser.</div>
 
-    <section class="panel" aria-labelledby="targets-title">
-      <h2 id="targets-title">Targets and context</h2>
+    <details class="panel"><summary id="targets-title">Targets and context</summary>
+      <p class="small">Start date locks after your first entry so saved weigh-ins keep their dates. Use Start next 14 days to continue.</p>
       <form class="form-grid" id="trackerMetaForm">
         <label class="span-3" for="startDate">First date
           <input id="startDate" type="date" required>
@@ -61,16 +50,18 @@
         <label class="span-3" for="waistCurrent">Current waist (cm)
           <input id="waistCurrent" type="number" inputmode="decimal" min="0" step="0.1">
         </label>
-        <label class="checkbox-field span-12" for="priorOver">
+        <label hidden class="checkbox-field span-12" for="priorOver">
           <input id="priorOver" type="checkbox"> Previous weekly projection also exceeded maximum
         </label>
       </form>
-      <div class="alert" id="trackerError" hidden role="alert"></div>
-    </section>
+
+    </details>
+    <div class="alert" id="trackerError" hidden role="alert"></div>
 
     <section aria-labelledby="log-title">
       <h2 id="log-title">Daily log</h2>
       <p class="small">Morning body weight works best. Blank cells stay blank; zero is treated as a real entry.</p>
+      <label for="daySelect">Choose a day<select id="daySelect"></select></label>
       <div class="table-wrap tracker-table-wrap">
         <table class="tracker-table">
           <thead><tr><th>Date</th><th>Weight lb</th><th>Calories</th><th>Protein g</th><th>Sleep h</th><th>Training</th><th>GI 0–3</th><th>Note</th></tr></thead>
@@ -85,22 +76,25 @@
         <div class="metric"><b id="firstAverage">—</b><span>Week 1 average</span></div>
         <div class="metric"><b id="secondAverage">—</b><span>Week 2 average</span></div>
         <div class="metric"><b id="weeklyRate">—</b><span>Weekly rate</span></div>
-        <div class="metric"><b id="projection">—</b><span>Projected finish</span></div>
+        <div class="metric"><b id="projection">—</b><span>Linear projection¹</span></div>
       </div>
       <div class="grid adherence-grid">
         <div class="card span-6"><b>Calories</b><p id="calorieAdherence">0 of 0 days</p></div>
         <div class="card span-6"><b>Protein</b><p id="proteinAdherence">0 of 0 days</p></div>
       </div>
       <div class="result" id="trackerDecision" role="status">Add entries to calculate.</div>
-      <div class="callout warn" id="waistFlag" hidden><b>Waist flag:</b> increase reached 4 cm. Report direction; do not auto-cut calories.</div>
+      <div class="callout warn" id="waistFlag" hidden><b>Waist flag:</b> waist is up at least 2 cm. Recheck at the same time and location; consider the pattern alongside weight and performance. This is a reminder, not a clinical cutoff.</div>
+      <p class="small">¹ A straight-line estimate only. Early water and glycogen changes can distort it. Aim for roughly 0.25–0.5% body weight per week as a starting review band, not a guaranteed rate of muscle gain.</p>
       <canvas id="trendChart" height="230" aria-label="Weight and seven-day rolling-average chart"></canvas>
       <div class="button-row">
-        <button class="secondary" id="downloadCsvButton" type="button">Download CSV</button>
+        <button class="secondary" id="downloadCsvButton" type="button">Export all periods (CSV)</button>
         <a class="button ghost" id="trackerBackupLink" href="index.html#backup">Open backup tools</a>
-        <button class="danger-button" id="clearTrackerButton" type="button">Clear tracker</button>
+        <button class="danger-button" id="clearTrackerButton" type="button">Clear this period</button>
       </div>
+      <button id="nextPeriodButton" type="button">Start next 14 days</button>
       <p class="status-line" id="trackerStatus" aria-live="polite"></p>
     </section>
+    <section><h2>Earlier periods</h2><div id="periodHistory"></div></section>
   </main>
 
   <footer class="site-footer">Built for personal use. This tracker supports plan rules; it does not replace medical advice.</footer>

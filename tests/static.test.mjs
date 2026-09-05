@@ -6,6 +6,8 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '..');
 const pages = [
   'index.html',
+  'training.html',
+  'meals.html',
   'quick-start.html',
   'shopping.html',
   'tracker.html',
@@ -23,6 +25,8 @@ const legacyFiles = [
 ];
 const navTargets = [
   'index.html',
+  'training.html',
+  'meals.html',
   'quick-start.html',
   'shopping.html',
   'tracker.html',
@@ -129,9 +133,9 @@ test('shopping page exposes complete editable-list controls', () => {
     assert.match(controller, new RegExp(`data-action["', )]+${action}|${action}`, 'i'), `missing ${action} action`);
   }
 
-  assert.match(controller, /confirm\([^)]*Delete store/i);
-  assert.match(controller, /confirm\([^)]*Delete item/i);
-  assert.match(controller, /confirm\([^)]*Restore default/i);
+  assert.match(controller, /confirmAction\([^)]*Delete store/i);
+  assert.match(controller, /confirmAction\([^)]*Delete item/i);
+  assert.match(controller, /confirmAction\([^)]*Restore default/i);
   assert.match(controller, /\.textContent\s*=/);
   assert.doesNotMatch(controller, /\.innerHTML\s*=/);
   assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/shopping\.js["']/i);
@@ -181,8 +185,8 @@ test('dashboard exposes whey setup, complete backup, and install controls', () =
 
 test('manifest defines installable relative-scope application', () => {
   const manifest = JSON.parse(read('manifest.webmanifest'));
-  assert.equal(manifest.name, 'GTA Nutrition Plan');
-  assert.equal(manifest.short_name, 'GTA Fuel Log');
+  assert.equal(manifest.name, 'Form & Fuel - Personal Training Journal');
+  assert.equal(manifest.short_name, 'Form & Fuel');
   assert.equal(manifest.start_url, './');
   assert.equal(manifest.scope, './');
   assert.equal(manifest.display, 'standalone');
@@ -197,6 +201,8 @@ test('manifest defines installable relative-scope application', () => {
 test('service worker precaches every shipped application asset', () => {
   const worker = read('sw.js');
   const expected = [
+    './training.html', './meals.html',
+    ...fs.readdirSync(path.join(root,'assets')).filter(name=>name.endsWith('.js')).map(name=>'./assets/'+name),
     './', './index.html', './quick-start.html', './shopping.html', './tracker.html',
     './plan.html', './cooking.html', './assets/styles.css', './assets/common.js',
     './assets/core.js', './assets/shopping-state.js', './assets/backup.js',
@@ -205,7 +211,7 @@ test('service worker precaches every shipped application asset', () => {
     './GTA_16_Week_Nutrition_Plan.pdf', './Mothers_Sunday_Cooking_Sheet.pdf',
     './Quick_Start_Card.pdf',
   ];
-  assert.match(worker, /gta-nutrition-v1/);
+  assert.match(worker, /gta-nutrition-v2/);
   for (const asset of expected) {
     assert.match(worker, new RegExp(`['"]${asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`), `cache omits ${asset}`);
     if (asset !== './') assert.equal(fs.existsSync(path.join(root, asset.slice(2))), true, `missing ${asset}`);
@@ -232,6 +238,6 @@ test('shopping action buttons retain 44-pixel touch targets', () => {
 test('tracker never persists an invalid intermediate form state', () => {
   const controller = read('assets/tracker.js');
   assert.match(controller, /function save\(\)[\s\S]*?validateTrackerState\(state\)[\s\S]*?saveJson/);
-  assert.match(controller, /catch \(_\) \{\s*return false;/);
+  assert.match(controller, /Not saved:/);
   assert.match(controller, /metaFields\.forEach\([^\n]*addEventListener\('input', updateMeta\)/);
 });

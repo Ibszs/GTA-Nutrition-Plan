@@ -1,6 +1,8 @@
 export function createStorage(candidate) {
+  let source;
   try {
     const storage = candidate ?? globalThis.localStorage;
+    source=storage;
     const probe = '__gta_storage_probe__';
     storage.setItem(probe, '1');
     storage.removeItem(probe);
@@ -10,9 +12,12 @@ export function createStorage(candidate) {
     return {
       persistent: false,
       storage: {
-        getItem: (key) => values.has(key) ? values.get(key) : null,
+        getItem: (key) => {
+          if(values.has(key))return values.get(key);
+          try{return source?.getItem(key) ?? null;}catch{return null;}
+        },
         setItem: (key, value) => values.set(key, String(value)),
-        removeItem: (key) => values.delete(key),
+        removeItem: (key) => values.set(key,null),
       },
     };
   }
@@ -68,3 +73,35 @@ export function downloadText(filename, text, type = 'text/plain', environment = 
   }
 }
 
+
+export function confirmAction(message) {
+  return new Promise(resolve=>{
+    const dialog=document.createElement('dialog');
+    dialog.className='confirm-dialog';dialog.setAttribute('aria-label','Confirm change');
+    const heading=document.createElement('h2');heading.textContent='Confirm change';
+    const copy=document.createElement('p');copy.textContent=message;
+    const actions=document.createElement('div');actions.className='button-row';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='ghost';cancel.textContent='Cancel';
+    const proceed=document.createElement('button');proceed.type='button';proceed.textContent='Continue';
+    const finish=value=>{dialog.close();dialog.remove();resolve(value);};
+    cancel.addEventListener('click',()=>finish(false));proceed.addEventListener('click',()=>finish(true));
+    dialog.addEventListener('cancel',event=>{event.preventDefault();finish(false);});
+    actions.append(cancel,proceed);dialog.append(heading,copy,actions);document.body.append(dialog);dialog.showModal();cancel.focus();
+  });
+}
+
+// Native dialogs contain focus and support Escape; the outer surface dismisses a sheet.
+if(typeof document!=='undefined'){
+  document.querySelectorAll('dialog').forEach(dialog=>{
+    let backdropPress=false;
+    dialog.addEventListener('pointerdown',event=>{backdropPress=event.target===dialog;});
+    dialog.addEventListener('click',event=>{
+      if(event.target===dialog && backdropPress){
+        const box=dialog.getBoundingClientRect();
+        if(event.clientX<box.left || event.clientX>box.right || event.clientY<box.top || event.clientY>box.bottom)dialog.close();
+      }
+      backdropPress=false;
+    });
+    dialog.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
+  });
+}

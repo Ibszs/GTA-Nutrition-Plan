@@ -84,4 +84,13 @@ test('downloadText clicks download and schedules URL cleanup', () => {
   assert.equal(clicked, true);
   assert.equal(removed, 'blob:test');
 });
-
+test('full storage still exposes existing records through temporary fallback',()=>{
+  const candidate={getItem:key=>key==='existing'?'saved':null,setItem(){throw new Error('quota');},removeItem(){}};
+  const result=createStorage(candidate);
+  assert.equal(result.persistent,false);
+  assert.equal(result.storage.getItem('existing'),'saved');
+  result.storage.setItem('existing','temporary');
+  assert.equal(result.storage.getItem('existing'),'temporary');
+  result.storage.removeItem('existing');
+  assert.equal(result.storage.getItem('existing'),null);
+});

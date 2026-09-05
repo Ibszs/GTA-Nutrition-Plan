@@ -1,5 +1,6 @@
-import { createDefaultTrackerState, validateTrackerState } from './backup.js';
-import { createStorage, downloadText, loadJson, saveJson } from './common.js';
+import { confirmAction } from './common.js';
+import { archiveTracker, createDefaultTrackerState, validateTrackerState } from './backup.js';
+import { createStorage, downloadText, saveJson } from './common.js';
 import { buildLocalDates, calculateTracker, formatLocalDate } from './core.js';
 
 const STORAGE_KEY = 'gtaNutrition.tracker.v2';
@@ -12,9 +13,10 @@ const elements = Object.fromEntries([
   ...metaFields, 'trackerRows', 'trackerStorageNotice', 'trackerError', 'trackerStatus',
   'firstAverage', 'secondAverage', 'weeklyRate', 'projection', 'calorieAdherence',
   'proteinAdherence', 'trackerDecision', 'waistFlag', 'trendChart',
-  'downloadCsvButton', 'clearTrackerButton',
+  'downloadCsvButton', 'clearTrackerButton', 'daySelect', 'nextPeriodButton', 'periodHistory',
 ].map((id) => [id, document.getElementById(id)]));
 
+let storageBlocked = false;
 let state = loadState();
 
 function defaultState() {
@@ -23,20 +25,26 @@ function defaultState() {
 
 function loadState() {
   try {
-    return validateTrackerState(loadJson(storage, STORAGE_KEY, defaultState()));
+    const raw = storage.getItem(STORAGE_KEY);
+    return raw === null ? defaultState() : validateTrackerState(JSON.parse(raw));
   } catch (_) {
+    storageBlocked = true;
     return defaultState();
   }
 }
 
 function save() {
+  if (storageBlocked) { showError('Saved progress could not be read and has not been overwritten. Restore a valid backup from Today, then reload.'); return false; }
   let validState;
   try {
     validState = validateTrackerState(state);
-  } catch (_) {
+  } catch (error) {
+    showError(`Not saved: ${error.message} Correct this field to save your changes.`);
     return false;
   }
-  saveJson(storage, STORAGE_KEY, validState);
+  try { saveJson(storage, STORAGE_KEY, validState); }
+  catch (_) { showError('This change could not be saved. Keep this page open and free browser storage.'); return false; }
+  elements.startDate.disabled = state.rows.some(row => Object.values(row).some(v => v !== ''));
   window.dispatchEvent(new CustomEvent('gta-data-changed', { detail: { section: 'tracker' } }));
   return true;
 }
@@ -52,6 +60,7 @@ function syncMetaToForm() {
     if (field === 'priorOver') elements[field].checked = state.meta[field];
     else elements[field].value = state.meta[field];
   });
+  elements.startDate.disabled = state.rows.some(row => Object.values(row).some(v => v !== ''));
 }
 
 function createInput(field, label, date, rowIndex) {
@@ -88,6 +97,12 @@ function createSelect(field, label, date, rowIndex, options) {
 function renderRows() {
   const dates = buildLocalDates(state.meta.startDate, 14);
   elements.trackerRows.replaceChildren();
+  const priorDay = elements.daySelect.value;
+  elements.daySelect.replaceChildren();
+  const all = node('option', 'All 14 days'); all.value = 'all'; elements.daySelect.append(all);
+  dates.forEach((date,index) => { const option=node('option', date); option.value=String(index); elements.daySelect.append(option); });
+  const todayIndex=dates.indexOf(formatLocalDate(new Date()));
+  elements.daySelect.value = priorDay || String(todayIndex < 0 ? 0 : todayIndex);
   dates.forEach((date, rowIndex) => {
     const row = node('tr');
     const dateCell = node('td', date);
@@ -123,7 +138,13 @@ function renderRows() {
     row.append(noteCell);
     elements.trackerRows.append(row);
   });
+  filterDays();
 }
+
+function filterDays() {
+  [...elements.trackerRows.children].forEach((row,index)=>{row.hidden=elements.daySelect.value !== 'all' && Number(elements.daySelect.value)!==index;});
+}
+elements.daySelect.addEventListener('change',filterDays);
 
 function showError(message = '') {
   elements.trackerError.hidden = !message;
@@ -136,8 +157,9 @@ function displayNumber(value, suffix = '') {
 
 function calculate() {
   try {
+    validateTrackerState(state);
     const result = calculateTracker({ ...state.meta, rows: state.rows });
-    showError();
+    if (!storageBlocked) showError();
     elements.firstAverage.textContent = displayNumber(result.firstAverage, ' lb');
     elements.secondAverage.textContent = displayNumber(result.secondAverage, ' lb');
     elements.weeklyRate.textContent = displayNumber(result.weeklyRate, ' lb/wk');
@@ -157,7 +179,7 @@ function calculate() {
 function renderWaistFlag() {
   const baseline = Number(state.meta.waistBaseline);
   const current = Number(state.meta.waistCurrent);
-  elements.waistFlag.hidden = !(state.meta.waistBaseline && state.meta.waistCurrent && current - baseline >= 4);
+  elements.waistFlag.hidden = !(state.meta.waistBaseline && state.meta.waistCurrent && current - baseline >= 2);
 }
 
 function drawChart(rollingAverages) {
@@ -238,8 +260,8 @@ function updateMeta(event) {
   const field = event.target.id;
   state.meta[field] = field === 'priorOver' ? event.target.checked : event.target.value;
   if (field === 'startDate') renderRows();
-  save();
   calculate();
+  save();
 }
 
 elements.trackerRows.addEventListener('input', (event) => {
@@ -247,8 +269,8 @@ elements.trackerRows.addEventListener('input', (event) => {
   const field = event.target.dataset.field;
   if (!Number.isInteger(rowIndex) || !field) return;
   state.rows[rowIndex][field] = event.target.value;
-  save();
   calculate();
+  save();
 });
 
 elements.trackerRows.addEventListener('change', (event) => {
@@ -256,43 +278,79 @@ elements.trackerRows.addEventListener('change', (event) => {
   const field = event.target.dataset.field;
   if (!Number.isInteger(rowIndex) || !field) return;
   state.rows[rowIndex][field] = event.target.value;
-  save();
   calculate();
+  save();
 });
 
 metaFields.forEach((field) => elements[field].addEventListener('input', updateMeta));
 
 function csvCell(value) {
-  const text = String(value ?? '');
+  let text = String(value ?? '');
+  if (/^[=+@-]/.test(text)) text = `'${text}`;
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-elements.downloadCsvButton.addEventListener('click', () => {
-  const dates = buildLocalDates(state.meta.startDate, 14);
+elements.downloadCsvButton.addEventListener('click', async () => {
   const headers = ['Date', 'Weight lb', 'Calories', 'Protein g', 'Sleep h', 'Training', 'GI 0-3', 'Note'];
-  const lines = [headers, ...state.rows.map((row, index) => [
-    dates[index], row.weight, row.calories, row.protein, row.sleep, row.training, row.gi, row.note,
-  ])].map((row) => row.map(csvCell).join(','));
-  const downloaded = downloadText('GTA-14-Day-Tracker.csv', `\uFEFF${lines.join('\r\n')}\r\n`, 'text/csv;charset=utf-8');
+  const records = [...(state.history || []), state].flatMap(period => {
+    const dates=buildLocalDates(period.meta.startDate,14);
+    return period.rows.map((row,index)=>[dates[index],row.weight,row.calories,row.protein,row.sleep,row.training,row.gi,row.note]);
+  });
+  const lines=[headers,...records].map(row=>row.map(csvCell).join(','));
+  const downloaded = downloadText('Form-and-Fuel-Progress.csv', `\uFEFF${lines.join('\r\n')}\r\n`, 'text/csv;charset=utf-8');
   elements.trackerStatus.textContent = downloaded ? 'CSV downloaded.' : 'CSV download unavailable.';
 });
 
-elements.clearTrackerButton.addEventListener('click', () => {
-  if (!window.confirm('Clear all tracker entries and reset targets?')) return;
-  state = defaultState();
-  save();
+elements.clearTrackerButton.addEventListener('click', async () => {
+  if (!await confirmAction('Clear entries in the current 14-day period? Previous periods and your targets will be kept.')) return;
+  const previous=state;
+  state={...state,rows:defaultState().rows};
+  if(!save()){state=previous;return;}
   syncMetaToForm();
   renderRows();
   calculate();
-  elements.trackerStatus.textContent = 'Tracker cleared.';
+  elements.trackerStatus.textContent = 'Current period cleared. Earlier periods retained.';
+});
+
+function renderHistory() {
+  elements.periodHistory.replaceChildren();
+  for(const period of (state.history || []).slice().reverse()) {
+    const details=node('details');
+    const dates=buildLocalDates(period.meta.startDate,14);
+    const logged=period.rows.filter(row=>row.weight!=='');
+    const average=logged.length ? (logged.reduce((sum,row)=>sum+Number(row.weight),0)/logged.length).toFixed(1)+' lb average' : 'No weights';
+    details.append(node('summary',`${dates[0]} – ${dates[13]} · ${average}`));
+    const list=node('ul');
+    period.rows.forEach((row,index)=>{if(Object.values(row).every(v=>v===''))return;list.append(node('li',`${dates[index]} · ${row.weight || '—'} lb · ${row.calories || '—'} kcal · ${row.protein || '—'} g protein · ${row.sleep || '—'} h sleep${row.note ? ' · '+row.note : ''}`));});
+    details.append(list); elements.periodHistory.append(details);
+  }
+  if(!state.history?.length)elements.periodHistory.append(node('p','Earlier 14-day periods appear here when you start the next one.','small'));
+}
+elements.nextPeriodButton.addEventListener('click',async()=>{
+  const nextDate=buildLocalDates(state.meta.startDate,15)[14];
+  if(!await confirmAction(`Save this period to history and start ${nextDate}? Existing entries stay available below and in your backup.`))return;
+  const previous=state;
+  try { state=archiveTracker(state,nextDate); if(!save()){state=previous;return;} }
+  catch(issue){state=previous;showError(issue.message);return;}
+  syncMetaToForm(); elements.daySelect.value=''; renderRows(); renderHistory(); calculate();
+  elements.trackerStatus.textContent='Previous period saved. Your next 14 days are ready.';
 });
 
 if (!persistent) {
   elements.trackerStorageNotice.dataset.mode = 'memory';
-  elements.trackerStorageNotice.textContent = 'Browser blocked local storage. Tracker entries last only until this tab closes; download CSV before leaving.';
+  elements.trackerStorageNotice.textContent = 'Browser blocked local storage. Changes last only on this page; download CSV before leaving. They will not appear in the backup on Today.';
 }
 
 syncMetaToForm();
 renderRows();
+renderHistory();
 calculate();
+if(storageBlocked)showError('Saved progress could not be read and has not been overwritten. Restore a valid backup from Today, then reload.');
 window.addEventListener('resize', calculate);
+
+window.addEventListener('storage', event => {
+  if(event.key!==STORAGE_KEY && event.key!==null)return;
+  storageBlocked=false;state=loadState();syncMetaToForm();renderRows();renderHistory();calculate();
+  if(storageBlocked)showError('Saved progress needs recovery; restore a valid backup.');
+  else elements.trackerStatus.textContent='Updated with changes from your other tab.';
+});

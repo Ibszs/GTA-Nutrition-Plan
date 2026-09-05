@@ -1,3 +1,5 @@
+import {createPersonalState,validatePersonalState} from './personal-state.js';
+import { confirmAction } from './common.js';
 import {
   buildBackup,
   createDefaultTrackerState,
@@ -5,16 +7,16 @@ import {
   parseBackup,
   validateTrackerState,
   validateWheyState,
+  restoreBackup,
+  DATA_KEYS,
 } from './backup.js';
+import { createTrainingState, validateTrainingState } from './training-state.js';
+import { createPlannerState, validatePlannerState } from './planner-state.js';
 import { createStorage, downloadText, loadJson, saveJson } from './common.js';
 import { calculateWheyLabel, formatLocalDate } from './core.js';
 import { createDefaultShoppingState, shoppingProgress, validateShoppingState } from './shopping-state.js';
 
-const KEYS = {
-  shopping: 'gtaNutrition.shopping.v2',
-  tracker: 'gtaNutrition.tracker.v2',
-  whey: 'gtaNutrition.whey.v1',
-};
+const KEYS = DATA_KEYS;
 const { storage, persistent } = createStorage();
 const elements = Object.fromEntries([
   'wheyCalories', 'wheyProtein', 'wheyCarbs', 'wheyFat', 'wheyResult',
@@ -33,22 +35,23 @@ function trackerDefault() {
 }
 
 function validatedLoad(key, fallback, validate) {
-  try {
-    return validate(loadJson(storage, key, fallback));
-  } catch (_) {
-    return fallback;
-  }
+  const raw=storage.getItem(key);
+  return validate(raw===null?fallback:JSON.parse(raw));
 }
 
-function currentData() {
+function currentData(includePersonal=false) {
   return {
+    ...(includePersonal && storage.getItem(KEYS.personal)!==null ? {personal:validatedLoad(KEYS.personal,createPersonalState(),validatePersonalState)} : {}),
     shopping: validatedLoad(KEYS.shopping, createDefaultShoppingState(), validateShoppingState),
     tracker: validatedLoad(KEYS.tracker, trackerDefault(), validateTrackerState),
     whey: validatedLoad(KEYS.whey, createDefaultWheyState(), validateWheyState),
+    training: validatedLoad(KEYS.training, createTrainingState(), validateTrainingState),
+    planner: validatedLoad(KEYS.planner, createPlannerState(), validatePlannerState),
   };
 }
 
-let whey = currentData().whey;
+let whey=createDefaultWheyState();
+try {whey=validatedLoad(KEYS.whey,whey,validateWheyState);}catch(error){setStatus(`Saved label could not be loaded: ${error.message}`,true);}
 let installPrompt = null;
 
 function setStatus(message, error = false) {
@@ -57,12 +60,14 @@ function setStatus(message, error = false) {
 }
 
 function renderSummaries() {
+  try {
   const data = currentData();
   const progress = shoppingProgress(data.shopping);
   const weights = data.tracker.rows.filter((row) => row.weight !== '').length;
   const intakeDays = data.tracker.rows.filter((row) => row.calories !== '').length;
   elements.shoppingSummary.textContent = `${progress.checked} of ${progress.total} items checked.`;
   elements.trackerSummary.textContent = `${weights} weight entries; ${intakeDays} calorie entries.`;
+  } catch(error){setStatus(`Some saved data could not be read. Restore a valid backup. ${error.message}`,true);}
 }
 
 function renderWhey() {
@@ -76,10 +81,7 @@ function renderWhey() {
 
   try {
     const result = calculateWheyLabel(whey);
-    const correction = result.method === 'honey'
-      ? `Use ${result.honeyGrams} g breakfast honey.`
-      : `Keep 20 g breakfast honey and ${result.oilAdjustmentGrams >= 0 ? 'add' : 'remove'} ${Math.abs(result.oilAdjustmentGrams)} g olive oil.`;
-    elements.wheyResult.textContent = `${correction} Day: ${result.uncorrectedCalories} kcal before correction, ${result.dailyProteinGrams} g protein, ${result.dailyCarbGrams} g carbohydrate, ${result.dailyFatGrams} g fat.`;
+    elements.wheyResult.textContent = `Original day with this scoop: approximately ${Math.round(result.dailyCalories)} kcal, ${result.dailyProteinGrams} g protein, ${result.dailyCarbGrams} g carbs and ${result.dailyFatGrams} g fat. Meal portions stay unchanged. All menu estimates use this label.`;
   } catch (error) {
     elements.wheyResult.textContent = error.message;
   }
@@ -99,9 +101,9 @@ for (const [elementId, field] of Object.entries(wheyFields)) {
   });
 }
 
-elements.exportBackupButton.addEventListener('click', () => {
+elements.exportBackupButton.addEventListener('click', async () => {
   try {
-    const backup = buildBackup(currentData());
+    const backup = buildBackup(currentData(true));
     const downloaded = downloadText('GTA-Nutrition-Backup.json', `${JSON.stringify(backup, null, 2)}\n`, 'application/json');
     setStatus(downloaded ? 'Complete backup downloaded.' : 'Backup download unavailable.', !downloaded);
   } catch (error) {
@@ -115,21 +117,21 @@ elements.importBackupInput.addEventListener('change', async () => {
   if (!file) return;
   try {
     const backup = parseBackup(await file.text());
-    if (!window.confirm(`Replace all saved nutrition data with “${file.name}”?`)) return;
-    saveJson(storage, KEYS.shopping, backup.data.shopping);
-    saveJson(storage, KEYS.tracker, backup.data.tracker);
-    saveJson(storage, KEYS.whey, backup.data.whey);
+    if (!await confirmAction(`Replace the saved sections included in this backup with “${file.name}”?`)) return;
+    restoreBackup(storage,backup);
+    const personalNote=backup.data.personal?' Personal log restored.':' Existing personal log was kept.';
     whey = backup.data.whey;
     renderWhey();
     renderSummaries();
-    setStatus('Complete backup imported. Shopping and tracker pages now use imported data.');
+    window.dispatchEvent(new CustomEvent('gta-data-changed'));
+    setStatus((backup.version===1?'Older backup imported. Existing training and meal-calendar data were kept.':'Complete backup imported. Training, meals, shopping and progress restored.')+personalNote);
   } catch (error) {
     setStatus(`Import rejected: ${error.message}`, true);
   }
 });
 
 window.addEventListener('gta-data-changed', renderSummaries);
-window.addEventListener('storage', renderSummaries);
+window.addEventListener('storage',()=>{try{whey=validatedLoad(KEYS.whey,createDefaultWheyState(),validateWheyState);renderWhey();}catch(error){setStatus(error.message,true);}renderSummaries();});
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
   installPrompt = event;

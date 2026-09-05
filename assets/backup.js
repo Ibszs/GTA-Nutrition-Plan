@@ -1,5 +1,8 @@
+import {validatePersonalState,PERSONAL_KEY} from './personal-state.js';
 import { buildLocalDates } from './core.js';
 import { validateShoppingState } from './shopping-state.js';
+import { createTrainingState, validateTrainingState } from './training-state.js';
+import { createPlannerState, validatePlannerState } from './planner-state.js';
 
 const TRACKER_META_FIELDS = [
   'startDate',
@@ -33,7 +36,7 @@ function validNumberText(value, { positive = false } = {}) {
   return Number.isFinite(converted) && (positive ? converted > 0 : converted >= 0);
 }
 
-export function validateTrackerState(state) {
+export function validateTrackerState(state, allowHistory = true) {
   if (!state || typeof state !== 'object' || Array.isArray(state)) {
     throw new TypeError('Tracker data must be an object.');
   }
@@ -91,7 +94,24 @@ export function validateTrackerState(state) {
     }
   }
 
+  if (state.history !== undefined) {
+    if (!allowHistory || !Array.isArray(state.history) || state.history.length > 500) throw new Error('Tracker history is invalid.');
+    state.history.forEach(period=>validateTrackerState(period,false));
+  }
   return clone(state);
+}
+
+export function archiveTracker(state,nextDate) {
+  const valid=validateTrackerState(state);
+  const earliest=buildLocalDates(valid.meta.startDate,15)[14];
+  buildLocalDates(nextDate,1);
+  if(nextDate<earliest)throw new Error('New tracker dates cannot overlap the current period.');
+  const history=valid.history || [];
+  if(valid.rows.some(row=>Object.values(row).some(value=>value!==''))) history.push({version:2,meta:clone(valid.meta),rows:clone(valid.rows)});
+  const next=createDefaultTrackerState(nextDate);
+  next.meta={...valid.meta,startDate:nextDate,weeksRemaining:String(Math.max(0,Number(valid.meta.weeksRemaining)-2)),priorOver:false};
+  next.history=history;
+  return validateTrackerState(next);
 }
 
 export function validateWheyState(state) {
@@ -113,8 +133,8 @@ export function createDefaultTrackerState(startDate) {
     version: 2,
     meta: {
       startDate,
-      targetCalories: '3300',
-      targetProtein: '175',
+      targetCalories: '3550',
+      targetProtein: '210',
       goalMin: '190',
       goalMax: '195',
       weeksRemaining: '14',
@@ -152,7 +172,7 @@ function validateBackupDocument(document) {
   if (document.application !== 'gta-nutrition-plan') {
     throw new TypeError('Backup application marker is invalid.');
   }
-  if (document.version !== 1) throw new RangeError('Unsupported backup version.');
+  if (![1,2].includes(document.version)) throw new RangeError('Unsupported backup version.');
   if (typeof document.exportedAt !== 'string' || Number.isNaN(Date.parse(document.exportedAt))) {
     throw new TypeError('Backup export timestamp is invalid.');
   }
@@ -162,12 +182,14 @@ function validateBackupDocument(document) {
 
   return {
     application: 'gta-nutrition-plan',
-    version: 1,
+    version: document.version,
     exportedAt: document.exportedAt,
     data: {
+      ...(document.version===2 && Object.hasOwn(document.data,'personal') ? {personal:validatePersonalState(document.data.personal)} : {}),
       shopping: validateShoppingState(document.data.shopping),
       tracker: validateTrackerState(document.data.tracker),
       whey: validateWheyState(document.data.whey),
+      ...(document.version===2 ? {training:validateTrainingState(document.data.training),planner:validatePlannerState(document.data.planner)} : {}),
     },
   };
 }
@@ -175,9 +197,9 @@ function validateBackupDocument(document) {
 export function buildBackup(data, exportedAt = new Date().toISOString()) {
   return validateBackupDocument({
     application: 'gta-nutrition-plan',
-    version: 1,
+    version: 2,
     exportedAt,
-    data,
+    data:{...data,training:data.training ?? createTrainingState(data.tracker.meta.startDate),planner:data.planner ?? createPlannerState(data.tracker.meta.startDate)},
   });
 }
 
@@ -189,4 +211,20 @@ export function parseBackup(text) {
     throw new SyntaxError('Backup must be valid JSON.');
   }
   return validateBackupDocument(parsed);
+}
+
+export const DATA_KEYS={personal:PERSONAL_KEY,shopping:'gtaNutrition.shopping.v2',tracker:'gtaNutrition.tracker.v2',whey:'gtaNutrition.whey.v1',training:'gtaNutrition.training.v1',planner:'gtaNutrition.planner.v1'};
+export function restoreBackup(storage,document) {
+  const valid=validateBackupDocument(document);
+  const entries=Object.entries(valid.data);
+  const previous=new Map(entries.map(([section])=>[DATA_KEYS[section],storage.getItem(DATA_KEYS[section])]));
+  try {
+    for(const [section,value] of entries)storage.setItem(DATA_KEYS[section],JSON.stringify(value));
+  } catch(error) {
+    for(const [key,value] of previous) {
+      try {if(value===null)storage.removeItem(key);else storage.setItem(key,value);}catch{}
+    }
+    throw error;
+  }
+  return valid;
 }
