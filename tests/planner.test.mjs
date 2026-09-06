@@ -2,6 +2,32 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as planner from '../assets/planner-state.js';
 
+test('saved recipes, notes and cooking progress survive validation without changing dated meals', () => {
+  assert.equal(typeof planner.setRecipeRecord, 'function');
+  const original = planner.createPlannerState('2026-09-07');
+  original.days['2026-09-07'] = { planId: 'build', overrides: {}, done: [0] };
+  const next = planner.setRecipeRecord(original, 'tomato-chicken-rice', { saved: true, servings: 4, checked: [0, 2], step: 2, note: 'Use the wide pan.' });
+  assert.deepEqual(next.recipeBook['tomato-chicken-rice'], { saved: true, servings: 4, checked: [0, 2], step: 2, note: 'Use the wide pan.' });
+  assert.deepEqual(planner.validatePlannerState(JSON.parse(JSON.stringify(next))), next);
+  assert.deepEqual(next.days, original.days);
+  assert.equal(original.recipeBook['tomato-chicken-rice'], undefined);
+  assert.equal(planner.setRecipeRecord(next, 'tomato-chicken-rice', { saved: false }).recipeBook['tomato-chicken-rice'].note, 'Use the wide pan.');
+  const resized = planner.setRecipeRecord(next, 'tomato-chicken-rice', {servings:2});
+  assert.deepEqual(resized.recipeBook['tomato-chicken-rice'].checked, []);
+  assert.equal(resized.recipeBook['tomato-chicken-rice'].step, null);
+  assert.equal(resized.recipeBook['tomato-chicken-rice'].saved, true);
+});
+
+test('old planners gain an empty recipe book and invalid cooking records are rejected', () => {
+  const old = { version: 1, weekStart: '2026-09-07', days: {}, pantry: {}, checked: {} };
+  assert.deepEqual(planner.validatePlannerState(old).recipeBook, {});
+  const record = { saved: true, servings: 1, checked: [], step: null, note: '' };
+  for (const invalid of [{servings:0},{servings:1.5},{servings:8},{checked:[0,0]},{checked:[99]},{step:-1},{step:99},{saved:'yes'},{note:'x'.repeat(2001)}]) {
+    assert.throws(() => planner.validatePlannerState({...old, recipeBook:{'tomato-chicken-rice':{...record,...invalid}}}));
+  }
+  assert.throws(() => planner.validatePlannerState({...old,recipeBook:JSON.parse('{"__proto__":{}}')}));
+});
+
 test('month picker includes a complete Monday-first grid across leap days and year boundaries', () => {
   assert.equal(typeof planner.monthGrid, 'function');
   const leap = planner.monthGrid('2028-02-15');

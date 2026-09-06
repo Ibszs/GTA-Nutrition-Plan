@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="pan" viewBox="0 0 360 170">
+    <g fill="none" stroke="#50668e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M300 83h42v17h-42"/><rect x="35" y="35" width="265" height="108" rx="30" fill="#dfe6f5"/><rect x="48" y="48" width="239" height="82" rx="24" stroke="#acbada"/><g fill="#d6a57e" stroke="#a36d49"><path d="M79 64q15-8 24 5l-2 20q-13 8-26-2z"/><path d="M139 64q15-8 24 5l-2 20q-13 8-26-2z"/><path d="M199 64q15-8 24 5l-2 20q-13 8-26-2z"/></g><path d="M119 79h7m-4-4 5 4-5 4m57-4h7m-4-4 5 4-5 4" stroke="#8499c5"/><path d="M91 109h143" stroke="#bcc9e2" stroke-dasharray="3 8"/></g>
+  </symbol>
+  <symbol id="probe" viewBox="0 0 360 170">
+    <g stroke-linecap="round" stroke-linejoin="round"><ellipse cx="158" cy="131" rx="91" ry="12" fill="#d9e1f1"/><path d="M77 112q-12-38 23-46 22-21 47-7 39-19 71 12 26 21 2 48-76 14-143-7" fill="#d5a17b" stroke="#a56e4e" stroke-width="3"/><path d="M97 86q54-30 105 5M111 110q40-18 81-2" fill="none" stroke="#bc855f" stroke-width="3"/><circle cx="158" cy="92" r="10" fill="#f3d4b1"/><path d="m162 90 54-47" stroke="#526783" stroke-width="5"/><rect x="204" y="14" width="99" height="39" rx="10" fill="#fff" stroke="#627caa" stroke-width="3"/><text x="254" y="40" font-family="system-ui,sans-serif" font-size="21" text-anchor="middle" fill="#38598c">74°C</text><circle cx="158" cy="92" r="3" fill="#526783"/></g>
+  </symbol>
+  <symbol id="rice" viewBox="0 0 360 170">
+    <g fill="none" stroke="#61779f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M89 81v48q0 12 14 12h140q14 0 14-12V81" fill="#dce5f5"/><path d="M89 98H70V85h19m168 13h19V85h-19M81 78h184M95 72q78-58 156 0"/><path d="M156 32h32v10h-32z" fill="#b6c6e3"/><path d="M123 102h100m-90 13h80" stroke="#b9c9e4" stroke-dasharray="2 9"/><path d="M115 157q7-14 14 0m35 0q7-14 14 0m35 0q7-14 14 0" stroke="#bd926a"/><path d="M290 42q-9-9 0-18m16 31q-9-9 0-18" stroke="#adbdd9"/></g>
+  </symbol>
+  <symbol id="store" viewBox="0 0 360 170">
+    <g stroke="#7185a7" stroke-width="2.5" stroke-linejoin="round"><rect x="30" y="66" width="100" height="48" rx="9" fill="#d7e1f2"/><path d="M37 68h86v14H37" fill="#e8c19a" stroke="none"/><rect x="24" y="57" width="112" height="12" rx="6" fill="#fff"/><rect x="53" y="89" width="54" height="14" rx="3" fill="#fff" stroke="none"/><path d="M62 96h35" stroke="#b0bdd4"/><path d="M151 88h35m-10-9 10 9-10 9" fill="none"/><rect x="207" y="26" width="94" height="127" rx="13" fill="#fff"/><path d="M208 72h92m-77-28v15m0 29v22"/><path d="M253 90v36m-16-27 32 18m-32 0 32-18" stroke="#95afd8" stroke-width="3" stroke-linecap="round"/></g>
+  </symbol>
+</svg>

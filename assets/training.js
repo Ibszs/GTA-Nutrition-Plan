@@ -418,7 +418,7 @@ window.addEventListener('storage',event=>{if(event.key===TRAINING_KEY || event.k
 function renderExerciseLibrary() {
   const search = $('librarySearch').value.toLowerCase().trim();
   const muscle = $('libraryMuscle').value;
-  const groups = { chest: /chest/i, back: /back/i, delts: /delts/i, arms: /biceps|triceps/i, legs: /quads|hamstrings|glutes|calves/i, abs: /abs/i };
+  const groups = { chest: /chest/i, back: /back/i, delts: /delts|shoulders/i, arms: /biceps|triceps/i, legs: /quads|hamstrings|glutes|calves/i, abs: /abs/i };
   $('exerciseLibrary').replaceChildren();
   for (const ex of Object.values(EXERCISES)) {
     if (muscle !== 'all' && !groups[muscle].test(ex.muscle)) continue;

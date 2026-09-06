@@ -2,7 +2,7 @@
 
 ## Interface icons and component references
 
-`assets/icons.svg` contains 41 Lucide symbols from revision `94e4cb9d9db5907053ebf3636a97c45529cf776b` of [lucide-icons/lucide](https://github.com/lucide-icons/lucide). Original path geometry is combined into a local sprite; the upstream ISC and Feather MIT notices are retained in [licenses/lucide.txt](licenses/lucide.txt). No icon service or external font is requested at runtime.
+`assets/icons.svg` contains 42 Lucide symbols from revision `94e4cb9d9db5907053ebf3636a97c45529cf776b` of [lucide-icons/lucide](https://github.com/lucide-icons/lucide). Original path geometry is combined into a local sprite; the upstream ISC and Feather MIT notices are retained in [licenses/lucide.txt](licenses/lucide.txt). No icon service or external font is requested at runtime.
 
 Component inspiration: [Aceternity floating dock](https://ui.aceternity.com/components/floating-dock), [card hover effect](https://ui.aceternity.com/components/card-hover-effect), [bento grid](https://ui.aceternity.com/components/bento-grid), [Magic UI border beam](https://magicui.design/docs/components/border-beam), and [shadcn calendar](https://ui.shadcn.com/docs/components/base/calendar). These informed navigation depth, card feedback and date selection. The application uses its own CSS and native JavaScript implementations; no component-library code, framework or runtime dependency was added.
 
@@ -26,7 +26,7 @@ Snacks: “Use case photorealistic-natural. Asset: six-tile food photography con
 
 ## Movement demonstrations
 
-Thirty-eight unmodified JPEGs under `assets/images/exercises/` come from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), which describes its data and imagery as public domain. The upstream [Unlicense](https://github.com/yuhonas/free-exercise-db/blob/a859101d633a01c4a1a920d6a8ce41dabba0705f/LICENSE.md) is retained in `docs/licenses/free-exercise-db.txt`.
+Seventy unmodified JPEGs under `assets/images/exercises/` come from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), which describes its data and imagery as public domain. The upstream [Unlicense](https://github.com/yuhonas/free-exercise-db/blob/a859101d633a01c4a1a920d6a8ce41dabba0705f/LICENSE.md) is retained in `docs/licenses/free-exercise-db.txt`.
 
 Pinned source revision: `a859101d633a01c4a1a920d6a8ce41dabba0705f`.
 
@@ -35,3 +35,7 @@ Pinned source revision: `a859101d633a01c4a1a920d6a8ce41dabba0705f`.
 The double-f app icon was generated with GPT image generation and resized to 192 and 512 pixels. The layout and rep demonstration use local HTML/CSS/SVG. System fonts avoid external requests and font downloads.
 
 Icon final edit prompt: “Preserve the elegant overlapping white and lavender double-f symbol. Replace the background with solid ink navy #202941 to the square edges. Keep the symbol fully visible and centered with 15% safe margins. Flat clean vector-like edges. No text, extra border, rounded outer corners, shadow or grain. Opaque background.”
+
+## Cooking diagrams
+
+`assets/kitchen.svg` contains four original vector diagrams for pan spacing, thermometer placement, covered-pot rice cooking and shallow-container cooling. They are illustrative technique cues, not measured portion drawings. Recipe food photos remain serving inspiration; recipe ingredients determine actual amounts.

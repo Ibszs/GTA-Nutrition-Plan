@@ -13,6 +13,19 @@ import {
 } from '../assets/backup.js';
 import { createDefaultShoppingState } from '../assets/shopping-state.js';
 import { createTrainingState, createDraft, editDraft, finishDraft } from '../assets/training-state.js';
+import { createPlannerState, setRecipeRecord } from '../assets/planner-state.js';
+
+test('recipe bookmarks, notes, quantities and cooking progress survive full backup restore', () => {
+  const planner = setRecipeRecord(createPlannerState('2026-09-07'), 'tomato-chicken-rice', {saved:true, servings:4, checked:[0,2], step:6, note:'Use the wide pan.'});
+  planner.days['2026-09-07'] = {planId:'original', overrides:{}, done:[0,2]};
+  const backup = buildBackup({...validBackup().data, planner});
+  const records = new Map();
+  restoreBackup({getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value),removeItem:key=>records.delete(key)},parseBackup(JSON.stringify(backup)));
+  assert.deepEqual(JSON.parse(records.get('gtaNutrition.planner.v1')), planner);
+  const legacy = structuredClone(backup); delete legacy.data.planner.recipeBook;
+  assert.deepEqual(parseBackup(JSON.stringify(legacy)).data.planner.recipeBook, {});
+  assert.deepEqual(parseBackup(JSON.stringify(legacy)).data.planner.days, planner.days);
+});
 
 test('complete backup restores customized workouts without altering their performed sets', () => {
   let training = createTrainingState('2026-09-03');

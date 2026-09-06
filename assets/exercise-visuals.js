@@ -75,5 +75,69 @@ export const EXERCISE_VISUALS = {
   "pushup": {
     "name": "Push-up",
     "sourceId": "Pushups"
+  },
+  "seated-row": {
+    "name": "Seated Cable Rows",
+    "sourceId": "Seated_Cable_Rows"
+  },
+  "one-arm-row": {
+    "name": "One-Arm Dumbbell Row",
+    "sourceId": "One-Arm_Dumbbell_Row"
+  },
+  "straight-arm": {
+    "name": "Straight-Arm Pulldown",
+    "sourceId": "Straight-Arm_Pulldown"
+  },
+  "shoulder-press": {
+    "name": "Seated Dumbbell Press",
+    "sourceId": "Seated_Dumbbell_Press"
+  },
+  "face-pull": {
+    "name": "Face Pull",
+    "sourceId": "Face_Pull"
+  },
+  "hammer": {
+    "name": "Hammer Curls",
+    "sourceId": "Hammer_Curls"
+  },
+  "preacher": {
+    "name": "Preacher Curl",
+    "sourceId": "Preacher_Curl"
+  },
+  "pushdown": {
+    "name": "Triceps Pushdown - Rope Attachment",
+    "sourceId": "Triceps_Pushdown_-_Rope_Attachment"
+  },
+  "lying-triceps": {
+    "name": "Lying Triceps Press",
+    "sourceId": "Lying_Triceps_Press"
+  },
+  "goblet": {
+    "name": "Goblet Squat",
+    "sourceId": "Goblet_Squat"
+  },
+  "reverse-lunge": {
+    "name": "Dumbbell Rear Lunge",
+    "sourceId": "Dumbbell_Rear_Lunge"
+  },
+  "hip-thrust": {
+    "name": "Barbell Hip Thrust",
+    "sourceId": "Barbell_Hip_Thrust"
+  },
+  "lying-legcurl": {
+    "name": "Lying Leg Curls",
+    "sourceId": "Lying_Leg_Curls"
+  },
+  "db-calves": {
+    "name": "Standing Dumbbell Calf Raise",
+    "sourceId": "Standing_Dumbbell_Calf_Raise"
+  },
+  "deadbug": {
+    "name": "Dead Bug",
+    "sourceId": "Dead_Bug"
+  },
+  "hanging-raise": {
+    "name": "Hanging Leg Raise",
+    "sourceId": "Hanging_Leg_Raise"
   }
 };

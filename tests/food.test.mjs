@@ -1,6 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RECIPES, MEAL_PLANS, recipeNutrition, dayNutrition, groceryTotals, recipeGroceryTotals, quantityToBuy } from '../assets/food-data.js';
+import { getRecipeGuide, stepText } from '../assets/recipe-guides.js';
+
+test('cooking guides scale food amounts and preserve temperature and time', () => {
+  for (const recipe of RECIPES.filter(r=>!r.archived)) {
+    const guide = getRecipeGuide(recipe.id);
+    assert.ok(guide.summary && guide.steps.length >= 2 && guide.storage.length >= 2, recipe.id);
+    const used = new Set(guide.steps.flatMap(step=>[...step.text.matchAll(/\{([a-zA-Z]+)\}/g)].map(match=>match[1])));
+    assert.deepEqual([...used].sort(), recipe.ingredients.map(item=>item.food).sort(), `${recipe.id}: every measured ingredient belongs in the method`);
+    for (const step of guide.steps) {
+      assert.ok(step.title && step.text);
+      assert.doesNotMatch(stepText(recipe.id, step, 4), /\{[^}]+\}/);
+    }
+  }
+  const guide = getRecipeGuide('tomato-chicken-rice');
+  const method = guide.steps.map(step=>stepText('tomato-chicken-rice', step, 4)).join(' ');
+  assert.match(method, /500 g/);
+  assert.match(method, /480 g/);
+  assert.match(method, /74°C/);
+  assert.doesNotMatch(method, /296°C/);
+});
+import * as foodData from '../assets/food-data.js';
+
+test('retired box meals stay readable in old menus but cannot be chosen for a new menu', () => {
+  assert.ok(Array.isArray(foodData.ACTIVE_RECIPES));
+  assert.ok(Array.isArray(foodData.ACTIVE_MEAL_PLANS));
+  assert.equal(foodData.ACTIVE_RECIPES.some(r=>['box-a','box-b'].includes(r.id)), false);
+  assert.equal(foodData.ACTIVE_MEAL_PLANS.some(p=>p.meals.some(m=>['box-a','box-b'].includes(m.recipe))), false);
+  assert.ok(recipeNutrition('box-a').kcal > 0);
+  assert.ok(dayNutrition('original').kcal > 0);
+});
 
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.000001, `${actual} != ${expected}`);
 

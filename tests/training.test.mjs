@@ -1,12 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as journal from '../assets/training-state.js';
-import { SESSIONS, getPrescription, getWeek } from '../assets/training-data.js';
+import { EXERCISES, SESSIONS, getPrescription, getWeek } from '../assets/training-data.js';
 import { createTrainingState, validateTrainingState, createDraft, finishDraft, copyLastSets, findLastEntry, progressionSuggestion } from '../assets/training-state.js';
 
 const state = () => createTrainingState('2026-09-07');
 const draft = () => createDraft(state(), 'upper-a', '2026-09-07');
 const performed = (load = 50, reps = 10, rir = 3) => ({ load, reps, rir, completed: true, clean: true });
+
+test('expanded non-chest library movements can be added, logged and restored', () => {
+  const additions = ['seated-row','one-arm-row','straight-arm','shoulder-press','face-pull','hammer','preacher','pushdown','lying-triceps','goblet','reverse-lunge','hip-thrust','lying-legcurl','db-calves','deadbug','hanging-raise'];
+  for (const id of additions) {
+    assert.ok(EXERCISES[id], id);
+    let value = state(); value.draft = draft();
+    value = journal.editDraft(value, {type:'add', exerciseId:id});
+    const entry = value.draft.exercises.at(-1);
+    entry.sets[0] = performed(0, 10, 3);
+    const saved = finishDraft(value, `library-${id}`);
+    assert.equal(validateTrainingState(JSON.parse(JSON.stringify(saved))).sessions[0].exercises.at(-1).exerciseId, id);
+  }
+});
 
 test('reordering a workout moves complete entries without losing sets or setup', () => {
   const value = state(); value.draft = draft();

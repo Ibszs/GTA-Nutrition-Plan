@@ -3,7 +3,7 @@ import { el } from './meal-utils.js';
 // Serving inspiration, never used as an ingredient or portion reference.
 export function mealPhoto(recipe, className='') {
   const id=recipe.id;
-  const snack = /snack|pre-workout|dairy|yogurt|oats|pancake/.test(id);
+  const snack = recipe.category !== 'Main meal' && /snack|pre-workout|dairy|yogurt|oats|pancake/.test(id);
   const tile = snack ? id==='work-snack'?0:id==='pre-workout'?1:/dairy|yogurt/.test(id)?2:/oats/.test(id)?3:/pancake/.test(id)?4:5 : /shake/.test(id)?0:/potato/.test(id)?4:/pita/.test(id)?5:2;
   const node=el('div',undefined,`food-photo ${className}`);
   node.setAttribute('aria-hidden','true');

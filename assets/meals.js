@@ -1,8 +1,9 @@
+import { initRecipeBook } from './recipe-book.js';
 import { mealPhoto } from './meal-visuals.js';
 import { icon, iconLabel } from './ui-icons.js';
 import { openCalendar } from './calendar.js';
 import { confirmAction } from './common.js';
-import { FOODS, RECIPES, MEAL_PLANS, recipeNutrition, dayNutrition } from './food-data.js';
+import { FOODS, RECIPES, MEAL_PLANS, ACTIVE_RECIPES, ACTIVE_MEAL_PLANS, recipeNutrition, dayNutrition } from './food-data.js';
 import { PLANNER_KEY, createPlannerState, validatePlannerState, weekDates, setDay, copyWeek } from './planner-state.js';
 import { createStorage, saveJson } from './common.js';
 import { formatLocalDate, buildLocalDates } from './core.js';
@@ -11,7 +12,7 @@ import { readPlanner, wheyLabel, dayMenu, menuNutrition, recipeById, macroText, 
 const {storage,persistent}=createStorage();
 const $=id=>document.getElementById(id);
 const today=formatLocalDate(new Date());
-let state,readOnly=false,activeRecipe=null;
+let state,readOnly=false;
 try {state=readPlanner(storage);} catch(error) {state=createPlannerState();readOnly=true;status(`${error.message} Saved data was preserved. Restore a valid backup to edit.`,true);}
 let selectedDate=weekDates(state.weekStart).includes(today)?today:state.weekStart;
 const queryDate=new URLSearchParams(location.search).get('date');
@@ -27,8 +28,8 @@ function update(transform,message='Saved on this browser.') {
   } catch(error){status(`Not saved: ${error.message}`,true);return false;}
 }
 function option(value,label){const node=el('option',label);node.value=value;return node;}
-for(const plan of MEAL_PLANS){$('dayPlan').append(option(plan.id,plan.name));$('fillPlan').append(option(plan.id,plan.name));}
-for(const category of [...new Set(RECIPES.map(recipe=>recipe.category))]) $('recipeCategory').append(option(category,category));
+for(const plan of ACTIVE_MEAL_PLANS){$('dayPlan').append(option(plan.id,plan.name));$('fillPlan').append(option(plan.id,plan.name));}
+
 function prettyDate(date,options={weekday:'long',month:'long',day:'numeric'}){return new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',options);}
 function renderCalendar(){
   $('mealWeek').value=state.weekStart;$('mealCalendar').replaceChildren();
@@ -54,7 +55,11 @@ function renderMenu(){
   const menu=dayMenu(state,selectedDate);
   $('selectedDayTitle').textContent=prettyDate(selectedDate);
   $('mealCompletion').textContent=`${menu.day.done.length} of 6 eaten`;
-  $('dayPlan').value=menu.plan.id;$('selectedPlanName').textContent=menu.plan.name;$('fillPlan').value=menu.plan.id;
+  $('dayPlan').querySelectorAll('[data-archived]').forEach(node=>node.remove());
+  const archived = !ACTIVE_MEAL_PLANS.some(plan=>plan.id===menu.plan.id);
+  if(archived){const old=option(menu.plan.id,`Archived: ${menu.plan.name}`);old.disabled=true;old.dataset.archived='true';$('dayPlan').append(old);}
+  $('archiveMenu').hidden=!archived;
+  $('dayPlan').value=menu.plan.id;$('selectedPlanName').textContent=menu.plan.name;$('fillPlan').value=archived?'build':menu.plan.id;
   $('dayDescription').textContent=menu.plan.description;
   const nutrition=menuNutrition(menu,wheyLabel(storage));
   $('dayMacros').replaceChildren();
@@ -96,46 +101,23 @@ $('copyWeek').addEventListener('click',async()=>{
 });
 function renderPlans(){
   $('planOptions').replaceChildren();
-  MEAL_PLANS.forEach(plan=>{
+  ACTIVE_MEAL_PLANS.forEach(plan=>{
     const card=el('article',undefined,'plan-option');card.append(el('h3',plan.name),el('p',plan.description),el('p',macroText(dayNutrition(plan.id,wheyLabel(storage))),'macro-line'));
     const button=el('button','Use for selected day','ghost');button.addEventListener('click',async()=>{if(update(current=>setDay(current,selectedDate,{planId:plan.id,overrides:{},done:[]}))){render();$('plansDialog').close();$('selectedDayTitle').scrollIntoView({block:'start'});}});card.append(button);$('planOptions').append(card);
   });
 }
-function renderRecipes(){
-  const term=$('recipeSearch').value.trim().toLowerCase(),category=$('recipeCategory').value;
-  const recipes=RECIPES.filter(recipe=>(category==='all'||recipe.category===category)&&`${recipe.name} ${recipe.ingredients.map(item=>FOODS[item.food].name).join(' ')}`.toLowerCase().includes(term));
-  $('recipeGrid').replaceChildren();
-  recipes.forEach(recipe=>{
-    const card=el('article',undefined,'recipe-card');card.dataset.category=recipe.category;
-    card.append(mealPhoto(recipe),el('p',`${recipe.category} · ${recipe.minutes} min`,'tiny'),el('h3',recipe.name),el('p',macroText(recipeNutrition(recipe.id,wheyLabel(storage))),'macro-line'));
-    const button=el('button','Open recipe','ghost');button.addEventListener('click',async()=>openRecipe(recipe.id));card.append(button);$('recipeGrid').append(card);
-  });
-  if(!recipes.length)$('recipeGrid').append(el('p','No recipes match. Try another ingredient.','empty'));
-}
-function openRecipe(id){activeRecipe=id;$('cookMode').hidden=true;$('recipeSteps').hidden=false;$('startCooking').hidden=false;$('recipeServings').value='1';renderRecipe();$('recipeDialog').showModal();$('recipeTitle').focus();}
-function renderRecipe(){
-  const recipe=recipeById(activeRecipe),servings=Number($('recipeServings').value);
-  $('recipePhoto').replaceChildren(mealPhoto(recipe));
-  $('recipeTitle').textContent=recipe.name;$('recipeType').textContent=recipe.category;
-  $('recipeMeta').textContent=`${recipe.minutes} min for one serving · ${recipe.equipment.join(', ')}. ${servings>1?'Ingredients below are scaled; the method describes one serving. Multiply its food quantities, allow more space/time, and keep safety temperatures unchanged.':''}`;
-  $('recipeMacros').textContent=`Per serving: ${macroText(recipeNutrition(recipe.id,wheyLabel(storage)))}`;
-  $('recipeIngredients').replaceChildren();
-  recipe.ingredients.forEach(item=>{const food=FOODS[item.food];const li=el('li'),label=el('label',`${Number((item.amount*servings).toFixed(1))} ${food.unit} ${food.name} — ${food.weightState}`,'ingredient-check'),check=el('input');check.type='checkbox';label.prepend(check);li.append(label);$('recipeIngredients').append(li);});
-  $('recipeSteps').replaceChildren();recipe.steps.forEach(step=>$('recipeSteps').append(el('li',step)));
-  $('recipeNote').textContent=recipe.note;
-}
-$('closeRecipe').addEventListener('click',async()=>$('recipeDialog').close());$('recipeServings').addEventListener('change',renderRecipe);
-$('recipeSearch').addEventListener('input',renderRecipes);$('recipeCategory').addEventListener('change',renderRecipes);
-window.addEventListener('storage',()=>{try{state=readPlanner(storage);readOnly=false;render();renderPlans();renderRecipes();}catch(error){readOnly=true;status(error.message,true);}});
+const book = initRecipeBook({getState:()=>state, update, storage});
+const openRecipe = id => book.open(id);
+window.addEventListener('storage',()=>{try{state=readPlanner(storage);readOnly=false;render();renderPlans();book.refresh();}catch(error){readOnly=true;status(error.message,true);}});
 if(!persistent)status('Storage is blocked. Changes last only in this page.',true);
-render();renderPlans();renderRecipes();
+render();renderPlans();
 
 function openSwap(index){
   const meal=dayMenu(state,selectedDate).meals[index],currentRecipe=recipeById(meal.recipe);
   const date=selectedDate;
   $('swapTitle').textContent=`Swap ${meal.label.replace(/^\d{2}:\d{2} /,'').toLowerCase()}`;
   $('swapOptions').replaceChildren();
-  for(const recipe of RECIPES.filter(item=>item.category===currentRecipe.category)){
+  for(const recipe of ACTIVE_RECIPES.filter(item=>item.category===currentRecipe.category)){
     const button=el('button',undefined,'choice-card');button.type='button';
     button.append(el('strong',recipe.name),el('span',macroText(recipeNutrition(recipe.id,wheyLabel(storage))),'small'));
     if(recipe.id===meal.recipe){button.append(el('span','Current meal','tag'));button.disabled=true;}
@@ -152,11 +134,3 @@ function openSwap(index){
 $('browsePlans').addEventListener('click',()=>{$('plansDialog').showModal();$('plansTitle').focus();});
 
 $('chooseDayPlan').addEventListener('click',()=>{$('plansDialog').showModal();$('plansTitle').focus();});
-
-let cookingStep=0;
-function showCookingStep(){$('cookNext').disabled=false;const steps=recipeById(activeRecipe).steps;$('cookStepCount').textContent='STEP '+(cookingStep+1)+' OF '+steps.length;$('cookStepText').textContent=steps[cookingStep];$('cookPrevious').disabled=cookingStep===0;iconLabel($('cookNext'),cookingStep===steps.length-1?'Finish cooking':'Next step',cookingStep===steps.length-1?'check':'arrow-right',true);}
-$('startCooking').addEventListener('click',()=>{cookingStep=0;$('cookNext').disabled=false;$('cookMode').hidden=false;$('recipeSteps').hidden=true;$('startCooking').hidden=true;showCookingStep();$('cookMode').scrollIntoView({block:'nearest'});});
-$('cookPrevious').addEventListener('click',()=>{cookingStep=Math.max(0,cookingStep-1);showCookingStep();});
-$('cookNext').addEventListener('click',()=>{if(cookingStep<recipeById(activeRecipe).steps.length-1){cookingStep++;showCookingStep();}else{$('cookStepCount').textContent='READY TO SERVE';$('cookStepText').textContent='Method complete. Check doneness and the storage note below. Tick the meal in your menu after eating.';$('cookNext').disabled=true;}});
-$('cookExit').addEventListener('click',()=>{$('cookMode').hidden=true;$('recipeSteps').hidden=false;$('startCooking').hidden=false;$('cookNext').disabled=false;});
-const requestedRecipe=new URLSearchParams(location.search).get('recipe');if(RECIPES.some(r=>r.id===requestedRecipe))openRecipe(requestedRecipe);

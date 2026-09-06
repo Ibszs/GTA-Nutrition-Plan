@@ -1,6 +1,6 @@
 import { el } from './meal-utils.js';
 
-export const APP_VERSION = '2.2.0';
+export const APP_VERSION = '2.3.0';
 
 export function initUpdates() {
   const settings=document.getElementById('backup');

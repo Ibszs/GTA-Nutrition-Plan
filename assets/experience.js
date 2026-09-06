@@ -1,5 +1,5 @@
 import { EXERCISES } from './training-data.js';
-import { RECIPES } from './food-data.js';
+import { ACTIVE_RECIPES as RECIPES } from './food-data.js';
 import { el } from './meal-utils.js';
 import { EXERCISE_VISUALS } from './exercise-visuals.js';
 import { initUpdates } from './updates.js';
@@ -9,7 +9,7 @@ const route = location.pathname.split('/').pop() || 'index.html';
 const guides = {
   'index.html': ['Make today simple.', 'Pick one thing to do now. Everything else can wait.', [['Train', 'Choose your session and log one set at a time.', 'training.html'], ['Eat', 'Open a recipe, cook it, then check off your meal.', 'meals.html'], ['Check in', 'Record your morning weight and watch the trend.', 'tracker.html']]],
   'training.html': ['Your first set, explained.', 'Choose your workout. Warm up. Record only the sets you perform.', [['Load', 'Enter the weight. For dumbbells, usually one dumbbell; read the exercise note.'], ['Reps', 'Count the repetitions you actually completed.'], ['Reps in reserve', 'Estimate how many more clean reps you could have done.']]],
-  'meals.html': ['A menu you can actually follow.', 'Select a day, choose its menu, then make it your own.', [['Choose', 'Browse complete-day plans to change all six meals.'], ['Cook', 'Open a recipe, check your ingredients and use Cook along.'], ['Check', 'Tick Eaten after eating. Swap changes the meal and your grocery list.']]],
+  'meals.html': ['A menu you can actually follow.', 'Select a day, choose its menu, then make it your own.', [['Choose', 'Browse complete-day plans to change all six meals.'], ['Cook', 'Open the Recipe book, save favourites, then use Start cooking to follow the method.'], ['Check', 'Tick Eaten after eating. Swap changes the meal and your grocery list.']]],
   'shopping.html': ['From kitchen to cart.', 'Your seven menus already make the list. Start with your pantry.', [['Check the kitchen', 'Enter what you already have in the unit shown.'], ['Shop the difference', 'Buy is the remaining amount. Round up to your package size.'], ['Tick as you go', 'Use shopping mode to hide bought items. Your pantry stays manual.']]],
   'tracker.html': ['See a pattern, not a single number.', 'Log a little each day. Compare the weeks when you have enough entries.', [['Morning', 'Enter weight after the bathroom and before breakfast.'], ['Evening', 'Add your actual intake and how you felt.'], ['Review', 'Weekly averages and consistency guide your next decision.']]],
 };

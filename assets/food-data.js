@@ -56,7 +56,7 @@ export const RECIPES = [
     note: 'Original 09:15 meal. Prep time is about 2 minutes if eggs are already cooked. Use refrigerated prepped eggs within 2–3 days for this plan; keep raisins separate and dry.',
   },
   {
-    id: 'box-a', name: 'Work Box A', category: 'Main meal', minutes: 35,
+    id: 'box-a', name: 'Work Box A', archived: true, category: 'Main meal', minutes: 35,
     equipment: ['Two saucepans', 'Frying pan', 'Food thermometer', 'Kitchen scale'],
     ingredients: ingredients([['chicken', 100], ['rice', 100], ['lentils', 30], ['vegetables', 175], ['oliveOil', 15]]),
     steps: ['Rinse 100 g dry rice and cook in water using its package ratio and time. Separately rinse 30 g dry red lentils, simmer in about 150 mL water for 12–18 minutes until tender, and drain excess water.', 'Cut 100 g raw chicken into even pieces. Heat 10 g oil in a pan over medium heat and cook chicken for about 10–14 minutes, turning until the thickest pieces reach 74°C; time alone does not confirm doneness.', 'Cook 175 g frozen vegetables according to the bag. Combine with rice and lentils, then add chicken and the remaining 5 g oil. Scrape cooking oil into the meal so the measured portion is included.'],
@@ -70,7 +70,7 @@ export const RECIPES = [
     note: 'Original 16:15 meal. Keep the egg at 4°C or colder and use within 2–3 days of cooking. Keep this honey portion at 15 g when comparing to the original template.',
   },
   {
-    id: 'box-b', name: 'Home Box B', category: 'Main meal', minutes: 35,
+    id: 'box-b', name: 'Home Box B', archived: true, category: 'Main meal', minutes: 35,
     equipment: ['Two saucepans', 'Frying pan', 'Food thermometer', 'Kitchen scale'],
     ingredients: ingredients([['chicken', 100], ['rice', 130], ['lentils', 30], ['vegetables', 175], ['oliveOil', 20]]),
     steps: ['Cook 130 g dry rice using the water ratio on its package. Rinse 30 g dry red lentils and simmer separately in about 150 mL water for 12–18 minutes until tender; drain if needed.', 'Cut 100 g raw chicken into even pieces. Pan-cook in 10 g oil over medium heat for about 10–14 minutes, turning; verify 74°C in the thickest pieces.', 'Cook 175 g frozen vegetables as directed on the package. Plate the rice, lentils, vegetables and chicken with the remaining 10 g oil; include the pan oil in your serving.'],
@@ -222,6 +222,9 @@ function wheyValues(override) {
 }
 
 // Return unrounded estimates so callers can round once at the final display.
+export const ACTIVE_RECIPES = RECIPES.filter(recipe => !recipe.archived);
+export const ACTIVE_MEAL_PLANS = MEAL_PLANS.filter(plan => plan.meals.every(meal => ACTIVE_RECIPES.some(recipe => recipe.id === meal.recipe)));
+
 export function recipeNutrition(recipeId, wheyOverride) {
   const recipe = lookup(RECIPES, recipeId, 'recipe');
   const whey = wheyValues(wheyOverride);
