@@ -40,16 +40,20 @@ export function validateTrainingState(value) {
     check(['lb', 'kg'].includes(item.unit), 'invalid session load unit.');
     check(typeof item.lightWeek === 'boolean', 'invalid lighter-session setting.');
     const template = SESSIONS.find(s => s.id === item.sessionId);
-    check(template && Array.isArray(item.exercises) && item.exercises.length === template.exercises.length, 'invalid session or exercise list.');
+    check(item.customized === undefined || typeof item.customized === 'boolean', 'invalid customization marker.');
+    check(template && Array.isArray(item.exercises) && (item.customized ? item.exercises.length >= 1 && item.exercises.length <= 25 : item.exercises.length === template.exercises.length), 'invalid session or exercise list.');
+    const movements = new Set();
     let completed = 0; let prescribed = 0;
     item.exercises.forEach((entry, index) => {
-      const [expectedId, count] = template.exercises[index];
-      check(object(entry) && entry.exerciseId === expectedId, 'invalid exercise id or order.');
-      const definition = EXERCISES[expectedId];
+      const [expectedId, count] = template.exercises[index] ?? [];
+      check(object(entry) && Object.hasOwn(EXERCISES, entry.exerciseId) && (item.customized || entry.exerciseId === expectedId) && !movements.has(entry.exerciseId), 'invalid or repeated exercise id or order.');
+      movements.add(entry.exerciseId);
+      const definition = EXERCISES[entry.exerciseId];
       check(definition.variants.some(v => v.id === entry.variantId), 'invalid exercise substitution.');
       check(typeof entry.setup === 'string' && entry.setup.length <= 120, 'setup must be at most 120 characters.');
-      const expectedSets = Math.max(1, Math.ceil(count * getPrescription(item.week, item.lightWeek).setMultiplier));
-      check(entry.prescribedSets === expectedSets && entry.repMin === definition.repMin && entry.repMax === definition.repMax, 'invalid exercise prescription.');
+      const expectedSets = item.customized ? entry.prescribedSets : Math.max(1, Math.ceil(count * getPrescription(item.week, item.lightWeek).setMultiplier));
+      check(numeric(expectedSets, 1, 20, true) && numeric(entry.repMin, 1, 100, true) && numeric(entry.repMax, entry.repMin, 100, true), 'invalid exercise prescription bounds.');
+      check(entry.prescribedSets === expectedSets && (item.customized || entry.repMin === definition.repMin && entry.repMax === definition.repMax), 'invalid exercise prescription.');
       check(Array.isArray(entry.sets) && (isDraft ? entry.sets.length === expectedSets : entry.sets.length <= expectedSets), 'invalid set count.');
       prescribed += expectedSets;
       entry.sets.forEach(set => {
@@ -73,6 +77,34 @@ export function validateTrainingState(value) {
   check(value.draft === null || object(value.draft), 'invalid draft.');
   if (value.draft) validateSession(value.draft, true);
   return structuredClone(value);
+}
+
+const hasRecordedSet = set => set.load !== '' || set.reps !== '' || set.rir !== '' || set.completed || set.clean;
+export function editDraft(state, action) {
+  const next = validateTrainingState(state);
+  check(next.draft, 'start a session first.');
+  const draft = next.draft;
+  const entry = draft.exercises[action.index];
+  if (action.type === 'add' || action.type === 'swap') {
+    check(Object.hasOwn(EXERCISES, action.exerciseId), 'choose a known exercise.');
+    check(!draft.exercises.some(e => e.exerciseId === action.exerciseId), 'this exercise is already in the session; adjust its sets instead.');
+    if (action.type === 'swap') check(entry && !entry.sets.some(hasRecordedSet), 'recorded numbers must be cleared explicitly before swapping; add the new exercise to keep them.');
+    const definition = EXERCISES[action.exerciseId];
+    const count = entry && action.type === 'swap' ? entry.prescribedSets : 3;
+    const replacement = { exerciseId: definition.id, variantId: definition.variants[0].id, setup: '', prescribedSets: count, repMin: definition.repMin, repMax: definition.repMax, sets: Array.from({ length: count }, blankSet) };
+    if (action.type === 'swap') draft.exercises[action.index] = replacement;
+    else draft.exercises.push(replacement);
+  } else if (action.type === 'remove') {
+    check(entry && !entry.sets.some(hasRecordedSet), 'recorded numbers must be cleared explicitly before removing this exercise.');
+    draft.exercises.splice(action.index, 1);
+  } else if (action.type === 'prescription') {
+    check(entry && numeric(action.count, 1, 20, true), 'choose 1–20 sets.');
+    check(!entry.sets.slice(action.count).some(hasRecordedSet), 'recorded sets cannot be removed; clear their numbers explicitly first.');
+    entry.sets = Array.from({ length: action.count }, (_, i) => entry.sets[i] ?? blankSet());
+    entry.prescribedSets = action.count; entry.repMin = action.repMin; entry.repMax = action.repMax;
+  } else check(false, 'unknown workout edit.');
+  draft.customized = true;
+  return validateTrainingState(next);
 }
 
 export function finishDraft(state, id) {
@@ -104,6 +136,7 @@ export function findLastEntry(sessions, exerciseId, variantId, unit, setup, befo
 }
 
 export function progressionSuggestion(entry, targetRir = 2) {
+  if (entry.exerciseId === 'dips' && entry.variantId === 'assisted') return { action: 'hold', text: 'Assisted dips: build controlled reps, then consider slightly less assistance. A larger assistance number makes the exercise easier.' };
   const complete = entry.sets.filter(s => s.completed);
   if (entry.lightWeek) return { action: 'hold', text: 'Lighter session: return to your normal prescription once recovered; no automatic increase.' };
   if (!numeric(targetRir, 0, 10) || !numeric(entry.prescribedSets, 1, 20, true) || !numeric(entry.repMax, 1, 100, true) || complete.some(s => !numeric(s.load, 0, 3000) || !numeric(s.reps, 1, 100, true) || !numeric(s.rir, 0, 10))) return { action: 'hold', text: 'Check the recorded numbers before considering a load increase.' };

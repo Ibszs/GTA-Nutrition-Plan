@@ -12,6 +12,19 @@ import {
   restoreBackup,
 } from '../assets/backup.js';
 import { createDefaultShoppingState } from '../assets/shopping-state.js';
+import { createTrainingState, createDraft, editDraft, finishDraft } from '../assets/training-state.js';
+
+test('complete backup restores customized workouts without altering their performed sets', () => {
+  let training = createTrainingState('2026-09-03');
+  training.draft = createDraft(training, 'upper-a', '2026-09-03');
+  training = editDraft(training, { type: 'add', exerciseId: 'fly' });
+  training.draft.exercises.at(-1).sets[0] = { load: 30, reps: 15, rir: 2, completed: true, clean: true };
+  training = finishDraft(training, 'adapted-session');
+  const backup = buildBackup({ ...validBackup().data, training });
+  const records = new Map();
+  restoreBackup({ getItem: key => records.get(key) ?? null, setItem: (key, value) => records.set(key, value), removeItem: key => records.delete(key) }, parseBackup(JSON.stringify(backup)));
+  assert.deepEqual(JSON.parse(records.get('gtaNutrition.training.v1')), training);
+});
 
 function trackerState() {
   return {

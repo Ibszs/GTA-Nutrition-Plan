@@ -4,6 +4,18 @@ const exercise = (id, name, muscle, reps, rest, cues, variants, loadNote = 'Reco
 });
 
 export const EXERCISES = {
+  flat: exercise('flat', 'Flat chest press', 'Chest', [6, 12], 180,
+    'Set your feet and upper back. Lower with control to a comfortable depth, then press without bouncing or lifting your hips.',
+    [['db', 'Flat dumbbell press'], ['barbell', 'Barbell bench press'], ['machine', 'Chest-press machine'], ['smith', 'Flat Smith press']], 'Dumbbells: record ONE dumbbell. Barbell: include the bar. Machine or Smith: use a consistent indicated load and note the setup.'),
+  fly: exercise('fly', 'Chest fly', 'Chest', [10, 20], 90,
+    'Keep a soft elbow bend. Bring your arms together in a hugging arc, then return through a comfortable stretch without forcing your shoulders back.',
+    [['cable', 'Cable chest fly'], ['pecdeck', 'Pec deck'], ['db', 'Dumbbell fly']], 'Cables or dumbbells: record ONE side. Pec deck: record the stack. Note pulley height or bench angle in Setup.'),
+  dips: exercise('dips', 'Chest dips', 'Chest / triceps', [6, 15], 150,
+    'Use a stable station and a comfortable forward lean. Lower only as far as your shoulders tolerate, then press smoothly. Choose assistance if needed.',
+    [['bodyweight', 'Bodyweight dips'], ['weighted', 'Weighted dips'], ['assisted', 'Assisted dip machine']], 'Bodyweight: enter 0. Weighted: record added weight only. Assisted: record assistance and note it in Setup; more assistance makes the movement easier.'),
+  pushup: exercise('pushup', 'Push-up', 'Chest / triceps', [8, 25], 120,
+    'Keep your trunk steady and hands at a comfortable width. Lower chest and hips together, then press the floor away. Elevate your hands to make the movement easier.',
+    [['floor', 'Floor push-up'], ['weighted', 'Weighted push-up'], ['incline', 'Hands-elevated push-up'], ['decline', 'Feet-elevated push-up']], 'Enter 0 for bodyweight or the added load for weighted work. Record hand or foot height in Setup.'),
   incline: exercise('incline', 'Incline dumbbell press', 'Upper chest', [6, 10], 180,
     'Use a low incline, feet planted and shoulder blades comfortably set. Lower under control through a pain-free range; keep wrists above elbows.',
     [['db', 'Incline dumbbell press'], ['machine', 'Incline chest-press machine'], ['smith', 'Low-incline Smith press']], 'Dumbbells: record the weight of ONE dumbbell. For a bar or machine, record its total indicated load.'),
