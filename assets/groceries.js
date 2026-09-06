@@ -55,3 +55,5 @@ $('copyPlannedGroceries').addEventListener('click',async()=>{
 window.addEventListener('storage',()=>{try{state=readPlanner(storage);blocked=false;render();}catch(error){blocked=true;status(error.message,true);}});
 if(!persistent)status('Storage blocked. Changes last only in this page.',true);
 render();
+
+const mode=el('button','Start shopping mode','button secondary');mode.type='button';mode.setAttribute('aria-pressed','false');$('plannedSummary').after(mode);mode.addEventListener('click',()=>{const active=mode.getAttribute('aria-pressed')!=='true';mode.setAttribute('aria-pressed',String(active));mode.textContent=active?'Show all ingredients':'Start shopping mode';$('generatedGroceries').classList.toggle('shopping-mode',active);});

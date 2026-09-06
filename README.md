@@ -17,11 +17,13 @@ Open http://127.0.0.1:4191/. Keep the terminal running. No dependencies or build
 ## Use it
 
 - **Today:** next session, next meal, weekly rhythm and quick morning weight/sleep entry.
-- **Train:** four gym sessions per week across 16 weeks. One exercise at a time; load, reps, reps in reserve (RIR), clean technique and done checks; last matching exercise/setup; copy previous numbers; resumable drafts, partial sessions, history and rest timer.
-- **Meals:** seven complete day templates, 21 recipes, seven-day calendar, swaps and serving quantities. The original meal quantities remain available. Three new templates estimate 3,500–3,600 kcal and 90–95 g fat with the default whey assumption.
-- **Shop:** ingredients from the chosen week, manual pantry subtraction, store/aisle grouping and saved checkboxes. Existing custom shopping lists remain editable under the separate disclosure.
+- **Train:** four starting templates across 16 weeks. Add movements, swap unlogged exercises, remove blank movements, and adjust working sets/reps for the active workout. Nineteen illustrated movement guides include flat/incline presses, flyes, dips and push-ups. Recorded sets stay attached to their exercise/setup. One exercise at a time; load, reps, reps in reserve (RIR), clean technique and done checks; last matching exercise/setup; copy previous numbers; resumable drafts, partial sessions, history and rest timer.
+- **Meals:** photographic recipes with ingredient checklists and Cook along steps; seven complete day templates, 21 recipes, seven-day calendar, swaps and serving quantities. The original meal quantities remain available. Three new templates estimate 3,500–3,600 kcal and 90–95 g fat with the default whey assumption.
+- **Shop:** ingredients from the chosen week, manual pantry subtraction, store/aisle grouping and saved checkboxes; shopping mode hides bought items. Existing custom shopping lists remain editable under the separate disclosure.
 - **Progress:** one day at a time or all 14 days, weekly averages, contextual calorie feedback, archived periods and CSV export. The first date locks once entries exist to keep their dates intact.
 - **Guides:** the full training/nutrition rationale and sources, cooking and food safety, and original meal card. Legacy PDFs are historical references with superseded guidance.
+
+Search and contextual **How this works** guides are available on every page. Try a practice set without adding a journal record. See [the 2.1 design and verification notes](docs/visual-redesign.md).
 
 ## Saved data
 
@@ -31,7 +33,7 @@ Actual package labels override estimates. Enter your whey label in Today. Grocer
 
 ## Install and offline use
 
-Open the HTTPS app link in Safari and use Share → Add to Home Screen, or use Chrome’s Install app option. The first successful online visit precaches the app. External research links need a connection. A local laptop preview is not available on a phone via the phone’s localhost.
+Open the HTTPS app link in Safari and use Share → Add to Home Screen, or use Chrome’s Install app option. The first successful online visit precaches the app. External research links need a connection. **Today → Backup & settings → Check for updates** checks manually. When a fresh version is ready, choose Reload app or Later; updates never automatically reload an unfinished form. A local laptop preview is not available on a phone via the phone’s localhost.
 
 ## Verify
 

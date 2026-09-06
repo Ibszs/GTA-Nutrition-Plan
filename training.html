@@ -5,42 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Train · Form &amp; Fuel</title>
   <meta name="description" content="Your four-day training plan, saved sets, rest timer and sixteen-week progress journal.">
-  <meta name="theme-color" content="#f5f5f7">
+  <meta name="theme-color" content="#f3f4f8">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/experience.css">
 </head>
 <body class="training-page">
   <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">GTA</span><span>Form &amp; Fuel<small>YOUR TRAINING JOURNAL</small></span></a><nav class="site-nav" aria-label="Primary navigation"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Today</span></a><a href="training.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 5v14M3 8v8M17 5v14M21 8v8M7 12h10"/></svg><span>Train</span></a><a href="meals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3v7m3-7v7m-6-7v7h6M5 10v11M17 3v18m0-18c-5 4-5 9 0 9"/></svg><span>Meals</span></a><a href="shopping.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18l-2 14H5zM8 7V5a4 4 0 0 1 8 0v2"/></svg><span>Shop</span></a><a href="tracker.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3v18h18M6 16l5-5 4 2 5-8"/></svg><span>Progress</span></a></nav><div class="side-bottom"><a href="plan.html">The 16-week guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meal plan</a><a href="index.html#backup">Backup &amp; settings</a><p>One session. One meal.<br>A little stronger, every week.</p></div></header>
+  <header class="site-header"><a class="brand" href="index.html"><img class="brand-icon" src="icons/icon-192.png" alt="" width="44" height="44"><span>Form &amp; Fuel<small>FORM. FUEL. REPEAT.</small></span></a><nav class="site-nav" aria-label="Primary navigation"><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Today</span></a><a href="training.html" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 5v14M3 8v8M17 5v14M21 8v8M7 12h10"/></svg><span>Train</span></a><a href="meals.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 3v7m3-7v7m-6-7v7h6M5 10v11M17 3v18m0-18c-5 4-5 9 0 9"/></svg><span>Meals</span></a><a href="shopping.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18l-2 14H5zM8 7V5a4 4 0 0 1 8 0v2"/></svg><span>Shop</span></a><a href="tracker.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3v18h18M6 16l5-5 4 2 5-8"/></svg><span>Progress</span></a></nav><div class="side-bottom"><a href="plan.html">The 16-week guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meal plan</a><a href="index.html#backup">Backup &amp; settings</a><p>One session. One meal.<br>A little stronger, every week.</p></div></header>
   <main class="wrap" id="main-content">
     <header class="hero">
       <p class="kicker">16 weeks · Four days a week</p>
-      <h1>One good set at a time.</h1>
-      <p>Build your back, shoulders and upper chest. Log what you actually lift, then earn the next small increase.</p>
+      <h1>Make your next<br><em>set count.</em></h1>
+      <p>Start with a template. Add chest work, swap movements and adjust sets as you go.</p>
     </header>
-    <noscript><p class="alert">Turn on JavaScript to save workouts and use the timer. The training overview remains readable below.</p></noscript>
+    <div class="section-nav"><a href="#session-title">Your session</a><a href="#exercise-library">Exercise library</a><a href="#history">History</a><button type="button" data-open-guide class="ghost">Try a practice set</button></div><noscript><p class="alert">Turn on JavaScript to save workouts and use the timer. The training overview remains readable below.</p></noscript>
     <div class="storage-notice" id="trainingStorageNotice" role="status">Checking saved training…</div>
     <p id="trainingError" class="alert" role="alert" hidden></p>
     <section class="panel" aria-labelledby="session-title">
       <h2 id="session-title">Your next session</h2>
-      <p class="small">Suggested rhythm: Mon upper, Tue lower, Thu upper, Sat lower. Move days as needed, leaving recovery between similar sessions.</p>
+      <p class="small">Four starting templates. Train on the days that suit you and adapt the exercises to how you feel.</p>
       <div class="week-rail" id="weekRail" aria-label="Selected training week"></div>
-      <form id="sessionForm" class="form-grid">
-        <label class="span-3" for="blockStart">Block starts<input id="blockStart" type="date" required></label>
-        <label class="span-3" for="workoutDate">Workout date<input id="workoutDate" type="date" required></label>
-        <label class="span-3" for="sessionSelect">Session<select id="sessionSelect" required></select></label>
-        <label class="span-3" for="loadUnit">Load unit<select id="loadUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></label>
-        <p id="sessionFocus" class="small span-12"></p><label class="checkbox-field span-12" for="lighterSession"><input id="lighterSession" type="checkbox">Lighter session: about half the sets, 4 RIR</label>
-        <p class="small span-12">Use a lighter 5–7 days when performance repeatedly drops alongside unusual fatigue or soreness. Reviews in weeks 4, 8 and 12 are check-ins, not automatic deloads.</p>
-        <div class="span-12 button-row"><button class="button" type="submit" id="beginSession">Start session</button></div>
-      </form>
+      <form id="sessionForm" class="form-grid"><div class="span-12 session-ready"><div><p id="sessionFocus"></p><p id="sessionSize" class="small"></p></div><button class="button" type="submit" id="beginSession">Start session</button></div><details class="span-12 session-settings"><summary>Date, units &amp; training options</summary><div class="form-grid"><label class="span-6" for="blockStart">Block starts<input id="blockStart" type="date" required></label><label class="span-6" for="workoutDate">Workout date<input id="workoutDate" type="date" required></label><label class="span-6" for="sessionSelect">Session<select id="sessionSelect" required></select></label><label class="span-6" for="loadUnit">Load unit<select id="loadUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></label><label class="checkbox-field span-12" for="lighterSession"><input id="lighterSession" type="checkbox">Lighter session: about half the sets, 4 RIR</label><p class="small span-12">Use a lighter week when performance repeatedly drops with unusual fatigue or soreness. Weeks 4, 8 and 12 are check-ins, not automatic deloads. Your block start locks after the first draft or saved workout.</p></div></details></form>
       <p id="phaseSummary"></p>
-      <p class="small">Your block start locks after the first draft or saved workout so earlier week numbers stay consistent.</p>
+
     </section>
-    <section class="panel" aria-labelledby="before-title">
-      <h2 id="before-title">Before your first working set</h2>
+    <details class="warmup-guide"><summary id="before-title">Before you lift · warm-up &amp; reps in reserve</summary>
+
       <p>Warm up for 5–8 minutes, then take 2–4 gradually heavier practice sets for your first compound lift. Warm-ups do not count toward the logged working sets. Rest 2–3 minutes on compounds and 60–120 seconds on smaller movements.</p>
       <p><strong>RIR = reps in reserve.</strong> 2 RIR means you could do about two more clean reps. Weeks 1–2 use 3 RIR; later aim for 1–2. Stop a set if technique breaks or a movement hurts.</p>
       <details><summary>Weekly targets & aiming for 60–75 minutes</summary>
@@ -48,11 +40,11 @@
         <p>Upper days have 20 working sets; lower days have 16 and 14. Aim for 60–75 minutes, allowing for gym availability and the rest you need. Pair curls with triceps, or calves with abs, if it keeps technique and rest intact. If you reach your time limit, finish the session as partial and prioritize recovery. Do not rush the main lifts.</p>
         <p>Keep the same exercise choices for several weeks when possible. Changing the machine, attachment, range or unit creates a separate comparison. Read the <a href="plan.html">training rationale and sources</a>.</p>
       </details>
-    </section>
+    </details>
     <section id="activeWorkout" aria-labelledby="active-title" hidden>
       <div class="section-heading"><h2 id="active-title">Working sets</h2><p id="workoutProgress" role="status"></p></div>
       <p class="small">Choose your exercise and machine setup before entering numbers. Check <strong>Done</strong> only after performing the set; check <strong>Clean</strong> if technique and range stayed controlled. Copying numbers leaves both unchecked.</p>
-      <label for="exerciseFocus">Working on<select id="exerciseFocus"></select></label><div id="exerciseList"></div><div class="button-row"><button id="previousExercise" class="ghost" type="button">Previous exercise</button><button id="nextExercise" type="button">Next exercise</button></div>
+      <div class="panel add-movement"><h3>Make it your session</h3><p class="small">Any template, any day. Add a movement here, or open Adapt exercise to change sets, reps or swap. Adjustments apply to this workout.</p><div class="form-grid"><label class="span-8" for="addExerciseSelect">Add an exercise<select id="addExerciseSelect"></select></label><div class="span-4"><button id="addExercise" type="button">Add movement</button></div></div></div><label for="exerciseFocus">Working on<select id="exerciseFocus"></select></label><div id="exerciseList"></div><div class="button-row"><button id="previousExercise" class="ghost" type="button">Previous exercise</button><button id="nextExercise" type="button">Next exercise</button></div>
       <div class="panel button-row"><button class="button" id="finishSession" type="button">Finish session</button><button class="button ghost" id="discardDraft" type="button">Discard draft</button><p class="small">Only completed sets enter history. Unfinished numbers remain in your draft until you finish or discard it.</p></div>
     </section>
     <section class="panel rest-timer" aria-labelledby="timer-title">
@@ -62,6 +54,7 @@
       <div class="button-row"><button class="button secondary" type="button" data-rest="90">90 sec</button><button class="button secondary" type="button" data-rest="120">2 min</button><button class="button secondary" type="button" data-rest="180">3 min</button><button class="button ghost" type="button" id="stopTimer">Stop</button></div>
       <p id="timerStatus" role="status"></p>
     </section>
+    <section id="exercise-library"><div class="section-heading"><h2>Know your movements</h2><span class="small">19 exercises · cues &amp; load guidance</span></div><div id="exerciseLibrary" class="exercise-library"></div></section>
     <section class="panel" id="history" aria-labelledby="history-title">
       <h2 id="history-title">Your training history</h2>
       <div id="weekSummaries"></div><div id="trainingHistory" class="training-history"></div>
@@ -70,5 +63,5 @@
   <footer class="site-footer"><a href="plan.html">Training &amp; nutrition guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meals</a><a href="index.html#backup">Backup</a><p>Saved on this browser. Personal estimates, real-world feedback. Package labels take priority.</p></footer>
   <script type="module" src="assets/common.js"></script>
   <script type="module" src="assets/training.js"></script>
-</body>
+<script type="module" src="assets/experience.js"></script></body>
 </html>

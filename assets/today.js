@@ -1,9 +1,10 @@
+import { mealPhoto } from './meal-visuals.js';
 import { createStorage, saveJson } from './common.js';
 import { buildLocalDates, formatLocalDate } from './core.js';
 import { createDefaultTrackerState, validateTrackerState, archiveTracker } from './backup.js';
 import { TRAINING_KEY, createTrainingState, validateTrainingState } from './training-state.js';
 import { SESSIONS, getWeek } from './training-data.js';
-import { readPlanner, dayMenu, menuNutrition, recipeById, wheyLabel, macroText, el } from './meal-utils.js';
+import { readPlanner, dayMenu, recipeById, el } from './meal-utils.js';
 import { weekDates } from './planner-state.js';
 const {storage,persistent}=createStorage();
 const $=id=>document.getElementById(id),today=formatLocalDate(new Date()),trackerKey='gtaNutrition.tracker.v2';
@@ -16,26 +17,31 @@ function render(){
     const blockWeek=today<training.startDate?1:getWeek(training.startDate,today);
     const next=training.draft?SESSIONS.find(item=>item.id===training.draft.sessionId):SESSIONS.find(item=>!training.sessions.some(session=>session.week===blockWeek&&session.sessionId===item.id&&!session.partial))||SESSIONS[0];
     $('nextTrainingName').textContent=next.name;
-    $('nextTrainingNote').textContent=training.draft?'Your workout is still open. Pick up where you left off.':`${next.focus || 'Build a repeatable session.'} Your last completed sets will be beside today's entries.`;
+    $('nextTrainingNote').textContent=training.draft?'Your workout is still open. Pick up where you left off.':`${next.focus} · 60–75 min`;
     $('trainingWeek').textContent=`WEEK ${blockWeek} OF 16 · ${training.draft?'SESSION IN PROGRESS':'NEXT IN YOUR ROTATION'}`;
-    $('startTrainingLink').textContent=training.draft?'Resume workout ↗':'Open workout ↗';
+    $('startTrainingLink').textContent=training.draft?'Resume workout ↗':'Start your workout ↗';
     const dates=weekDates(today);$('todayWeek').replaceChildren();
     const schedule=['Upper A','Lower A','Recover','Upper B','Recover','Lower B','Recover'];
     for(const [index,date] of dates.entries()){
       const entries=training.sessions.filter(session=>session.date===date);
       const full=entries.some(session=>!session.partial);
-      const node=el('div',undefined,`week-cell${date===today?' today':''}${full?' complete':''}`);
-      node.append(el('div',new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',{weekday:'short'})),el('b',schedule[index]),el('span',full?'Done':entries.length?'Partial':date===today?'Today':'Suggested'));
+      const node=el('a',undefined,`week-cell${date===today?' today':''}${full?' complete':''}`);
+      node.href=entries.length?'training.html#history':index===2||index===4||index===6?'plan.html':'training.html?session='+['upper-a','lower-a','','upper-b','','lower-b',''][index];
+      node.append(el('div',new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',{weekday:'short'})),el('b',entries.length?[...new Set(entries.map(entry=>SESSIONS.find(s=>s.id===entry.sessionId).name))].join(' + '):schedule[index]),el('span',full?'Done':entries.length?'Partial':date===today?'Today':'Suggested'));
       $('todayWeek').append(node);
     }
     const fullCount=new Set(training.sessions.filter(session=>dates.includes(session.date)&&!session.partial).map(session=>session.sessionId)).size;
-    $('weekSessions').textContent=`${fullCount} / 4`;
+    $('weekSessions').textContent=`${fullCount} / 4 sessions`;
   } catch(error){$('nextTrainingNote').textContent=`Open Train to review saved data. ${error.message}`;}
   try {
     const menu=dayMenu(readPlanner(storage),today),meal=menu.meals.find(item=>!item.done);
     $('nextMealName').textContent=meal?recipeById(meal.recipe).name:'All six meals checked.';
     $('nextMealCopy').textContent=meal?`${meal.label}. ${menu.plan.name}.`:'Your menu is complete for today.';
-    $('todayMacros').textContent=macroText(menuNutrition(menu,wheyLabel(storage)));
+    $('todayMacros').textContent=meal?`${recipeById(meal.recipe).minutes} min · View ingredients & method`:'';
+    $('homeMealPhoto').replaceChildren(mealPhoto(recipeById(meal?.recipe||menu.meals[0].recipe)));
+    $('homeMealLink').href=meal?`meals.html?recipe=${meal.recipe}`:'meals.html';
+    $('homeMealLink').textContent=meal?'Make this meal ↗':'View today’s menu ↗';
+    $('mealsEaten').textContent=`${menu.day.done.length} of 6 meals eaten`;
   } catch(error){$('todayMacros').textContent=`Open Meals to review saved data. ${error.message}`;}
   try {const tracker=readTracker(),index=buildLocalDates(tracker.meta.startDate,14).indexOf(today);if(index>=0){$('quickWeight').value=tracker.rows[index].weight;$('quickSleep').value=tracker.rows[index].sleep;}}catch(error){status(`Saved progress needs recovery: ${error.message}`,true);}
 }

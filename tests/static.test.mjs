@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
+import { EXERCISES } from '../assets/training-data.js';
+import { EXERCISE_VISUALS } from '../assets/exercise-visuals.js';
 
 const root = path.resolve(import.meta.dirname, '..');
 const pages = [
@@ -179,7 +182,7 @@ test('dashboard exposes whey setup, complete backup, and install controls', () =
   assert.match(controller, /calculateWheyLabel/);
   assert.match(controller, /buildBackup/);
   assert.match(controller, /parseBackup/);
-  assert.match(controller, /navigator\.serviceWorker/);
+  assert.match(read('assets/updates.js'), /navigator\.serviceWorker/);
   assert.match(html, /<script\s+type=["']module["'][^>]*src=["']assets\/home\.js["']/i);
 });
 
@@ -216,6 +219,62 @@ test('service worker precaches every shipped application asset', () => {
     assert.match(worker, new RegExp(`['"]${asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`), `cache omits ${asset}`);
     if (asset !== './') assert.equal(fs.existsSync(path.join(root, asset.slice(2))), true, `missing ${asset}`);
   }
+});
+
+test('every exercise has two local demonstration photos available offline', () => {
+  assert.deepEqual(Object.keys(EXERCISE_VISUALS).sort(), Object.keys(EXERCISES).sort());
+  const worker = read('sw.js');
+  for (const id of Object.keys(EXERCISES)) {
+    for (const position of [0, 1]) {
+      const asset = `assets/images/exercises/${id}-${position}.jpg`;
+      assert.ok(fs.statSync(path.join(root, asset)).size > 1000, asset);
+      assert.ok(worker.includes(`'./${asset}'`), `offline cache omits ${asset}`);
+    }
+  }
+  for (const asset of ['experience.css', 'images/training-editorial.jpg', 'images/meal-editorial.jpg', 'images/snack-editorial.jpg']) {
+    assert.ok(worker.includes(`'./assets/${asset}'`), `offline cache omits ${asset}`);
+    assert.ok(fs.existsSync(path.join(root, 'assets', asset)));
+  }
+});
+
+test('offline recipe deep links load the meal route while asset query strings stay distinct', async () => {
+  const handlers = {}, mealPage = { page: 'meals' }, networkError = { error: true };
+  const origin = 'https://example.test';
+  const cached = new Map([[`${origin}/app/meals.html`, mealPage]]);
+  let networkRequests = 0;
+  vm.runInNewContext(read('sw.js'), {
+    URL,
+    self: { location: { origin }, addEventListener: (event, handler) => { handlers[event] = handler; } },
+    caches: { match: async (request, options) => {
+      const url = new URL(typeof request === 'string' ? request : request.url, `${origin}/app/`);
+      if (options?.ignoreSearch) url.search = '';
+      return cached.get(url.href);
+    } },
+    fetch: async () => { networkRequests++; throw new Error('Offline'); },
+    Response: { error: () => networkError },
+  });
+  let response;
+  handlers.fetch({ request: { method: 'GET', mode: 'navigate', url: `${origin}/app/meals.html?recipe=breakfast-shake` }, respondWith: value => { response = value; } });
+  assert.equal(await response, mealPage);
+  assert.equal(networkRequests, 0);
+  handlers.fetch({ request: { method: 'GET', mode: 'cors', url: `${origin}/app/meals.html?version=next` }, respondWith: value => { response = value; } });
+  assert.equal(await response, networkError);
+  assert.equal(networkRequests, 1);
+});
+
+test('app installation reloads every asset before activating the new version', async () => {
+  const handlers = {};
+  let requests, activated = false, installation;
+  vm.runInNewContext(read('sw.js'), {
+    Request: class extends Request { constructor(path, options) { super(new URL(path, 'https://example.test/app/'), options); } },
+    self: { addEventListener: (name, handler) => { handlers[name] = handler; }, skipWaiting: () => { activated = true; } },
+    caches: { open: async () => ({ addAll: async assets => { requests = assets; } }) },
+  });
+  handlers.install({ waitUntil: promise => { installation = promise; } });
+  await installation;
+  assert.ok(requests.length > 40);
+  assert.ok(requests.every(request => request.cache === 'reload'));
+  assert.equal(activated, true);
 });
 
 test('every page exposes install metadata', () => {

@@ -1,7 +1,8 @@
+import { openExercise } from './experience.js';
 import { confirmAction } from './common.js';
 import { createStorage, makeId, saveJson } from './common.js';
 import { EXERCISES, SESSIONS, localToday, getWeek, getPrescription, isRealDate } from './training-data.js';
-import { TRAINING_KEY, createTrainingState, validateTrainingState, createDraft, finishDraft, copyLastSets, findLastEntry, progressionSuggestion } from './training-state.js';
+import { TRAINING_KEY, createTrainingState, validateTrainingState, createDraft, editDraft, finishDraft, copyLastSets, findLastEntry, progressionSuggestion } from './training-state.js';
 
 const $ = id => document.getElementById(id);
 const { storage, persistent } = createStorage();
@@ -40,14 +41,16 @@ function save(message = 'Draft saved on this device.') {
     return false;
   }
 }
-function hasNumbers(entry) { return entry.sets.some(s => s.load !== '' || s.reps !== '' || s.rir !== '' || s.completed); }
+function hasNumbers(entry) { return entry.sets.some(s => s.load !== '' || s.reps !== '' || s.rir !== '' || s.completed || s.clean); }
 function draftHasNumbers() { return state.draft?.exercises.some(hasNumbers); }
 function completedCount(session) { return session.exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0); }
 function selectedWeek() {
   try { return getWeek(state.startDate, $('workoutDate').value); } catch (_) { return 1; }
 }
 function renderOverview() {
-  $('sessionFocus').textContent=SESSIONS.find(s=>s.id===$('sessionSelect').value)?.focus??'';
+  const selected=SESSIONS.find(s=>s.id===$('sessionSelect').value);
+  $('sessionFocus').textContent=selected?.focus??'';
+  $('sessionSize').textContent=`${selected.exercises.length} exercises · ${selected.exercises.reduce((n,e)=>n+e[1],0)} standard working sets · 60–75 min`;
   const week = selectedWeek();
   const prescription = getPrescription(week, $('lighterSession').checked);
   $('phaseSummary').textContent = `Week ${week} · ${prescription.phase}. ${prescription.note}${prescription.checkpoint ? ' Review performance, fatigue, soreness and sleep this week.' : ''}`;
@@ -55,7 +58,8 @@ function renderOverview() {
   for (const session of SESSIONS) {
     const saved = state.sessions.filter(s => s.week === week && s.sessionId === session.id);
     const status = saved.some(s => !s.partial) ? 'Complete' : saved.length ? 'Partial' : 'To do';
-    const item = element('div', undefined, `week-day ${status === 'Complete' ? 'is-complete' : ''}`);
+    const item = element('button', undefined, `week-day ${status === 'Complete' ? 'is-complete' : ''}`);
+    item.type='button';item.setAttribute('aria-pressed',String($('sessionSelect').value===session.id));item.addEventListener('click',()=>{$('sessionSelect').value=session.id;renderOverview();});
     item.append(element('span', session.day, 'small'), element('strong', session.name), element('span', status, 'small'));
     $('weekRail').append(item);
   }
@@ -77,7 +81,7 @@ function renderHistory() {
   for (const session of state.sessions.slice().reverse().sort((a, b) => b.date.localeCompare(a.date))) {
     const details = element('details');
     const sessionName = SESSIONS.find(s => s.id === session.sessionId).name;
-    details.append(element('summary', `${session.date} · ${sessionName} · ${completedCount(session)} sets${session.partial ? ' · Partial' : ''}${session.lightWeek ? ' · Lighter' : ''}`));
+    details.append(element('summary', `${session.date} · ${sessionName} · ${completedCount(session)} sets${session.customized ? ' · Adapted' : ''}${session.partial ? ' · Partial' : ''}${session.lightWeek ? ' · Lighter' : ''}`));
     session.exercises.filter(e => e.sets.length).forEach(entry => {
       const definition = EXERCISES[entry.exerciseId];
       const variant = definition.variants.find(v => v.id === entry.variantId).name;
@@ -110,6 +114,23 @@ function focusExercise() {
   $('previousExercise').disabled=selected==='all'||Number(selected)===0;
   $('nextExercise').disabled=selected==='all'||Number(selected)>=(state.draft?.exercises.length??0)-1;
 }
+function applyWorkoutEdit(action) {
+  try {
+    const old = state;
+    state = editDraft(state, action);
+    if (!save('Workout updated. Your recorded sets are preserved.')) { state = old; return; }
+    if (action.type === 'add') $('exerciseFocus').value = 'all';
+    renderWorkout(); renderOverview();
+    if (action.type === 'add') { $('exerciseFocus').value = String(state.draft.exercises.length - 1); focusExercise(); }
+  } catch (issue) { error(issue.message); $('trainingError').scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+}
+function exerciseChoices(select, currentId) {
+  const placeholder = element('option', 'Choose a movement'); placeholder.value = ''; select.append(placeholder);
+  Object.values(EXERCISES).filter(ex => ex.id !== currentId && !state.draft.exercises.some(e => e.exerciseId === ex.id)).forEach(ex => {
+    const option = element('option', `${ex.muscle} · ${ex.name}`); option.value = ex.id; select.append(option);
+  });
+}
+$('addExercise').addEventListener('click', () => applyWorkoutEdit({ type: 'add', exerciseId: $('addExerciseSelect').value }));
 $('exerciseFocus').addEventListener('change',focusExercise);
 for(const [id,delta] of [['previousExercise',-1],['nextExercise',1]])$(''+id).addEventListener('click',async()=>{
   $('exerciseFocus').value=String(Number($('exerciseFocus').value)+delta);focusExercise();$('exerciseFocus').scrollIntoView({block:'start',behavior:'smooth'});
@@ -119,19 +140,37 @@ function renderWorkout() {
   $('exerciseList').replaceChildren();
   if (!state.draft) return;
   const draft = state.draft;
+  $('addExerciseSelect').replaceChildren(); exerciseChoices($('addExerciseSelect'));
   const previousFocus=$('exerciseFocus').value;
   $('exerciseFocus').replaceChildren();
   draft.exercises.forEach((entry,index)=>{const option=element('option',`${index+1}. ${EXERCISES[entry.exerciseId].name}`);option.value=String(index);$('exerciseFocus').append(option);});
   const all=element('option','Show every exercise');all.value='all';$('exerciseFocus').append(all);
   $('exerciseFocus').value=previousFocus==='all'||draft.exercises[Number(previousFocus)]&&previousFocus!==''?previousFocus:String(Math.max(0,draft.exercises.findIndex(entry=>entry.sets.some(set=>!set.completed))));
   const target = getPrescription(draft.week, draft.lightWeek).rir;
-  $('active-title').textContent = `${SESSIONS.find(s => s.id === draft.sessionId).name} · ${draft.date}`;
+  $('active-title').textContent = `${SESSIONS.find(s => s.id === draft.sessionId).name}${draft.customized ? ' · Adapted' : ''} · ${draft.date}`;
   draft.exercises.forEach((entry, exerciseIndex) => {
     const definition = EXERCISES[entry.exerciseId];
     const card = element('article', undefined, 'panel exercise-card');
     card.append(element('p', `${exerciseIndex + 1} / ${draft.exercises.length} · ${definition.muscle}`, 'kicker'));
     card.append(element('h3', definition.name));
-    card.append(element('p', `${entry.prescribedSets} sets × ${entry.repMin}–${entry.repMax} reps · ${target} RIR · ${definition.rest / 60} min rest`));
+    card.append(button('View movement guide ↗',()=>openExercise(entry.exerciseId),'button secondary'));
+    card.append(element('p', `${entry.prescribedSets} sets × ${entry.repMin}–${entry.repMax} reps · suggested ${target} RIR · ${definition.rest / 60} min rest`));
+    const adapt = element('details', undefined, 'adapt-exercise');
+    adapt.append(element('summary', 'Adapt exercise · sets, reps & swaps'));
+    const prescriptionForm = element('form', undefined, 'form-grid');
+    const inputs = {};
+    for (const [key, label, value, max] of [['count', 'Working sets', entry.prescribedSets, 20], ['repMin', 'Min reps', entry.repMin, 100], ['repMax', 'Max reps', entry.repMax, 100]]) {
+      const wrapper = element('label', label, 'span-4');
+      const input = element('input'); input.type = 'number'; input.min = '1'; input.max = String(max); input.step = '1'; input.required = true; input.value = String(value); input.setAttribute('aria-label', `${definition.name} ${label.toLowerCase()}`);
+      wrapper.append(input); prescriptionForm.append(wrapper); inputs[key] = input;
+    }
+    const apply = element('button', 'Apply sets & reps', 'button secondary'); apply.type = 'submit'; prescriptionForm.append(apply);
+    prescriptionForm.addEventListener('submit', event => { event.preventDefault(); applyWorkoutEdit({ type: 'prescription', index: exerciseIndex, count: Number(inputs.count.value), repMin: Number(inputs.repMin.value), repMax: Number(inputs.repMax.value) }); });
+    adapt.append(prescriptionForm);
+    const swapLabel = element('label', 'Swap this movement'); const swapSelect = element('select'); swapSelect.setAttribute('aria-label', `Swap ${definition.name}`); exerciseChoices(swapSelect, entry.exerciseId); swapLabel.append(swapSelect);
+    adapt.append(swapLabel, button('Swap movement', () => applyWorkoutEdit({ type: 'swap', index: exerciseIndex, exerciseId: swapSelect.value }), 'button secondary'), button('Remove movement', () => applyWorkoutEdit({ type: 'remove', index: exerciseIndex }), 'button ghost'));
+    adapt.append(element('p', 'Already entered numbers? Add another movement to keep those sets. Swapping or removing requires explicitly clearing this exercise first. Set reductions only remove blank sets.', 'small'));
+    card.append(adapt);
     const setupGrid = element('div', undefined, 'form-grid');
     const variantLabel = element('label', 'Exercise choice', 'span-6');
     const variantSelect = element('select'); variantSelect.setAttribute('aria-label', `${definition.name} exercise choice`);
@@ -271,14 +310,16 @@ function tickTimer() {
   $('timerDisplay').textContent = `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`;
   if (timerEnd && !remaining) { timerEnd = 0; $('timerStatus').textContent = 'Rest complete. Start when you feel ready.'; }
 }
-function startTimer(seconds) { $('timerDisplay').scrollIntoView({block:'center',behavior:'smooth'}); timerEnd = Date.now() + seconds * 1000; $('timerStatus').textContent = `Resting for ${seconds} seconds.`; tickTimer(); }
+function startTimer(seconds) { $('timerDisplay').closest('.rest-timer').classList.add('timer-floating'); timerEnd = Date.now() + seconds * 1000; $('timerStatus').textContent = `Resting for ${seconds} seconds.`; tickTimer(); }
 document.querySelectorAll('[data-rest]').forEach(node => node.addEventListener('click', async () => startTimer(Number(node.dataset.rest))));
-$('stopTimer').addEventListener('click', async () => { timerEnd = 0; tickTimer(); $('timerStatus').textContent = 'Timer stopped.'; });
+$('stopTimer').addEventListener('click', async () => { $('timerDisplay').closest('.rest-timer').classList.remove('timer-floating');timerEnd = 0; tickTimer(); $('timerStatus').textContent = 'Timer stopped.'; });
 setInterval(tickTimer, 500);
 
 syncForm(); renderOverview(); renderWorkout(); renderHistory();
 $('trainingStorageNotice').textContent = storageBlocked ? 'Saved data needs recovery; the existing record is preserved.' : persistent ? state.draft ? 'Your saved draft is ready to resume.' : 'Training saves automatically in this browser.' : 'Browser storage is unavailable. This session is temporary and cannot be backed up from Today. Keep this page open.';
 $('trainingStorageNotice').dataset.mode = persistent ? 'persistent' : 'memory';
-if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 window.addEventListener('storage',event=>{if(event.key===TRAINING_KEY || event.key===null)location.reload();});
+
+for(const ex of Object.values(EXERCISES)){const b=button('',()=>openExercise(ex.id),'exercise-tile');const image=element('img');image.src=`assets/images/exercises/${ex.id}-0.jpg`;image.alt='';image.loading='lazy';image.className='exercise-thumb';b.append(image);b.append(element('span',ex.muscle,'eyebrow'),element('strong',ex.name),element('span',ex.repMin+'–'+ex.repMax+' reps  ↗','small'));$('exerciseLibrary').append(b);}
+const requestedSession=new URLSearchParams(location.search).get('session');if(!state.draft&&SESSIONS.some(s=>s.id===requestedSession)){$('sessionSelect').value=requestedSession;renderOverview();}

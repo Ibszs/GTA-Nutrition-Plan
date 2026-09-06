@@ -14,7 +14,7 @@ import { createTrainingState, validateTrainingState } from './training-state.js'
 import { createPlannerState, validatePlannerState } from './planner-state.js';
 import { createStorage, downloadText, loadJson, saveJson } from './common.js';
 import { calculateWheyLabel, formatLocalDate } from './core.js';
-import { createDefaultShoppingState, shoppingProgress, validateShoppingState } from './shopping-state.js';
+import { createDefaultShoppingState, validateShoppingState } from './shopping-state.js';
 
 const KEYS = DATA_KEYS;
 const { storage, persistent } = createStorage();
@@ -62,10 +62,9 @@ function setStatus(message, error = false) {
 function renderSummaries() {
   try {
   const data = currentData();
-  const progress = shoppingProgress(data.shopping);
   const weights = data.tracker.rows.filter((row) => row.weight !== '').length;
   const intakeDays = data.tracker.rows.filter((row) => row.calories !== '').length;
-  elements.shoppingSummary.textContent = `${progress.checked} of ${progress.total} items checked.`;
+  elements.shoppingSummary.textContent = 'Plan & tick your weekly list.';
   elements.trackerSummary.textContent = `${weights} weight entries; ${intakeDays} calorie entries.`;
   } catch(error){setStatus(`Some saved data could not be read. Restore a valid backup. ${error.message}`,true);}
 }
@@ -149,9 +148,7 @@ window.addEventListener('appinstalled', () => {
   setStatus('App installed.');
 });
 
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-  navigator.serviceWorker.register('sw.js').catch(() => setStatus('Offline setup will retry on next visit.', true));
-}
+
 
 if (!persistent) {
   elements.homeStorageNotice.dataset.mode = 'memory';

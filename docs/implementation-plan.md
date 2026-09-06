@@ -4,7 +4,7 @@ Goal: a personal, simple offline training and food journal for a 16-week muscle-
 
 Scope and assumptions: one person; full gym; four 60–75 minute sessions; no injuries reported; existing halal/plain-ingredient preferences retained. Research uses primary training studies, consensus syntheses, Canadian food safety guidance and food labels. No dose-based training or nutrition formula; the personal log is behind a discreet eye toggle. Its user-requested default schedule is part of the public app code; actual saved entries remain in browser storage and exported backups.
 
-Design: soft grey #f5f5f7, white #ffffff, charcoal #1d1d1f and blue #0071e3. Native system typography, quiet surfaces, centered desktop popup cards and mobile bottom sheets. A weekly session rail is the signature: completed sessions fill in, with the next session always obvious. Desktop sidebar; five mobile navigation destinations. Today, Train, Meals, Shop, Progress; guides reached contextually.
+Original 2.0 design (superseded by [visual-redesign.md](visual-redesign.md)): soft grey #f5f5f7, white #ffffff, charcoal #1d1d1f and blue #0071e3. Native system typography, quiet surfaces, centered desktop popup cards and mobile bottom sheets. A weekly session rail is the signature: completed sessions fill in, with the next session always obvious. Desktop sidebar; five mobile navigation destinations. Today, Train, Meals, Shop, Progress; guides reached contextually.
 
 - [x] Inspect old routes, storage, calculations and source claims; baseline 82 tests pass.
 - [x] Discovery and follow-up: reconcile training, nutrition and food-safety evidence; audit old calorie rules and grocery quantities. Record sources and uncertainty in research/report-source.md; reader-facing synthesis in plan.html.
