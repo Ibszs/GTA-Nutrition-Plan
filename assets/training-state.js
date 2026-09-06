@@ -94,6 +94,10 @@ export function editDraft(state, action) {
     const replacement = { exerciseId: definition.id, variantId: definition.variants[0].id, setup: '', prescribedSets: count, repMin: definition.repMin, repMax: definition.repMax, sets: Array.from({ length: count }, blankSet) };
     if (action.type === 'swap') draft.exercises[action.index] = replacement;
     else draft.exercises.push(replacement);
+  } else if (action.type === 'move') {
+    check(numeric(action.index, 0, draft.exercises.length - 1, true) && numeric(action.to, 0, draft.exercises.length - 1, true), 'choose a valid position in this workout.');
+    const [moved] = draft.exercises.splice(action.index, 1);
+    draft.exercises.splice(action.to, 0, moved);
   } else if (action.type === 'remove') {
     check(entry && !entry.sets.some(hasRecordedSet), 'recorded numbers must be cleared explicitly before removing this exercise.');
     draft.exercises.splice(action.index, 1);
@@ -105,6 +109,16 @@ export function editDraft(state, action) {
   } else check(false, 'unknown workout edit.');
   draft.customized = true;
   return validateTrainingState(next);
+}
+
+export function repeatSession(state, sessionId, date = localToday()) {
+  const next = validateTrainingState(state);
+  const source = next.sessions.find(session => session.id === sessionId);
+  check(source, 'choose a saved session to repeat.');
+  const draft = createDraft(next, source.sessionId, date, source.lightWeek);
+  draft.customized = true;
+  draft.exercises = source.exercises.map(entry => ({ ...structuredClone(entry), sets: Array.from({ length: entry.prescribedSets }, blankSet) }));
+  return validateTrainingState({ ...next, draft });
 }
 
 export function finishDraft(state, id) {

@@ -1,8 +1,9 @@
 import { openExercise } from './experience.js';
+import { icon, iconLabel } from './ui-icons.js';
 import { confirmAction } from './common.js';
 import { createStorage, makeId, saveJson } from './common.js';
 import { EXERCISES, SESSIONS, localToday, getWeek, getPrescription, isRealDate } from './training-data.js';
-import { TRAINING_KEY, createTrainingState, validateTrainingState, createDraft, editDraft, finishDraft, copyLastSets, findLastEntry, progressionSuggestion } from './training-state.js';
+import { TRAINING_KEY, createTrainingState, validateTrainingState, createDraft, editDraft, repeatSession, finishDraft, copyLastSets, findLastEntry, progressionSuggestion } from './training-state.js';
 
 const $ = id => document.getElementById(id);
 const { storage, persistent } = createStorage();
@@ -66,6 +67,8 @@ function renderOverview() {
   $('blockStart').disabled = Boolean(state.draft || state.sessions.length);
   $('loadUnit').disabled = Boolean(draftHasNumbers());
   $('beginSession').textContent = state.draft ? 'Replace current draft' : 'Start session';
+  const last = state.sessions.slice().reverse().find(s => s.sessionId === selected.id);
+  $('repeatLastLineup').hidden = !last;
 }
 
 function renderHistory() {
@@ -98,6 +101,7 @@ function renderHistory() {
       if (!save('Session deleted.')) { state = old; return; }
       renderHistory(); renderOverview(); renderWorkout();
     }, 'button ghost'));
+    details.append(button('Repeat this lineup', () => startRepeatedSession(session.id), 'button secondary'));
     $('trainingHistory').append(details);
   }
 }
@@ -107,10 +111,17 @@ function updateProgress() {
   const total = state.draft.exercises.reduce((n, e) => n + e.prescribedSets, 0);
   $('workoutProgress').textContent = `${completedCount(state.draft)} of ${total} working sets done`;
   $('loadUnit').disabled = Boolean(draftHasNumbers());
+  [...$('exerciseList').children].forEach((card, index) => {
+    const entry = state.draft.exercises[index];
+    const done = entry.sets.filter(set => set.completed).length;
+    const badge = card.querySelector('.exercise-completion');
+    if (badge) badge.textContent = `${done}/${entry.prescribedSets}`;
+    card.classList.toggle('exercise-complete', done === entry.prescribedSets);
+  });
 }
 function focusExercise() {
   const selected=$('exerciseFocus').value;
-  [...$('exerciseList').children].forEach((card,index)=>card.hidden=selected!=='all' && Number(selected)!==index);
+  if (selected !== 'all') [...$('exerciseList').children].forEach((card,index) => { card.open = Number(selected) === index; });
   $('previousExercise').disabled=selected==='all'||Number(selected)===0;
   $('nextExercise').disabled=selected==='all'||Number(selected)>=(state.draft?.exercises.length??0)-1;
 }
@@ -119,9 +130,17 @@ function applyWorkoutEdit(action) {
     const old = state;
     state = editDraft(state, action);
     if (!save('Workout updated. Your recorded sets are preserved.')) { state = old; return; }
-    if (action.type === 'add') $('exerciseFocus').value = 'all';
+    if (action.type === 'add' || action.type === 'move') $('exerciseFocus').value = 'all';
     renderWorkout(); renderOverview();
-    if (action.type === 'add') { $('exerciseFocus').value = String(state.draft.exercises.length - 1); focusExercise(); }
+    if (action.type === 'add') {
+      $('exerciseFocus').value = String(state.draft.exercises.length - 1); focusExercise();
+      $('exerciseList').lastElementChild.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+    if (action.type === 'move') {
+      const name = EXERCISES[state.draft.exercises[action.to].exerciseId].name;
+      $('workoutOrderStatus').textContent = `${name} moved to position ${action.to + 1}.`;
+      $('exerciseList').children[action.to].querySelector('.drag-handle').focus({ preventScroll: true });
+    }
   } catch (issue) { error(issue.message); $('trainingError').scrollIntoView({ block: 'center', behavior: 'smooth' }); }
 }
 function exerciseChoices(select, currentId) {
@@ -131,12 +150,60 @@ function exerciseChoices(select, currentId) {
   });
 }
 $('addExercise').addEventListener('click', () => applyWorkoutEdit({ type: 'add', exerciseId: $('addExerciseSelect').value }));
+$('collapseExercises').addEventListener('click', () => { [...$('exerciseList').children].forEach(card => { card.open = false; }); $('exerciseFocus').value = 'all'; focusExercise(); });
+$('expandExercises').addEventListener('click', () => { [...$('exerciseList').children].forEach(card => { card.open = true; }); $('exerciseFocus').value = 'all'; focusExercise(); });
+
+function attachReorder(handle, card, index) {
+  let startY, dragging = false, target = index;
+  const clear = () => {
+    card.classList.remove('is-dragging');
+    [...$('exerciseList').children].forEach(item => item.classList.remove('drop-before', 'drop-after'));
+  };
+  handle.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); });
+  handle.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    event.preventDefault(); event.stopPropagation();
+    startY = event.clientY; target = index; dragging = false;
+    handle.setPointerCapture(event.pointerId);
+  });
+  handle.addEventListener('pointermove', event => {
+    if (!handle.hasPointerCapture(event.pointerId)) return;
+    if (!dragging && Math.abs(event.clientY - startY) < 7) return;
+    dragging = true; card.classList.add('is-dragging');
+    const cards = [...$('exerciseList').children];
+    cards.forEach(item => item.classList.remove('drop-before', 'drop-after'));
+    const over = cards.find(item => { const r = item.getBoundingClientRect(); return event.clientY >= r.top && event.clientY <= r.bottom; });
+    if (over && over !== card) {
+      const overIndex = cards.indexOf(over), after = event.clientY > over.getBoundingClientRect().top + over.getBoundingClientRect().height / 2;
+      const slot = overIndex + (after ? 1 : 0);
+      target = Math.max(0, Math.min(cards.length - 1, slot > index ? slot - 1 : slot));
+      over.classList.add(after ? 'drop-after' : 'drop-before');
+    } else if (over === card) target = index;
+    if (event.clientY < 90) window.scrollBy(0, -16);
+    if (event.clientY > window.innerHeight - 120) window.scrollBy(0, 16);
+  });
+  handle.addEventListener('pointerup', event => {
+    if (!handle.hasPointerCapture(event.pointerId)) return;
+    handle.releasePointerCapture(event.pointerId); clear();
+    if (dragging && target !== index) applyWorkoutEdit({ type: 'move', index, to: target });
+    dragging = false;
+  });
+  handle.addEventListener('pointercancel', clear);
+  handle.addEventListener('keydown', event => {
+    if (!event.altKey || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    const to = index + (event.key === 'ArrowUp' ? -1 : 1);
+    if (to >= 0 && to < state.draft.exercises.length) applyWorkoutEdit({ type: 'move', index, to });
+  });
+}
 $('exerciseFocus').addEventListener('change',focusExercise);
 for(const [id,delta] of [['previousExercise',-1],['nextExercise',1]])$(''+id).addEventListener('click',async()=>{
   $('exerciseFocus').value=String(Number($('exerciseFocus').value)+delta);focusExercise();$('exerciseFocus').scrollIntoView({block:'start',behavior:'smooth'});
 });
 function renderWorkout() {
   $('activeWorkout').hidden = !state.draft;
+  const openExercises = new Set([...$('exerciseList').children].filter(card => card.open).map(card => card.dataset.exercise));
+  const hadCards = $('exerciseList').children.length > 0;
   $('exerciseList').replaceChildren();
   if (!state.draft) return;
   const draft = state.draft;
@@ -144,16 +211,28 @@ function renderWorkout() {
   const previousFocus=$('exerciseFocus').value;
   $('exerciseFocus').replaceChildren();
   draft.exercises.forEach((entry,index)=>{const option=element('option',`${index+1}. ${EXERCISES[entry.exerciseId].name}`);option.value=String(index);$('exerciseFocus').append(option);});
-  const all=element('option','Show every exercise');all.value='all';$('exerciseFocus').append(all);
-  $('exerciseFocus').value=previousFocus==='all'||draft.exercises[Number(previousFocus)]&&previousFocus!==''?previousFocus:String(Math.max(0,draft.exercises.findIndex(entry=>entry.sets.some(set=>!set.completed))));
+  const all=element('option','Workout overview');all.value='all';$('exerciseFocus').append(all);
+  $('exerciseFocus').value=previousFocus==='all'||draft.exercises[Number(previousFocus)]&&previousFocus!==''?previousFocus:'all';
   const target = getPrescription(draft.week, draft.lightWeek).rir;
   $('active-title').textContent = `${SESSIONS.find(s => s.id === draft.sessionId).name}${draft.customized ? ' · Adapted' : ''} · ${draft.date}`;
   draft.exercises.forEach((entry, exerciseIndex) => {
     const definition = EXERCISES[entry.exerciseId];
-    const card = element('article', undefined, 'panel exercise-card');
-    card.append(element('p', `${exerciseIndex + 1} / ${draft.exercises.length} · ${definition.muscle}`, 'kicker'));
-    card.append(element('h3', definition.name));
-    card.append(button('View movement guide ↗',()=>openExercise(entry.exerciseId),'button secondary'));
+    const wrapper = element('details', undefined, 'panel exercise-card'); wrapper.dataset.exercise = entry.exerciseId;
+    wrapper.open = hadCards ? openExercises.has(entry.exerciseId) : exerciseIndex === 0;
+    const summary = element('summary', undefined, 'exercise-heading');
+    const handle = button('', () => {}, 'drag-handle');
+    handle.setAttribute('aria-label', `Reorder ${definition.name}`); handle.title = 'Drag to reorder, or use Alt + arrow keys';
+    const grip = element('span', undefined, 'grip-dots'); grip.setAttribute('aria-hidden', 'true'); handle.append(grip);
+    const title = element('div', undefined, 'exercise-heading-copy');
+    title.append(element('span', `${exerciseIndex + 1}. ${definition.muscle}`, 'eyebrow'), element('h3', definition.name), element('span', `${entry.prescribedSets} sets · ${entry.repMin}–${entry.repMax} reps`, 'small'));
+    summary.append(handle, title, element('span', '', 'exercise-completion'), icon('chevron-down', 'ui-icon exercise-chevron'));
+    wrapper.append(summary);
+    const card = element('div', undefined, 'exercise-body');
+    const reorder = element('div', undefined, 'exercise-reorder');
+    const up = button('Move up', () => applyWorkoutEdit({ type: 'move', index: exerciseIndex, to: exerciseIndex - 1 }), 'button ghost'); up.disabled = exerciseIndex === 0;
+    const down = button('Move down', () => applyWorkoutEdit({ type: 'move', index: exerciseIndex, to: exerciseIndex + 1 }), 'button ghost'); down.disabled = exerciseIndex === draft.exercises.length - 1;
+    reorder.append(up, down); card.append(reorder);
+    card.append(iconLabel(button('',()=>openExercise(entry.exerciseId),'button secondary'), 'Movement guide', 'play'));
     card.append(element('p', `${entry.prescribedSets} sets × ${entry.repMin}–${entry.repMax} reps · suggested ${target} RIR · ${definition.rest / 60} min rest`));
     const adapt = element('details', undefined, 'adapt-exercise');
     adapt.append(element('summary', 'Adapt exercise · sets, reps & swaps'));
@@ -241,10 +320,25 @@ function renderWorkout() {
       });
       doneLabel.prepend(doneInput); row.append(cleanLabel, doneLabel); setGrid.append(row);
     });
-    card.append(setGrid); $('exerciseList').append(card); updatePrevious();
+    card.append(setGrid); wrapper.append(card); $('exerciseList').append(wrapper); attachReorder(handle, wrapper, exerciseIndex); updatePrevious();
   });
   updateProgress();focusExercise();
 }
+
+async function startRepeatedSession(id) {
+  if (state.draft && !await confirmAction('Replace the current draft with this lineup? Its recorded numbers will be discarded.')) return;
+  try {
+    const old = state;
+    state = repeatSession(state, id, $('workoutDate').value || localToday());
+    if (!save('Lineup ready. Every working set starts blank.')) { state = old; return; }
+    syncForm(); renderOverview(); renderWorkout();
+    $('active-title').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  } catch (issue) { error(issue.message); }
+}
+$('repeatLastLineup').addEventListener('click', () => {
+  const last = state.sessions.slice().reverse().find(session => session.sessionId === $('sessionSelect').value);
+  if (last) startRepeatedSession(last.id);
+});
 
 function syncForm() {
   $('blockStart').value = state.startDate;
@@ -321,5 +415,23 @@ $('trainingStorageNotice').dataset.mode = persistent ? 'persistent' : 'memory';
 
 window.addEventListener('storage',event=>{if(event.key===TRAINING_KEY || event.key===null)location.reload();});
 
-for(const ex of Object.values(EXERCISES)){const b=button('',()=>openExercise(ex.id),'exercise-tile');const image=element('img');image.src=`assets/images/exercises/${ex.id}-0.jpg`;image.alt='';image.loading='lazy';image.className='exercise-thumb';b.append(image);b.append(element('span',ex.muscle,'eyebrow'),element('strong',ex.name),element('span',ex.repMin+'–'+ex.repMax+' reps  ↗','small'));$('exerciseLibrary').append(b);}
+function renderExerciseLibrary() {
+  const search = $('librarySearch').value.toLowerCase().trim();
+  const muscle = $('libraryMuscle').value;
+  const groups = { chest: /chest/i, back: /back/i, delts: /delts/i, arms: /biceps|triceps/i, legs: /quads|hamstrings|glutes|calves/i, abs: /abs/i };
+  $('exerciseLibrary').replaceChildren();
+  for (const ex of Object.values(EXERCISES)) {
+    if (muscle !== 'all' && !groups[muscle].test(ex.muscle)) continue;
+    if (!`${ex.name} ${ex.muscle} ${ex.variants.map(v => v.name).join(' ')}`.toLowerCase().includes(search)) continue;
+    const tile = button('', () => openExercise(ex.id), 'exercise-tile');
+    const image = element('img'); image.src = `assets/images/exercises/${ex.id}-0.jpg`; image.alt = ''; image.loading = 'lazy'; image.className = 'exercise-thumb';
+    const copy = element('span', undefined, 'exercise-tile-copy');
+    copy.append(element('span', ex.muscle, 'eyebrow'), element('strong', ex.name), element('span', `${ex.repMin}–${ex.repMax} reps`, 'small'), icon('arrow-up-right'));
+    tile.append(image, copy); $('exerciseLibrary').append(tile);
+  }
+  if (!$('exerciseLibrary').children.length) $('exerciseLibrary').append(element('p', 'No matching movements. Try another name or muscle group.', 'empty'));
+}
+$('librarySearch').addEventListener('input', renderExerciseLibrary);
+$('libraryMuscle').addEventListener('change', renderExerciseLibrary);
+renderExerciseLibrary();
 const requestedSession=new URLSearchParams(location.search).get('session');if(!state.draft&&SESSIONS.some(s=>s.id===requestedSession)){$('sessionSelect').value=requestedSession;renderOverview();}

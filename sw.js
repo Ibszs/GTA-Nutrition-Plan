@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gta-nutrition-v2.15';
+const CACHE_NAME = 'gta-nutrition-v2.17';
 const APP_SHELL = [
   './',
   './index.html',
@@ -20,6 +20,10 @@ const APP_SHELL = [
   './assets/today.js',
   './assets/styles.css',
   './assets/experience.css',
+  './assets/components.css',
+  './assets/icons.svg',
+  './assets/ui-icons.js',
+  './assets/calendar.js',
   './assets/experience.js',
   './assets/updates.js',
   './assets/exercise-visuals.js',

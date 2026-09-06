@@ -1,4 +1,23 @@
-# Form & Fuel 2.1
+# Form & Fuel design and verification
+
+## Version 2.2 component update
+
+- Consistent local Lucide icons, a floating mobile navigation bar, quieter hover feedback, clearer action cards and compact page shortcuts.
+- Weekly training cards with dates, session status and horizontal phone scrolling. Meals gets a month picker with previous/next month, arrow-key selection, today shortcut and focus restoration. Nutrition cards use two columns on phones.
+- Every workout exercise is collapsible, with completion badges and expand/collapse controls. Drag grips reorder whole entries, including any recorded sets and setup. Move up/down buttons and Alt + arrow keys offer alternatives. Reuse the last or a historical lineup with its order and prescription preserved and every working set blank.
+- Collapsible movement library with search and muscle filters. Progress gets fourteen selectable date buttons with entry indicators.
+
+Verification completed September 6, 2026:
+
+- 136 automated checks passed, including leap-year/month-boundary dates, invalid reordering, preservation of logged values, repeated lineup isolation, backup compatibility, SVG fragment links and complete offline asset coverage. All JavaScript passed syntax checks; `git diff --check` passed.
+- Every route checked at 320, 390, 430 and 1440 pixels: no horizontal document overflow or broken loaded images. Screenshots reviewed for all phone routes, core desktop screens, expanded/collapsed workouts, exercise guides, search, meal plans, and the month picker.
+- Browser interaction proof: logged 35 lb × 8 reps at 3 RIR; dragged that exercise from first to third; moved it back one place with Alt + Up; reloaded and verified order and numbers. Expanded all seven exercises and collapsed them. Saved partial history, reused its lineup and confirmed blank sets. Added chest flyes and used Move up. Filtered the library to chest flyes and opened its guide.
+- Calendar: next-month navigation, arrow-key date movement, Enter selection, today shortcut, and focus returning to its trigger. Progress: selected a date, entered a synthetic weight, reloaded and confirmed the date indicator and saved entry.
+- Screenshot checks caught and resolved inherited white calendar cards hiding their text, cramped narrow-screen shortcuts and wrapped nutrition units.
+- Update check installed version 2.2.0. With the preview HTTP server stopped, the month picker, local icons and reordered workout draft still loaded from the service worker.
+- Verification used isolated localhost records and browser viewport emulation. Physical iPhone/Safari and Android touch dragging were not tested; this browser supports pointer dragging but does not expose touch-event injection.
+
+## Version 2.1 foundation
 
 ## Product direction
 

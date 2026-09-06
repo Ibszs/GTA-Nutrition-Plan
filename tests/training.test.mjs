@@ -8,6 +8,37 @@ const state = () => createTrainingState('2026-09-07');
 const draft = () => createDraft(state(), 'upper-a', '2026-09-07');
 const performed = (load = 50, reps = 10, rir = 3) => ({ load, reps, rir, completed: true, clean: true });
 
+test('reordering a workout moves complete entries without losing sets or setup', () => {
+  const value = state(); value.draft = draft();
+  value.draft.exercises[0].sets[0] = performed();
+  value.draft.exercises[0].setup = 'Bench 2';
+  const moved = journal.editDraft(value, { type: 'move', index: 0, to: 3 });
+  assert.equal(moved.draft.exercises[0].exerciseId, 'row');
+  assert.deepEqual(moved.draft.exercises[3], value.draft.exercises[0]);
+  assert.equal(value.draft.exercises[0].exerciseId, 'incline');
+  assert.deepEqual(validateTrainingState(moved), moved);
+  for (const to of [-1, 7, 1.5]) assert.throws(() => journal.editDraft(value, { type: 'move', index: 0, to }));
+});
+
+test('repeating an adapted lineup keeps order and prescription but clears every recorded set', () => {
+  assert.equal(typeof journal.repeatSession, 'function');
+  let value = state(); value.draft = draft();
+  value = journal.editDraft(value, { type: 'swap', index: 0, exerciseId: 'fly' });
+  value = journal.editDraft(value, { type: 'prescription', index: 0, count: 2, repMin: 10, repMax: 18 });
+  value.draft.exercises[0].variantId = 'pecdeck'; value.draft.exercises[0].setup = 'Seat 4';
+  value.draft.exercises[0].sets[0] = performed(40, 15, 2);
+  value = finishDraft(value, 'lineup-1');
+  const repeated = journal.repeatSession(value, 'lineup-1', '2026-09-14');
+  const entry = repeated.draft.exercises[0];
+  assert.equal(repeated.draft.week, 2);
+  assert.equal(entry.exerciseId, 'fly'); assert.equal(entry.variantId, 'pecdeck');
+  assert.equal(entry.setup, 'Seat 4'); assert.equal(entry.repMax, 18);
+  assert.equal(entry.sets.length, 2);
+  assert.ok(entry.sets.every(s => s.load === '' && s.reps === '' && s.rir === '' && !s.completed && !s.clean));
+  assert.deepEqual(repeated.sessions, value.sessions);
+  assert.equal(value.draft, null);
+});
+
 test('custom workout additions and prescriptions survive finishing and backup validation', () => {
   assert.equal(typeof journal.editDraft, 'function');
   let value = state(); value.draft = draft();

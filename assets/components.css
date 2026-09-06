@@ -1,0 +1,380 @@
+/* Shared component details: local icons, calendars, navigation and workout cards. */
+:root {
+  --accent: #5266df;
+  --accent-deep: #394fc4;
+  --surface-shadow: 0 4px 6px -4px #20294110, 0 18px 40px -24px #20294135;
+  --control-shadow: 0 1px 2px #20294112, inset 0 1px #ffffffb0;
+}
+
+.ui-icon { width: 21px; height: 21px; flex: 0 0 auto; vertical-align: middle; }
+.calendar-panel-heading .eyebrow { display: block; }
+.with-icon, a.button, button:has(> .ui-icon) { display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.with-icon > span:empty { display: none; }
+.icon-button { display: inline-grid; place-items: center; padding: 0; width: 44px; height: 44px; min-width: 44px; }
+button:disabled .ui-icon { opacity: .5; }
+button, .button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #7b8bef; outline-offset: 4px; }
+button, .button { box-shadow: var(--control-shadow); transition: background .18s, border-color .18s, box-shadow .18s, transform .18s; }
+button:not(.ghost):not(.secondary):not(.icon-button):not(.calendar-day):not(.exercise-tile):not(.week-day):active, .button:active { transform: translateY(1px); }
+summary:after { content: ''; width: 8px; height: 8px; border-right: 1.7px solid currentColor; border-bottom: 1.7px solid currentColor; transform: rotate(45deg); margin-right: 3px; }
+details[open] > summary:after { transform: rotate(225deg); }
+details > summary { cursor: pointer; }
+details[open] > summary { margin-bottom: 14px; }
+
+/* A consistent, deliberate icon treatment across all five destinations. */
+.site-nav a { position: relative; gap: 13px; border: 1px solid transparent; color: #66718b; }
+.site-nav a .ui-icon { width: 23px; height: 23px; stroke-width: 1.8; transition: transform .22s; }
+.site-nav a[aria-current="page"] { background: linear-gradient(135deg, #293655, #1c2743); border-color: #455275; box-shadow: 0 6px 15px -8px #17243b80, inset 0 1px #ffffff25; }
+.site-nav a[aria-current="page"] .ui-icon { color: #c3ceff; }
+.site-nav a[aria-current="page"]:after { content: ''; position: absolute; right: 13px; width: 5px; height: 5px; border-radius: 50%; background: #b6c3ff; box-shadow: 0 0 10px #b6c3ff60; }
+.side-bottom a { display: flex; align-items: center; gap: 10px; }
+.side-bottom .ui-icon { width: 16px; height: 16px; color: #8c96ae; }
+.toolbar-search { background: #fff; gap: 10px; min-width: 214px; justify-content: flex-start; border-radius: 13px; color: #596680; box-shadow: var(--control-shadow); }
+.toolbar-search .ui-icon { width: 18px; height: 18px; }
+.toolbar-search kbd { margin-left: auto; padding: 3px 5px; border: 1px solid #e4e7ef; border-radius: 5px; font: 10px var(--body); color: #8590a6; box-shadow: 0 1px #e4e7ef; }
+.toolbar-help { display: inline-flex; align-items: center; gap: 8px; }
+.toolbar-help .ui-icon { width: 18px; height: 18px; color: var(--accent); }
+.section-nav { padding: 6px; border: 1px solid var(--line); border-radius: 15px; width: fit-content; background: #e9edf5a0; }
+.section-nav a, .section-nav button { border-color: transparent; background: transparent; box-shadow: none; }
+.section-nav a:hover, .section-nav button:hover { background: #fff; box-shadow: 0 2px 6px #2029410d; }
+
+/* Home action cards: clear touch targets, with purpose-specific icon plates. */
+.daily-path { border: 0; box-shadow: none; background: transparent; padding: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 28px 0; }
+.daily-path > div { grid-column: 1/-1; display: flex; justify-content: space-between; align-items: end; margin-bottom: 0; }
+.daily-path > div > .eyebrow { display: none; }
+.daily-path h2 { font-size: 24px; margin: 0; }
+.daily-path > a { min-height: 110px; background: #fff; padding: 22px; gap: 16px; border: 1px solid #e1e5f0; border-radius: 19px; box-shadow: var(--surface-shadow); position: relative; overflow: hidden; transition: transform .2s, border-color .2s, box-shadow .2s; }
+.daily-path .path-icon { width: 49px; height: 49px; border-radius: 15px; background: linear-gradient(145deg,#f5f7ff,#dfe6ff); box-shadow: inset 0 1px #fff, 0 5px 9px -6px #6475bd90; border: 1px solid #dbe2fa; color: #4e61c0; }
+.daily-path .path-icon .ui-icon { width: 25px; height: 25px; stroke-width: 1.7; }
+.daily-path > a:nth-child(3) .path-icon { background: linear-gradient(145deg,#fff9ee,#f6e7d0); color: #947139; border-color: #f0dfc2; }
+.daily-path > a:nth-child(4) .path-icon { background: linear-gradient(145deg,#edf8f3,#cde8dc); color: #3f7b64; border-color: #cce5d8; }
+.daily-path b { font-size: 15px; letter-spacing: -.3px; }
+.daily-path small { font-size: 11px; line-height: 1.5; }
+.daily-path .path-arrow { margin-left: auto; width: 17px; color: #8490aa; }
+.training-feature { box-shadow: 0 15px 35px -21px #15244290; border: 1px solid #ffffff55; }
+.training-feature .button { box-shadow: inset 0 1px #fff, 0 4px 15px #050b1d30; border: 1px solid #fff7; }
+.training-feature .button .ui-icon { margin-left: 10px; }
+.next-meal, .checkin-card { box-shadow: var(--surface-shadow); }
+.learn-card { background: radial-gradient(ellipse at top right,#e9edff,transparent 65%),#dbe2fc; border: 1px solid #d0d9f9; box-shadow: inset 0 1px #fff; }
+
+/* The week board is the app's training timeline. */
+.week-board { padding: 26px; border-radius: 23px; color: #fff; background: radial-gradient(ellipse at top right,#34496b,transparent 64%),#202d48; border: 1px solid #394b6b; box-shadow: 0 20px 40px -24px #17243b80, inset 0 1px #ffffff15; }
+.week-board-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.week-board .eyebrow { color: #9dacce; font-size: 9px; }
+.week-board h2 { color: #fff; font-size: 25px; margin: 7px 0; }
+.week-board-heading p { color: #a9b8d6; font-size: 12px; margin: 0; }
+.week-board-icon { display: grid; place-items: center; width: 47px; height: 47px; border-radius: 14px; background: #ffffff0c; border: 1px solid #ffffff15; color: #aebfe2; }
+.week-board-icon .ui-icon { width: 25px; height: 25px; }
+.today-page .week-board #todayWeek { gap: 9px; margin: 22px 0 18px; }
+.today-page #todayWeek .week-cell { display: flex; flex-direction: column; align-items: flex-start; min-height: 167px; padding: 15px 12px; border: 1px solid #ffffff15; border-radius: 14px; background: #ffffff06; color: #fff; text-align: left; box-shadow: inset 0 1px #ffffff08; }
+.week-date-heading { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.today-page #todayWeek .week-weekday { color: #a9b8d4; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; }
+.today-page #todayWeek .week-date { font: 500 28px/1 var(--body); letter-spacing: -.7px; color: #fff; }
+.today-page #todayWeek .week-session-icon { margin: 15px 0 7px; width: 18px; height: 18px; color: #9aaed4; }
+.today-page #todayWeek .week-cell b { font-size: 12px; line-height: 1.5; margin: 0 0 4px; letter-spacing: -.2px; }
+.today-page #todayWeek .week-state { color: #879abf; font-size: 10px; margin-top: auto; }
+.today-page #todayWeek .week-cell.today { background: linear-gradient(145deg,#6277e8,#495ecc); border-color: #8b9df1; box-shadow: inset 0 1px #c2cdff50, 0 8px 15px -8px #050d2690; }
+.today-page #todayWeek .today .week-weekday, .today-page #todayWeek .today .week-state, .today-page #todayWeek .today .week-session-icon { color: #e2e8ff; }
+.today-page #todayWeek .complete:not(.today) { background: #385d583b; border-color: #68ad8e50; }
+.today-page #todayWeek .complete:not(.today) .week-session-icon { color: #9fd8bd; }
+.week-board-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #a2b2d1; font-size: 10px; }
+.legend-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 7px; background: #869bee; }
+.swipe-hint { display: none; }
+
+/* Meal calendar: month navigation, a crisp week strip, and six honest progress dots. */
+.meal-calendar-panel { margin: 25px 0 30px; padding: 25px 28px 17px; border: 1px solid #dce2f1; border-radius: 23px; background: linear-gradient(155deg,#fff 65%,#f5f7ff); box-shadow: var(--surface-shadow); }
+.calendar-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+.calendar-panel-heading .eyebrow { color: #8a94ab; font-size: 9px; }
+.month-trigger { background: transparent; color: var(--ink); border: 0; box-shadow: none; padding: 0; font-size: 24px; font-weight: 650; letter-spacing: -.8px; min-height: 44px; text-align: left; justify-content: flex-start!important; }
+.month-trigger:hover { background: transparent; color: var(--accent-deep); }
+.month-trigger > .ui-icon:first-child { width: 23px; height: 23px; color: var(--accent); }
+.month-trigger > .ui-icon:last-child { width: 17px; height: 17px; color: #7d88a2; margin-left: 2px; }
+.calendar-panel-heading p { margin: 2px 0 0; font-size: 12px; color: #8791a8; }
+.calendar-shop { display: inline-flex; align-items: center; gap: 8px; padding: 12px 15px; border-radius: 12px; text-decoration: none; color: #596bc5; font-size: 12px; font-weight: 600; background: #edf1ff; border: 1px solid #e1e7ff; }
+.meal-calendar-panel .calendar-strip { margin: 21px 0; gap: 8px; }
+.meal-calendar-panel .calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; min-height: 108px; border: 1px solid transparent; border-radius: 15px; box-shadow: none; background: transparent; padding: 10px 5px; }
+.meal-calendar-panel .calendar-day small { font-size: 11px; color: #7e8aa4; font-weight: 500; }
+.meal-calendar-panel .calendar-day b { margin: 1px 0; width: auto; height: auto; background: none; font-size: 27px; font-weight: 550; letter-spacing: -.8px; line-height: 1.3; color: #38455f; }
+.meal-calendar-panel .calendar-day[aria-current="date"] { border-color: #dce3fa; }
+.meal-calendar-panel .calendar-day[aria-pressed="true"] { background: linear-gradient(145deg,#667bed,#5064d4); border-color: #7487ec; box-shadow: 0 8px 16px -8px #5568ce85, inset 0 1px #ffffff40; }
+.meal-calendar-panel .calendar-day[aria-pressed="true"] b, .meal-calendar-panel .calendar-day[aria-pressed="true"] small { color: white; background: none; }
+.meal-calendar-panel .calendar-day:hover:not([aria-pressed="true"]) { background: #f0f3fc; }
+.meal-calendar-panel .calendar-day .meal-dots { display: flex; gap: 3px; height: 4px; margin: 3px 0; }
+.meal-dots i { display: block; width: 4px; height: 4px; border-radius: 50%; background: #dce1ed; }
+.meal-dots i.eaten { background: #536acc; }
+.calendar-day[aria-pressed="true"] .meal-dots i { background: #ffffff3a; }
+.calendar-day[aria-pressed="true"] .meal-dots i.eaten { background: white; }
+.calendar-panel-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 13px; border-top: 1px solid #edf0f6; }
+.calendar-panel-footer > .small { font-size: 11px; color: #919bb0; }
+.week-navigation { display: flex; align-items: center; gap: 5px; }
+.week-navigation .icon-button { box-shadow: none; background: #f4f6fb; color: #697793; border: 1px solid #e5e9f3; border-radius: 11px; }
+.week-navigation #currentWeek { background: transparent; box-shadow: none; font-size: 11px; padding: 9px; }
+.nutrition-summary { gap: 10px; }
+#dayMacros { background: transparent; padding: 0; }
+.nutrition-summary > div { position: relative; background: #fff; border: 1px solid #e3e8f2; padding: 17px 18px; border-radius: 16px; box-shadow: var(--control-shadow); }
+.nutrition-summary .ui-icon { position: absolute; top: 17px; right: 17px; width: 19px; height: 19px; color: #8799d9; }
+.nutrition-summary > div:nth-child(1) .ui-icon { color: #bd936b; }
+.nutrition-summary > div:nth-child(3) .ui-icon { color: #ad9563; }
+.nutrition-summary > div:nth-child(4) .ui-icon { color: #6caaa0; }
+.nutrition-summary b { font-size: 23px; letter-spacing: -.7px; padding-top: 14px; }
+.nutrition-summary span { font-size: 11px; }
+
+/* Month picker uses native buttons and a modal, with full keyboard navigation. */
+.date-dialog { width: 364px; max-width: calc(100vw - 28px); max-height: calc(100dvh - 32px); margin: auto; padding: 22px; border: 1px solid #e1e6f2; border-radius: 22px; background: #fff; box-shadow: 0 30px 100px #15223c35; }
+.date-dialog::backdrop { background: #18233c44; backdrop-filter: blur(5px); }
+.date-dialog-header { display: flex; align-items: center; justify-content: space-between; margin: -4px -5px 7px 0; }
+.date-dialog-header .eyebrow { font-size: 10px; }
+.date-dialog .icon-button { background: transparent; color: #6c7a96; box-shadow: none; }
+.date-dialog .icon-button:hover { background: #f0f3fb; }
+.month-navigation { display: flex; align-items: center; justify-content: space-between; margin: 8px -4px 15px; gap: 4px; }
+.month-navigation h2 { margin: 0; font-size: 22px; font-weight: 600; text-align: center; }
+.month-weekdays, .month-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 3px; }
+.month-weekdays { text-align: center; color: #94a0b7; font-size: 10px; margin-bottom: 9px; }
+.month-grid button { display: grid; place-items: center; padding: 0; min-width: 0; min-height: 40px; height: 40px; font-size: 13px; background: transparent; color: #40506c; border: 1px solid transparent; border-radius: 10px; box-shadow: none; font-weight: 500; }
+.month-grid button:hover { background: #edf1ff; }
+.month-grid button[aria-current="date"] { border-color: #b7c4f6; color: #5269c7; }
+.month-grid button[aria-pressed="true"] { color: white; background: var(--accent); box-shadow: 0 4px 8px -4px #5166cbaa; }
+.month-grid button.outside-month:not([aria-pressed="true"]) { color: #bbc2d1; }
+.calendar-footer { margin-top: 18px; padding-top: 17px; border-top: 1px solid #edf0f6; }
+.calendar-footer button { width: 100%; }
+.calendar-footer p { margin: 12px 0 0; text-align: center; color: #929db1; font-size: 10px; }
+
+/* Workout lineup: everything can be scanned, opened and reordered in place. */
+.session-start-actions { display: grid; gap: 7px; min-width: 180px; }
+.training-page .week-day { text-align: left; align-items: flex-start; padding: 18px 15px; background: #f6f8fc; border-color: #e2e7f1; box-shadow: var(--control-shadow); gap: 10px; }
+.training-page .week-day > .small:first-child { font-size: 9px; letter-spacing: 1.3px; text-transform: uppercase; color: #8a98b4; }
+.training-page .week-day strong { font-size: 21px; letter-spacing: -.6px; }
+.training-page .week-day > .small:last-child { font-size: 10px; background: #e7edf7; padding: 3px 8px; border-radius: 6px; color: #75819b; }
+.training-page .week-day[aria-pressed="true"] { background: linear-gradient(145deg,#344464,#263551); border-color: #526384; box-shadow: 0 8px 17px -11px #1c294aaa, inset 0 1px #ffffff18; }
+.training-page .week-day[aria-pressed="true"] > .small:last-child { background: #ffffff12; color: #c8d4ed; }
+.workout-tools { display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; margin: 18px 0 12px; }
+.workout-tools > label { flex: 1; max-width: 400px; font-size: 11px; }
+.workout-tools .button-row { flex-wrap: nowrap; margin: 0; gap: 6px; }
+.workout-tools button { padding: 10px 13px; font-size: 11px; }
+.reorder-hint { font-size: 11px; color: #8894ab; line-height: 1.6; margin: 10px 0 18px; }
+.training-page #exerciseList { display: grid; gap: 11px; }
+.training-page .exercise-card { position: relative; border-radius: 18px; margin: 0; padding: 0; background: #fff; border: 1px solid #e0e6f1; box-shadow: var(--surface-shadow); overflow: visible; scroll-margin-top: 16px; transition: border-color .18s, box-shadow .18s; }
+.training-page .exercise-card[open] { border-color: #b9c6ef; box-shadow: 0 8px 24px -14px #5168a755; }
+.exercise-card > .exercise-heading { display: flex; align-items: center; gap: 14px; padding: 18px 19px 18px 10px; margin: 0; min-height: 105px; border-radius: 17px; }
+.exercise-heading:after { display: none; }
+.exercise-heading-copy { flex: 1; min-width: 0; }
+.exercise-heading-copy .eyebrow { font-size: 9px; color: #929db2; letter-spacing: 1px; }
+.exercise-heading-copy h3 { font-size: 19px; font-weight: 600; letter-spacing: -.45px; margin: 5px 0 4px; line-height: 1.3; }
+.exercise-heading-copy .small { color: #8290a8; font-size: 11px; }
+.exercise-heading .exercise-completion { display: grid; place-items: center; width: 37px; height: 37px; flex: none; background: #f2f5fc; border: 1px solid #e1e8f7; border-radius: 50%; color: #7486ac; font-size: 10px; font-weight: 600; }
+.exercise-heading .exercise-chevron { width: 16px; height: 16px; color: #8c99b1; transition: transform .2s; }
+.exercise-card[open] .exercise-heading .exercise-chevron { transform: rotate(180deg); color: #617ac4; }
+.exercise-complete .exercise-completion { background: #e3f3e9; border-color: #cae5d4; color: #478468; }
+.drag-handle { display: grid; place-items: center; width: 35px; min-width: 35px; min-height: 48px; padding: 0; border: 0; background: transparent; box-shadow: none; color: #aab4c7; cursor: grab; touch-action: none; user-select: none; }
+.drag-handle:hover { background: #edf2fc; color: #647baa; }
+.drag-handle:active { cursor: grabbing; }
+.grip-dots { width: 12px; height: 20px; background-image: radial-gradient(circle,currentColor 1.3px,transparent 1.6px); background-size: 6px 6px; pointer-events: none; }
+.exercise-card.is-dragging { opacity: .5; border-style: dashed; }
+.exercise-card.drop-before:before, .exercise-card.drop-after:after { content: ''; position: absolute; height: 3px; left: 0; right: 0; border-radius: 4px; background: #6984e7; box-shadow: 0 0 10px #6984e750; pointer-events: none; }
+.exercise-card.drop-before:before { top: -7px; }
+.exercise-card.drop-after:after { bottom: -7px; }
+.exercise-body { padding: 0 25px 25px; border-top: 1px solid #edf0f6; }
+.exercise-body > p { font-size: 12px; color: #75819b; line-height: 1.6; }
+.exercise-body .form-grid label { font-size: 11px; }
+.exercise-body .form-grid input, .exercise-body .form-grid select { min-height: 44px; }
+.exercise-reorder { display: flex; justify-content: flex-end; gap: 5px; padding: 10px 0; }
+.exercise-reorder button { min-height: 36px; font-size: 10px; padding: 7px 11px; box-shadow: none; }
+.exercise-body > .secondary { font-size: 11px; }
+.exercise-body .adapt-exercise { background: #f3f6fc; border: 1px solid #e7ecf7; padding: 14px 16px; }
+.exercise-body .adapt-exercise summary { font-size: 11px; }
+.exercise-body .set-row { border-radius: 14px; border-color: #e0e7f3; background: #f9fbff; padding: 14px; }
+.exercise-body .set-row legend { font-size: 10px; font-weight: 650; color: #7184ab; letter-spacing: 1px; padding: 0 6px; }
+.exercise-body .set-row input[type="number"] { background: #fff; }
+.exercise-body .last-performance { border-radius: 12px; border: 0; background: #edf2ff; padding: 13px 16px; }
+.exercise-body .performance-numbers { font-size: 13px; }
+.library-panel { margin: 26px 0; padding: 21px; border-radius: 19px; background: #fff; border: 1px solid #e0e6f1; box-shadow: var(--surface-shadow); }
+.library-panel > summary { justify-content: flex-start; gap: 14px; }
+.library-panel > summary:after { margin-left: auto; }
+.library-panel > summary strong { display: block; font-size: 20px; font-weight: 600; letter-spacing: -.5px; }
+.library-panel > summary small { display: block; font-size: 11px; color: #8b96aa; margin-top: 4px; }
+.library-heading-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; background: #eef2ff; color: #788fd1; flex: none; }
+.library-filters { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; padding-top: 12px; }
+.library-filters label { font-size: 11px; }
+.exercise-library { margin-bottom: 0; gap: 13px; }
+.exercise-tile { overflow: hidden; padding: 0; gap: 0; border: 1px solid #e5eaf3; background: #fff; border-radius: 16px; box-shadow: var(--control-shadow); }
+.exercise-tile:hover { background: #fff; border-color: #a7bae9; }
+.exercise-thumb { width: 100%; height: 155px; padding: 12px; border-bottom: 1px solid #edf0f6; filter: none; background: #f8faff; mix-blend-mode: normal; transition: transform .25s; }
+.exercise-tile-copy { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; padding: 16px 18px; width: 100%; min-height: 121px; }
+.exercise-tile-copy > .eyebrow { font-size: 8px; color: #94a0b8; }
+.exercise-tile-copy > strong { font-size: 15px; padding-right: 8px; }
+.exercise-tile-copy > .small { font-size: 10px; color: #8293b8; }
+.exercise-tile-copy > .ui-icon { position: absolute; right: 15px; bottom: 17px; width: 16px; height: 16px; color: #7e94c6; }
+
+/* Consistent detail in search, journal metrics and recipe collections. */
+.search-result { padding: 17px 40px 17px 59px; background: #fff; min-height: 72px; }
+.search-result-icon { position: absolute; left: 13px; top: 18px; display: grid; place-items: center; width: 33px; height: 33px; color: #879ad1; background: #eff3ff; border: 1px solid #e2e9fc; border-radius: 10px; }
+.search-result-icon .ui-icon { width: 17px; height: 17px; }
+.search-result .result-arrow { width: 15px; height: 15px; top: 28px; }
+.recipe-card { box-shadow: var(--surface-shadow); transition: transform .2s, box-shadow .2s; }
+.recipe-card > button { background: #f1f4fc; color: #6176b7; }
+.metric { background: linear-gradient(145deg,#fff,#f8faff); border: 1px solid #e0e7f4; border-radius: 17px; box-shadow: var(--control-shadow); }
+.metric b { letter-spacing: -1px; }
+.tracker-day-rail { display: grid; grid-template-columns: repeat(14,minmax(0,1fr)); gap: 5px; margin: 19px 0 24px; padding: 9px; border-radius: 16px; border: 1px solid #e2e8f4; background: #f6f8fc; }
+.tracker-day-rail button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 9px 2px; min-height: 78px; color: #7e8ca8; background: transparent; box-shadow: none; border: 1px solid transparent; border-radius: 11px; }
+.tracker-day-rail small { font-size: 9px; }
+.tracker-day-rail b { font-size: 19px; font-weight: 500; }
+.tracker-day-rail i { width: 4px; height: 4px; background: #d8e1f3; border-radius: 50%; }
+.tracker-day-rail .has-entry i { background: #6e9f83; }
+.tracker-day-rail button[aria-current="date"] { border-color: #d5dff8; }
+.tracker-day-rail button[aria-pressed="true"] { background: #596fd5; color: #fff; border-color: #6f83db; box-shadow: 0 6px 11px -6px #6173c8a0; }
+.tracker-day-rail button[aria-pressed="true"] i { background: #c2cfff; }
+.tracker-day-rail button[aria-pressed="true"].has-entry i { background: #bce6c9; }
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .site-nav a:hover .ui-icon { transform: translateY(-2px) scale(1.08); }
+  .daily-path > a:hover { transform: translateY(-3px); border-color: #becbf3; box-shadow: 0 12px 25px -14px #5167ad50; }
+  .recipe-card:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px #5167ad50; }
+  .exercise-tile:hover .exercise-thumb { transform: scale(1.04); }
+  .training-feature .button:hover .ui-icon { transform: translate(2px,-2px); transition: transform .18s; }
+}
+
+@media (max-width: 1100px) {
+  .daily-path > a { padding: 19px 16px; gap: 11px; }
+  .daily-path .path-arrow { display: none; }
+  .today-page #todayWeek .week-cell { padding: 14px 8px; }
+  .today-page #todayWeek .week-cell b { font-size: 11px; }
+  .tracker-day-rail { grid-template-columns: repeat(7,minmax(0,1fr)); }
+}
+
+@media (max-width: 760px) {
+  body { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .site-nav { left: 12px; right: 12px; bottom: max(10px,env(safe-area-inset-bottom)); border: 1px solid #d5ddefb0; border-radius: 22px; padding: 7px 6px; gap: 2px; background: #fefeffeb; backdrop-filter: blur(18px); box-shadow: 0 6px 24px #1c29421c, 0 1px 5px #2029410d, inset 0 1px #fff; }
+  .site-nav a { flex-direction: column; padding: 8px 2px 6px; gap: 5px; min-height: 56px; font-size: 9px; font-weight: 550; border-radius: 15px; }
+  .site-nav a .ui-icon { width: 22px; height: 22px; stroke-width: 1.8; }
+  .site-nav a[aria-current="page"] { color: #fff; box-shadow: 0 4px 8px -4px #26365560, inset 0 1px #ffffff20; }
+  .site-nav a[aria-current="page"]:after { display: none; }
+  .site-nav a[aria-current="page"] .ui-icon { color: #d6dfff; }
+  .app-toolbar { margin-bottom: 21px; }
+  .toolbar-search { min-width: 0; gap: 8px; min-height: 40px; padding: 9px 12px; font-size: 11px; }
+  .toolbar-search kbd { display: none; }
+  .toolbar-help { font-size: 11px; gap: 7px; }
+  .toolbar-help .ui-icon { width: 17px; height: 17px; }
+  .section-nav { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 3px; width: 100%; border-radius: 13px; padding: 4px; }
+  .section-nav a, .section-nav button { display: flex; align-items: center; padding: 10px 6px; min-height: 44px; font-size: 11px; justify-content: center; text-align: center; white-space: normal; }
+  .training-page .section-nav { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .daily-path { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 25px 0; }
+  .daily-path > div { margin: 0 0 4px; display: block; }
+  .daily-path h2 { font-size: 23px; }
+  .daily-path > a, .daily-path > a:last-child { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; min-height: 151px; padding: 15px 11px; border: 1px solid #dfe5f2; border-radius: 16px; gap: 12px; }
+  .daily-path .path-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .daily-path .path-icon .ui-icon { width: 23px; height: 23px; }
+  .daily-path b { font-size: 12px; letter-spacing: -.2px; line-height: 1.4; }
+  .daily-path small { font-size: 9px; line-height: 1.5; }
+  .daily-path .path-arrow { display: none; }
+  .week-board { padding: 23px 0 18px; border-radius: 21px; overflow: hidden; }
+  .week-board-heading { padding: 0 20px; }
+  .week-board h2 { font-size: 23px; }
+  .week-board-heading p { font-size: 11px; }
+  .week-board-icon { width: 42px; height: 42px; border-radius: 12px; }
+  .today-page .week-board #todayWeek { display: flex; width: 100%; overflow-x: auto; overflow-y: hidden; padding: 0 20px 6px; margin: 21px 0 15px; gap: 9px; scroll-snap-type: x proximity; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .today-page .week-board #todayWeek::-webkit-scrollbar { display: none; }
+  .today-page #todayWeek .week-cell { flex: 0 0 95px; padding: 14px 12px; min-height: 163px; border-radius: 13px; scroll-snap-align: center; }
+  .today-page #todayWeek .week-cell b { font-size: 12px; }
+  .today-page #todayWeek .week-weekday { font-size: 10px; }
+  .today-page #todayWeek .week-state { font-size: 9px; }
+  .week-board-footer { padding: 0 20px; flex-wrap: wrap; gap: 10px; font-size: 9px; line-height: 1.5; }
+  .swipe-hint { display: inline-flex; align-items: center; gap: 7px; color: #8196bf; }
+  .swipe-hint .ui-icon { width: 14px; height: 14px; }
+  .meal-calendar-panel { padding: 20px 16px 13px; border-radius: 19px; margin: 21px 0 25px; }
+  .calendar-panel-heading .eyebrow { font-size: 8px; letter-spacing: 1px; }
+  .month-trigger { gap: 7px!important; font-size: 20px; letter-spacing: -.6px; min-height: 41px; }
+  .month-trigger > .ui-icon:first-child { display: none; }
+  .month-trigger > .ui-icon:last-child { width: 15px; height: 15px; margin: 0; }
+  .calendar-panel-heading p { font-size: 10px; }
+  .calendar-shop { padding: 10px; min-width: 43px; min-height: 43px; border-radius: 12px; }
+  .calendar-shop span { display: none; }
+  .calendar-shop .ui-icon { width: 20px; height: 20px; }
+  .meal-calendar-panel .calendar-strip { margin: 19px -3px; gap: 3px; }
+  .meal-calendar-panel .calendar-day { min-height: 91px; padding: 9px 1px; border-radius: 11px; gap: 6px; }
+  .meal-calendar-panel .calendar-day small { font-size: 10px; }
+  .meal-calendar-panel .calendar-day b { font-size: 24px; }
+  .meal-calendar-panel .calendar-day .meal-dots { gap: 2px; }
+  .meal-dots i { width: 3px; height: 3px; }
+  .calendar-panel-footer { flex-wrap: wrap; gap: 8px; }
+  .calendar-panel-footer > .small { font-size: 9px; }
+  .calendar-panel-footer .legend-dot { width: 5px; height: 5px; margin-right: 4px; }
+  .week-navigation { gap: 2px; margin-left: auto; }
+  .week-navigation .icon-button { width: 36px; min-width: 36px; height: 40px; min-height: 40px; }
+  .week-navigation #currentWeek { padding: 7px; font-size: 10px; }
+  .nutrition-summary { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .nutrition-summary > div { padding: 16px 13px 13px; border-radius: 14px; }
+  .nutrition-summary b { font-size: 23px; white-space: nowrap; }
+  .nutrition-summary .ui-icon { right: 12px; top: 12px; width: 18px; height: 18px; }
+  .nutrition-summary span { font-size: 10px; }
+  .date-dialog { padding: 18px; border-radius: 20px; }
+  .date-dialog .month-navigation h2 { font-size: 21px; }
+  .month-grid { gap: 3px; }
+  .month-grid button { min-height: 40px; height: 40px; }
+  .session-start-actions { min-width: 0; width: 100%; }
+  .training-page #weekRail { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .training-page .week-day { padding: 16px; gap: 8px; min-height: 113px; border-radius: 14px; }
+  .training-page .week-day strong { font-size: 21px; }
+  .training-page .week-day > .small:first-child { font-size: 9px; }
+  .training-page .week-day > .small:last-child { font-size: 9px; padding: 3px 7px; }
+  .workout-tools { display: block; margin-top: 18px; }
+  .workout-tools > label { max-width: none; }
+  .workout-tools .button-row { margin-top: 10px; justify-content: flex-end; }
+  .workout-tools button { min-height: 39px; font-size: 10px; }
+  .reorder-hint { font-size: 10px; }
+  .training-page .exercise-card { padding: 0; border-radius: 16px; }
+  .exercise-card > .exercise-heading { padding: 16px 13px 16px 3px; gap: 8px; min-height: 105px; }
+  .exercise-heading-copy h3 { font-size: 17px; letter-spacing: -.4px; margin: 5px 0; }
+  .exercise-heading-copy .eyebrow { font-size: 8px; letter-spacing: .5px; }
+  .exercise-heading-copy .small { font-size: 10px; }
+  .exercise-heading .exercise-completion { width: 30px; height: 30px; font-size: 9px; }
+  .exercise-heading .exercise-chevron { width: 14px; height: 14px; }
+  .drag-handle { min-width: 32px; width: 32px; min-height: 54px; }
+  .exercise-body { padding: 0 16px 19px; }
+  .exercise-body .set-row { padding: 11px; }
+  .exercise-body .set-row label { font-size: 10px; }
+  .exercise-body .adapt-exercise { padding: 13px; }
+  .exercise-body .adapt-exercise summary { font-size: 10px; gap: 8px; }
+  .exercise-body .form-grid { gap: 10px; }
+  .exercise-reorder button { min-height: 39px; }
+  .library-panel { padding: 19px 15px; border-radius: 17px; }
+  .library-panel > summary { gap: 11px; }
+  .library-panel > summary strong { font-size: 19px; }
+  .library-panel > summary small { font-size: 10px; }
+  .library-heading-icon { width: 39px; height: 39px; }
+  .library-filters { grid-template-columns: 1fr; gap: 10px; }
+  .exercise-library { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+  .exercise-tile { padding: 0; border-radius: 13px; }
+  .exercise-thumb { height: 112px; padding: 7px; }
+  .exercise-tile-copy { padding: 13px 12px; min-height: 129px; gap: 7px; }
+  .exercise-tile-copy > strong { font-size: 13px; line-height: 1.4; }
+  .exercise-tile-copy > .small { font-size: 9px; }
+  .exercise-tile-copy > .eyebrow { font-size: 7px; letter-spacing: .5px; }
+  .exercise-tile-copy > .ui-icon { right: 11px; bottom: 14px; width: 14px; height: 14px; }
+  .tracker-day-rail { grid-template-columns: repeat(7,minmax(0,1fr)); gap: 3px; padding: 7px; border-radius: 15px; }
+  .tracker-day-rail button { min-height: 74px; padding: 8px 1px; }
+  .tracker-day-rail b { font-size: 20px; }
+  .tracker-day-rail small { font-size: 8px; }
+}
+
+@media (max-width: 360px) {
+  .daily-path > a, .daily-path > a:last-child { padding: 14px 10px; }
+  .daily-path b { font-size: 11px; }
+  .daily-path small { font-size: 8px; }
+  .calendar-panel-footer { justify-content: center; }
+  .calendar-panel-footer > .small { width: 100%; text-align: center; }
+  .week-navigation { margin: 0; }
+  .month-trigger { font-size: 18px; }
+  .exercise-heading-copy h3 { font-size: 16px; }
+  .exercise-heading .exercise-completion { width: 27px; height: 27px; }
+  .exercise-body { padding-left: 13px; padding-right: 13px; }
+  .exercise-body .set-row { padding: 9px; }
+  .month-grid button { height: 38px; min-height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after { animation: none!important; transition: none!important; scroll-behavior: auto!important; }
+}
+@media print {
+  .site-nav, .workout-tools, .reorder-hint, .drag-handle, .exercise-reorder, .calendar-panel-footer, .tracker-day-rail { display: none!important; }
+  .week-board { print-color-adjust: exact; }
+}

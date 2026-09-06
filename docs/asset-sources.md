@@ -1,5 +1,11 @@
 # Visual assets
 
+## Interface icons and component references
+
+`assets/icons.svg` contains 41 Lucide symbols from revision `94e4cb9d9db5907053ebf3636a97c45529cf776b` of [lucide-icons/lucide](https://github.com/lucide-icons/lucide). Original path geometry is combined into a local sprite; the upstream ISC and Feather MIT notices are retained in [licenses/lucide.txt](licenses/lucide.txt). No icon service or external font is requested at runtime.
+
+Component inspiration: [Aceternity floating dock](https://ui.aceternity.com/components/floating-dock), [card hover effect](https://ui.aceternity.com/components/card-hover-effect), [bento grid](https://ui.aceternity.com/components/bento-grid), [Magic UI border beam](https://magicui.design/docs/components/border-beam), and [shadcn calendar](https://ui.shadcn.com/docs/components/base/calendar). These informed navigation depth, card feedback and date selection. The application uses its own CSS and native JavaScript implementations; no component-library code, framework or runtime dependency was added.
+
 The app ships all artwork locally. No third-party image requests are made while using it.
 
 ## Original editorial artwork

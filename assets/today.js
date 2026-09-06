@@ -1,4 +1,5 @@
 import { mealPhoto } from './meal-visuals.js';
+import { icon, iconLabel } from './ui-icons.js';
 import { createStorage, saveJson } from './common.js';
 import { buildLocalDates, formatLocalDate } from './core.js';
 import { createDefaultTrackerState, validateTrackerState, archiveTracker } from './backup.js';
@@ -19,16 +20,26 @@ function render(){
     $('nextTrainingName').textContent=next.name;
     $('nextTrainingNote').textContent=training.draft?'Your workout is still open. Pick up where you left off.':`${next.focus} · 60–75 min`;
     $('trainingWeek').textContent=`WEEK ${blockWeek} OF 16 · ${training.draft?'SESSION IN PROGRESS':'NEXT IN YOUR ROTATION'}`;
-    $('startTrainingLink').textContent=training.draft?'Resume workout ↗':'Start your workout ↗';
+    iconLabel($('startTrainingLink'), training.draft?'Resume workout':'Start your workout', 'arrow-up-right', true);
     const dates=weekDates(today);$('todayWeek').replaceChildren();
+    const dateText = date => new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+    $('homeWeekRange').textContent = `${dateText(dates[0])} – ${dateText(dates[6])}, ${dates[6].slice(0,4)}`;
     const schedule=['Upper A','Lower A','Recover','Upper B','Recover','Lower B','Recover'];
     for(const [index,date] of dates.entries()){
       const entries=training.sessions.filter(session=>session.date===date);
       const full=entries.some(session=>!session.partial);
       const node=el('a',undefined,`week-cell${date===today?' today':''}${full?' complete':''}`);
       node.href=entries.length?'training.html#history':index===2||index===4||index===6?'plan.html':'training.html?session='+['upper-a','lower-a','','upper-b','','lower-b',''][index];
-      node.append(el('div',new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',{weekday:'short'})),el('b',entries.length?[...new Set(entries.map(entry=>SESSIONS.find(s=>s.id===entry.sessionId).name))].join(' + '):schedule[index]),el('span',full?'Done':entries.length?'Partial':date===today?'Today':'Suggested'));
+      if (date === today) node.setAttribute('aria-current', 'date');
+      const heading = el('div', undefined, 'week-date-heading');
+      heading.append(el('span', new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', { weekday: 'short' }), 'week-weekday'), el('strong', String(Number(date.slice(8))), 'week-date'));
+      const sessionName = entries.length ? [...new Set(entries.map(entry => SESSIONS.find(s => s.id === entry.sessionId).name))].join(' + ') : schedule[index];
+      node.append(heading, icon(full ? 'check-check' : sessionName === 'Recover' ? 'moon' : 'dumbbell', 'ui-icon week-session-icon'), el('b', sessionName), el('span', full ? 'Completed' : entries.length ? 'Partial' : date === today ? 'Today' : 'Planned', 'week-state'));
       $('todayWeek').append(node);
+    }
+    if (matchMedia('(max-width: 760px)').matches) {
+      const current = $('todayWeek').querySelector('.today');
+      $('todayWeek').scrollLeft = current.offsetLeft - $('todayWeek').offsetLeft - $('todayWeek').clientWidth / 2 + current.clientWidth / 2;
     }
     const fullCount=new Set(training.sessions.filter(session=>dates.includes(session.date)&&!session.partial).map(session=>session.sessionId)).size;
     $('weekSessions').textContent=`${fullCount} / 4 sessions`;
@@ -40,7 +51,7 @@ function render(){
     $('todayMacros').textContent=meal?`${recipeById(meal.recipe).minutes} min · View ingredients & method`:'';
     $('homeMealPhoto').replaceChildren(mealPhoto(recipeById(meal?.recipe||menu.meals[0].recipe)));
     $('homeMealLink').href=meal?`meals.html?recipe=${meal.recipe}`:'meals.html';
-    $('homeMealLink').textContent=meal?'Make this meal ↗':'View today’s menu ↗';
+    iconLabel($('homeMealLink'), meal?'Make this meal':'View today’s menu', 'arrow-up-right', true);
     $('mealsEaten').textContent=`${menu.day.done.length} of 6 meals eaten`;
   } catch(error){$('todayMacros').textContent=`Open Meals to review saved data. ${error.message}`;}
   try {const tracker=readTracker(),index=buildLocalDates(tracker.meta.startDate,14).indexOf(today);if(index>=0){$('quickWeight').value=tracker.rows[index].weight;$('quickSleep').value=tracker.rows[index].sleep;}}catch(error){status(`Saved progress needs recovery: ${error.message}`,true);}

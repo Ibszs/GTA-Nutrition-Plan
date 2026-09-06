@@ -1,4 +1,6 @@
 import { mealPhoto } from './meal-visuals.js';
+import { icon, iconLabel } from './ui-icons.js';
+import { openCalendar } from './calendar.js';
 import { confirmAction } from './common.js';
 import { FOODS, RECIPES, MEAL_PLANS, recipeNutrition, dayNutrition } from './food-data.js';
 import { PLANNER_KEY, createPlannerState, validatePlannerState, weekDates, setDay, copyWeek } from './planner-state.js';
@@ -30,14 +32,24 @@ for(const category of [...new Set(RECIPES.map(recipe=>recipe.category))]) $('rec
 function prettyDate(date,options={weekday:'long',month:'long',day:'numeric'}){return new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',options);}
 function renderCalendar(){
   $('mealWeek').value=state.weekStart;$('mealCalendar').replaceChildren();
+  const dates = weekDates(state.weekStart);
+  $('mealMonthLabel').textContent = prettyDate(selectedDate, { month: 'long', year: 'numeric' });
+  $('mealWeekRange').textContent = `${prettyDate(dates[0], { month: 'short', day: 'numeric' })} – ${prettyDate(dates[6], { month: 'short', day: 'numeric' })}`;
   for(const date of weekDates(state.weekStart)){
     const {plan,day}=dayMenu(state,date);
     const node=el('button',undefined,'calendar-day');node.type='button';node.setAttribute('aria-pressed',String(selectedDate===date));
     node.setAttribute('aria-label',`${prettyDate(date)}: ${plan.name}, ${day.done.length} meals eaten`);
-    node.append(el('small',prettyDate(date,{weekday:'short'})),el('b',String(Number(date.slice(8)))),el('span',plan.id==='original'?'Original':plan.name.replace(' day','').split(' ').slice(0,2).join(' ')),el('small',`${day.done.length}/6 eaten`));
+    if (date === today) node.setAttribute('aria-current', 'date');
+    const dots = el('span', undefined, 'meal-dots'); dots.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 6; i++) dots.append(el('i', undefined, i < day.done.length ? 'eaten' : ''));
+    node.append(el('small',prettyDate(date,{weekday:'short'})),el('b',String(Number(date.slice(8)))),dots);
     node.addEventListener('click',async()=>{selectedDate=date;render();});$('mealCalendar').append(node);
   }
 }
+$('chooseMealDate').addEventListener('click', () => openCalendar(selectedDate, date => {
+  if (!update(current => ({ ...current, weekStart: weekDates(date)[0] }))) return false;
+  selectedDate = date; render(); return true;
+}, $('chooseMealDate')));
 function renderMenu(){
   const menu=dayMenu(state,selectedDate);
   $('selectedDayTitle').textContent=prettyDate(selectedDate);
@@ -47,7 +59,7 @@ function renderMenu(){
   const nutrition=menuNutrition(menu,wheyLabel(storage));
   $('dayMacros').replaceChildren();
   for(const [key,label] of [['kcal','Calories'],['protein','Protein'],['carbs','Carbs'],['fat','Fat']]){
-    const stat=el('div');stat.append(el('b',`${Math.round(nutrition[key]).toLocaleString('en-CA')}${key==='kcal'?'':' g'}`),el('span',label));$('dayMacros').append(stat);
+    const stat=el('div');stat.append(icon({kcal:'flame',protein:'beef',carbs:'wheat',fat:'droplets'}[key]),el('b',`${Math.round(nutrition[key]).toLocaleString('en-CA')}${key==='kcal'?'':' g'}`),el('span',label));$('dayMacros').append(stat);
   }
   $('dayMacros').setAttribute('aria-label',`Estimated nutrition: ${macroText(nutrition)}`);
   $('mealList').replaceChildren();
@@ -142,7 +154,7 @@ $('browsePlans').addEventListener('click',()=>{$('plansDialog').showModal();$('p
 $('chooseDayPlan').addEventListener('click',()=>{$('plansDialog').showModal();$('plansTitle').focus();});
 
 let cookingStep=0;
-function showCookingStep(){$('cookNext').disabled=false;const steps=recipeById(activeRecipe).steps;$('cookStepCount').textContent='STEP '+(cookingStep+1)+' OF '+steps.length;$('cookStepText').textContent=steps[cookingStep];$('cookPrevious').disabled=cookingStep===0;$('cookNext').textContent=cookingStep===steps.length-1?'Finish cooking ✓':'Next step →';}
+function showCookingStep(){$('cookNext').disabled=false;const steps=recipeById(activeRecipe).steps;$('cookStepCount').textContent='STEP '+(cookingStep+1)+' OF '+steps.length;$('cookStepText').textContent=steps[cookingStep];$('cookPrevious').disabled=cookingStep===0;iconLabel($('cookNext'),cookingStep===steps.length-1?'Finish cooking':'Next step',cookingStep===steps.length-1?'check':'arrow-right',true);}
 $('startCooking').addEventListener('click',()=>{cookingStep=0;$('cookNext').disabled=false;$('cookMode').hidden=false;$('recipeSteps').hidden=true;$('startCooking').hidden=true;showCookingStep();$('cookMode').scrollIntoView({block:'nearest'});});
 $('cookPrevious').addEventListener('click',()=>{cookingStep=Math.max(0,cookingStep-1);showCookingStep();});
 $('cookNext').addEventListener('click',()=>{if(cookingStep<recipeById(activeRecipe).steps.length-1){cookingStep++;showCookingStep();}else{$('cookStepCount').textContent='READY TO SERVE';$('cookStepText').textContent='Method complete. Check doneness and the storage note below. Tick the meal in your menu after eating.';$('cookNext').disabled=true;}});

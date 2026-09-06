@@ -45,6 +45,7 @@ function save() {
   try { saveJson(storage, STORAGE_KEY, validState); }
   catch (_) { showError('This change could not be saved. Keep this page open and free browser storage.'); return false; }
   elements.startDate.disabled = state.rows.some(row => Object.values(row).some(v => v !== ''));
+  renderDayRail();
   window.dispatchEvent(new CustomEvent('gta-data-changed', { detail: { section: 'tracker' } }));
   return true;
 }
@@ -141,8 +142,25 @@ function renderRows() {
   filterDays();
 }
 
+const dayRail = document.createElement('div');
+dayRail.className = 'tracker-day-rail'; dayRail.setAttribute('aria-label', 'Your fourteen journal days');
+elements.daySelect.closest('label').after(dayRail);
+function renderDayRail() {
+  const dates = buildLocalDates(state.meta.startDate, 14);
+  dayRail.replaceChildren();
+  dates.forEach((date, index) => {
+    const button = node('button'); button.type = 'button';
+    button.setAttribute('aria-label', `Log ${date}`); button.setAttribute('aria-pressed', String(elements.daySelect.value === String(index)));
+    button.className = Object.values(state.rows[index]).some(value => value !== '') ? 'has-entry' : '';
+    if (date === formatLocalDate(new Date())) button.setAttribute('aria-current', 'date');
+    button.append(node('small', new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', { weekday: 'short' })), node('b', String(Number(date.slice(8)))), node('i'));
+    button.addEventListener('click', () => { elements.daySelect.value = String(index); filterDays(); });
+    dayRail.append(button);
+  });
+}
 function filterDays() {
   [...elements.trackerRows.children].forEach((row,index)=>{row.hidden=elements.daySelect.value !== 'all' && Number(elements.daySelect.value)!==index;});
+  renderDayRail();
 }
 elements.daySelect.addEventListener('change',filterDays);
 

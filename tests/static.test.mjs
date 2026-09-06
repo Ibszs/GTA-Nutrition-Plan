@@ -99,7 +99,7 @@ test('every local link target and fragment resolves with exact filename case', (
       const target = decodeURIComponent(url.pathname.slice(1)) || page;
       assert.equal(fs.existsSync(path.join(root, target)), true, `${page} links to missing ${target}`);
 
-      if (url.hash && target.endsWith('.html')) {
+      if (url.hash && /\.(html|svg)$/.test(target)) {
         const targetHtml = read(target);
         const fragment = decodeURIComponent(url.hash.slice(1));
         const escaped = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -205,7 +205,7 @@ test('service worker precaches every shipped application asset', () => {
   const worker = read('sw.js');
   const expected = [
     './training.html', './meals.html',
-    ...fs.readdirSync(path.join(root,'assets')).filter(name=>name.endsWith('.js')).map(name=>'./assets/'+name),
+    ...fs.readdirSync(path.join(root,'assets')).filter(name=>/\.(js|css|svg)$/.test(name)).map(name=>'./assets/'+name),
     './', './index.html', './quick-start.html', './shopping.html', './tracker.html',
     './plan.html', './cooking.html', './assets/styles.css', './assets/common.js',
     './assets/core.js', './assets/shopping-state.js', './assets/backup.js',

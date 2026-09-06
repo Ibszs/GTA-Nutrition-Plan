@@ -3,6 +3,7 @@ import { RECIPES } from './food-data.js';
 import { el } from './meal-utils.js';
 import { EXERCISE_VISUALS } from './exercise-visuals.js';
 import { initUpdates } from './updates.js';
+import { icon, iconLabel } from './ui-icons.js';
 
 const route = location.pathname.split('/').pop() || 'index.html';
 const guides = {
@@ -14,15 +15,17 @@ const guides = {
 };
 const guide = guides[route] || ['Find the part you need.', 'Use the chapter links to jump straight to an answer.', [['Training', 'Your sessions, exercise cues and a practice set.', 'training.html'], ['Food', 'Recipes, portions and step-by-step cooking.', 'meals.html'], ['Your day', 'Return to your next workout and meal.', 'index.html']]];
 
-function action(text, run, className = 'button') {
-  const b = el('button', text, className); b.type = 'button'; b.addEventListener('click', run); return b;
+function action(text, run, className = 'button', iconName) {
+  const b = el('button', text, className); b.type = 'button'; b.addEventListener('click', run);
+  if (iconName) iconLabel(b, text, iconName);
+  return b;
 }
 export function sheet(title, eyebrow = 'FORM & FUEL') {
   const d = el('dialog', undefined, 'guide-dialog');
   const head = el('div', undefined, 'sheet-header'), copy = el('div');
   const h = el('h2', title); h.id = 'dynamic-sheet-title'; h.tabIndex = -1;
   copy.append(el('span', eyebrow, 'eyebrow'), h);
-  const close = action('×', () => d.close(), 'icon-button'); close.setAttribute('aria-label', 'Close guide');
+  const close = action('', () => d.close(), 'icon-button', 'x'); close.setAttribute('aria-label', 'Close guide');
   head.append(copy, close); const content = el('div', undefined, 'sheet-content');
   d.append(head, content); d.setAttribute('aria-labelledby', h.id);
   d.addEventListener('close', () => d.remove());
@@ -58,7 +61,7 @@ export function openExercise(id) {
   const demo=el('div',undefined,'movement-demo'),photos=el('div',undefined,'movement-photos');
   const frames=[0,1].map(i=>{const figure=el('figure');const img=el('img');img.src=`assets/images/exercises/${id}-${i}.jpg`;img.alt=`${visual.name}, position ${i+1}`;figure.append(img,el('figcaption',`Position ${i+1}`));photos.append(figure);return figure;});
   let playing=false,frame=0,interval;
-  const play=action('Play positions',()=>{playing=!playing;clearInterval(interval);demo.classList.toggle('is-playing',playing);play.textContent=playing?'Pause positions':'Play positions';play.setAttribute('aria-pressed',String(playing));frames.forEach(f=>f.classList.remove('active'));if(playing){frames[frame].classList.add('active');interval=setInterval(()=>{frames[frame].classList.remove('active');frame=1-frame;frames[frame].classList.add('active');},1400);}},'button secondary');
+  const play=action('Play positions',()=>{playing=!playing;clearInterval(interval);demo.classList.toggle('is-playing',playing);iconLabel(play,playing?'Pause positions':'Play positions',playing?'pause':'play');play.setAttribute('aria-pressed',String(playing));frames.forEach(f=>f.classList.remove('active'));if(playing){frames[frame].classList.add('active');interval=setInterval(()=>{frames[frame].classList.remove('active');frame=1-frame;frames[frame].classList.add('active');},1400);}},'button secondary','play');
   play.setAttribute('aria-pressed','false');s.d.addEventListener('close',()=>clearInterval(interval));
   demo.append(photos,play,el('p',`Two-position reference · ${visual.name}. This shows one variation, not every available machine or setup.`,'tiny'));
   s.content.append(demo,el('p',`${ex.repMin}–${ex.repMax} reps · ${ex.rest/60} min rest`,'macro-line'));
@@ -77,7 +80,7 @@ function openSearch() {
   const pages=[['Today','Your next step','index.html'],['Train','Workouts and exercise library','training.html'],['Meals','Menu and recipes','meals.html'],['Shop','Groceries and pantry','shopping.html'],['Progress','Weight, calories and trends','tracker.html'],['Backup & settings','Export, import and whey label','index.html#backup'],['Kitchen guide','Cooking and storage','cooking.html'],['16-week guide','Training and nutrition sources','plan.html']];
   function render(){const term=input.value.toLowerCase().trim();list.replaceChildren();
     const results=[...pages.map(([name,copy,url])=>({name,copy,url})),...RECIPES.map(r=>({name:r.name,copy:`Recipe · ${r.category} · ${r.minutes} min`,url:`meals.html?recipe=${r.id}`})),...Object.values(EXERCISES).map(e=>({name:e.name,copy:`Exercise · ${e.muscle}`,exercise:e.id}))].filter(r=>`${r.name} ${r.copy}`.toLowerCase().includes(term));
-    results.slice(0,term?40:8).forEach(r=>{const item=el(r.exercise?'button':'a',undefined,'search-result');if(r.url)item.href=r.url;else item.addEventListener('click',()=>{s.d.close();openExercise(r.exercise);});item.append(el('strong',r.name),el('span',r.copy,'small'),el('span','↗','result-arrow'));list.append(item);});
+    results.slice(0,term?40:8).forEach(r=>{const item=el(r.exercise?'button':'a',undefined,'search-result');if(r.url)item.href=r.url;else item.addEventListener('click',()=>{s.d.close();openExercise(r.exercise);});const mark=el('span',undefined,'search-result-icon');mark.append(icon(r.exercise?'dumbbell':r.copy.startsWith('Recipe')?'cooking-pot':'arrow-up-right'));item.append(mark,el('strong',r.name),el('span',r.copy,'small'),icon('arrow-up-right','ui-icon result-arrow'));list.append(item);});
     if(!results.length)list.append(el('p','No matches. Try an ingredient, muscle or page name.','empty'));
   }
   input.addEventListener('input',render);s.content.append(label,list);render();s.open();input.focus();
@@ -86,10 +89,22 @@ function openSearch() {
 const toolbar=el('div',undefined,'app-toolbar');
 const context=el('span','YOUR PERSONAL TRAINING COMPANION','toolbar-caption');
 const controls=el('div',undefined,'toolbar-actions');
-controls.append(action('⌕  Find anything',openSearch,'toolbar-search'),action('How this works',openGuide,'toolbar-help'));
+const searchButton = action('Find anything',openSearch,'toolbar-search','search');
+searchButton.append(el('kbd','Ctrl K'));
+controls.append(searchButton,action('How this works',openGuide,'toolbar-help','book-open'));
 toolbar.append(context,controls);document.querySelector('main').prepend(toolbar);
 document.querySelectorAll('[data-open-guide]').forEach(b=>b.addEventListener('click',openGuide));
 initUpdates();
+document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (!document.querySelector('dialog[open]')) openSearch(); } });
+function revealAnchor() {
+  let id;
+  try { id = decodeURIComponent(location.hash.slice(1)); } catch { return; }
+  const target = document.getElementById(id);
+  if (target?.matches('details')) target.open = true;
+  target?.closest('details')?.setAttribute('open','');
+}
+window.addEventListener('hashchange', revealAnchor);
+revealAnchor();
 
 // Reading pages get direct chapter links; no duplicated reference content.
 if(!guides[route]){

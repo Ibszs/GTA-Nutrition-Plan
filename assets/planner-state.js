@@ -10,6 +10,24 @@ export function weekDates(date) {
   value.setDate(value.getDate() - (value.getDay() + 6) % 7);
   return buildLocalDates(formatLocalDate(value), 7);
 }
+
+export function monthGrid(date) {
+  buildLocalDates(date, 1);
+  const first = `${date.slice(0, 7)}-01`;
+  return buildLocalDates(weekDates(first)[0], 42);
+}
+
+export function shiftCalendarMonth(date, delta) {
+  buildLocalDates(date, 1);
+  if (!Number.isInteger(delta)) throw new Error('Month offset must be a whole number.');
+  const value = new Date(`${date}T12:00:00`);
+  const day = value.getDate();
+  value.setDate(1);
+  value.setMonth(value.getMonth() + delta);
+  const last = new Date(value.getFullYear(), value.getMonth() + 1, 0, 12).getDate();
+  value.setDate(Math.min(day, last));
+  return buildLocalDates(formatLocalDate(value), 1)[0];
+}
 export function createPlannerState(date = formatLocalDate(new Date())) {
   return {version:1, weekStart:weekDates(date)[0], days:{}, pantry:{}, checked:{}};
 }

@@ -23,7 +23,9 @@ Open http://127.0.0.1:4191/. Keep the terminal running. No dependencies or build
 - **Progress:** one day at a time or all 14 days, weekly averages, contextual calorie feedback, archived periods and CSV export. The first date locks once entries exist to keep their dates intact.
 - **Guides:** the full training/nutrition rationale and sources, cooking and food safety, and original meal card. Legacy PDFs are historical references with superseded guidance.
 
-Search and contextual **How this works** guides are available on every page. Try a practice set without adding a journal record. See [the 2.1 design and verification notes](docs/visual-redesign.md).
+Search and contextual **How this works** guides are available on every page. Try a practice set without adding a journal record. See [the design and verification notes](docs/visual-redesign.md).
+
+Version 2.2 adds collapsible exercise cards, drag grips for workout ordering, Move up/down buttons and Alt + arrow-key alternatives. Reuse a saved lineup with blank working sets. The movement library collapses and filters by name or muscle. Local Lucide icons, a floating phone navigation bar, weekly training cards, a month picker and journal date buttons complete the component update. In Meals, tap the month to choose a date; arrow keys navigate the calendar and Enter selects.
 
 ## Saved data
 
