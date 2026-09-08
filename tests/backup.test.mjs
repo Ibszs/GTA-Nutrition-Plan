@@ -203,3 +203,53 @@ test('personal records roundtrip while backups without that section preserve the
   assert.throws(()=>restoreBackup(storage,invalid),/Personal log/);
   assert.deepEqual(JSON.parse(values.get('gtaNutrition.personal.v1')),personal);
 });
+
+test('full backup preserves mixed legacy and hybrid records, shifted calendar and unfinished input', async () => {
+  const { setProgramDay } = await import('../assets/training-state.js');
+  const legacy = {
+    version: 1, startDate: '2026-09-03', unit: 'kg',
+    sessions: [{ id: 'old-custom', date: '2026-09-03', week: 1, sessionId: 'upper-a', unit: 'kg', lightWeek: false, customized: true, partial: true,
+      exercises: [{ exerciseId: 'incline', variantId: 'db', setup: 'Bench 2', prescribedSets: 2, repMin: 6, repMax: 10,
+        sets: [{ load: 20, reps: 8, rir: 3, completed: true, clean: true }] }] }],
+    draft: null,
+  };
+  const legacyBackup = buildBackup({ ...validBackup().data, training: legacy });
+  assert.deepEqual(parseBackup(JSON.stringify(legacyBackup)).data.training, legacy);
+  assert.equal(Object.hasOwn(legacyBackup.data.training, 'program'), false);
+  let training = setProgramDay(legacy, '2026-09-07', 1);
+  training.draft = createDraft(training, 'hybrid5-upper-v1', '2026-09-07', true);
+  training.draft.exercises[0].variantId = 'db';
+  training.draft.exercises[0].sets[0] = { load: 25, reps: 8, rir: 4, completed: true, clean: true };
+  training = finishDraft(training, 'hybrid-partial');
+  training.draft = createDraft(training, 'hybrid5-lower-v1', '2026-09-08');
+  training.draft.exercises[0].setup = 'Machine 3';
+  training.draft.exercises[0].sets[0].load = 80; // Typed, still unperformed.
+  const original = structuredClone(training);
+  training = setProgramDay(training, '2026-09-09', 1);
+  assert.deepEqual(training.sessions, original.sessions);
+  assert.deepEqual(training.draft, original.draft);
+  assert.equal(training.startDate, original.startDate);
+  const built = buildBackup({ ...validBackup().data, training });
+  const parsed = parseBackup(JSON.stringify(built));
+  const values = new Map();
+  const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
+  restoreBackup(storage, parsed);
+  assert.deepEqual(JSON.parse(values.get('gtaNutrition.training.v1')), training);
+  assert.equal(parsed.data.training.sessions[1].targetRir, 4);
+  assert.equal(parsed.data.training.sessions[1].partial, true);
+  assert.equal(parsed.data.training.draft.targetRir, 2);
+  parsed.data.training.draft.exercises[0].setup = 'Changed after parsing';
+  assert.equal(built.data.training.draft.exercises[0].setup, 'Machine 3');
+  const before = new Map(values);
+  for (const mutate of [
+    t => { t.program.anchorDate = '2026-02-30'; },
+    t => { t.sessions[1].targetRir = '4'; },
+    t => { t.sessions[1].partial = false; },
+    t => { t.draft.exercises[0].repMax = 100; },
+  ]) {
+    const bad = structuredClone(built); mutate(bad.data.training);
+    assert.throws(() => parseBackup(JSON.stringify(bad)), /Training data/);
+    assert.throws(() => restoreBackup(storage, bad), /Training data/);
+    assert.deepEqual(values, before, 'invalid imports must not write any section');
+  }
+});

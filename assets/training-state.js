@@ -1,4 +1,6 @@
-import { EXERCISES, SESSIONS, localToday, isRealDate, getWeek, getPrescription } from './training-data.js';
+import { EXERCISES, localToday, isRealDate, getWeek, getPrescription } from './training-data.js';
+
+import { PROGRAM_ID, NEW_SESSIONS, getSessionTemplate, getSessionPrescription, mondayAnchor, shiftDate, validateProgram } from './training-program.js';
 
 export const TRAINING_KEY = 'gtaNutrition.training.v1';
 const blankSet = () => ({ load: '', reps: '', rir: '', completed: false, clean: false });
@@ -8,21 +10,22 @@ const numeric = (value, min, max, integer = false) => typeof value === 'number' 
 
 export function createTrainingState(startDate = localToday()) {
   check(isRealDate(startDate), 'start date must be a real calendar date.');
-  return { version: 1, startDate, unit: 'lb', sessions: [], draft: null };
+  return { version: 1, startDate, unit: 'lb', sessions: [], draft: null, program: { id: PROGRAM_ID, anchorDate: mondayAnchor(startDate) } };
 }
 
 export function createDraft(state, sessionId, date = localToday(), lightWeek = false) {
-  const session = SESSIONS.find(item => item.id === sessionId);
+  const session = getSessionTemplate(sessionId);
   check(session && isRealDate(date) && date >= state.startDate, 'choose a session and a date on or after the block start.');
   const week = getWeek(state.startDate, date);
-  const prescription = getPrescription(week, lightWeek);
+  const prescription = getSessionPrescription(state, sessionId, date, lightWeek);
   return {
     date, week, sessionId, unit: state.unit, lightWeek,
-    exercises: session.exercises.map(([exerciseId, count]) => {
+    ...(NEW_SESSIONS.some(s => s.id === sessionId) ? { targetRir: prescription.rir } : {}),
+    exercises: session.exercises.map(([exerciseId, count, repMin, repMax, initialVariantId]) => {
       const exercise = EXERCISES[exerciseId];
       const prescribedSets = Math.max(1, Math.ceil(count * prescription.setMultiplier));
-      return { exerciseId, variantId: exercise.variants[0].id, setup: '', prescribedSets,
-        repMin: exercise.repMin, repMax: exercise.repMax,
+      return { exerciseId, variantId: initialVariantId ?? exercise.variants[0].id, setup: '', prescribedSets,
+        repMin: repMin ?? exercise.repMin, repMax: repMax ?? exercise.repMax,
         sets: Array.from({ length: prescribedSets }, blankSet) };
     }),
   };
@@ -31,6 +34,7 @@ export function createDraft(state, sessionId, date = localToday(), lightWeek = f
 export function validateTrainingState(value) {
   check(object(value) && value.version === 1, 'unsupported state version.');
   check(isRealDate(value.startDate), 'invalid start date.');
+  if (Object.hasOwn(value, 'program')) validateProgram(value.program);
   check(['lb', 'kg'].includes(value.unit), 'invalid load unit.');
   check(Array.isArray(value.sessions) && value.sessions.length <= 5000, 'invalid session history.');
   const ids = new Set();
@@ -39,21 +43,22 @@ export function validateTrainingState(value) {
     check(item.week === getWeek(value.startDate, item.date), 'session week does not match its date.');
     check(['lb', 'kg'].includes(item.unit), 'invalid session load unit.');
     check(typeof item.lightWeek === 'boolean', 'invalid lighter-session setting.');
-    const template = SESSIONS.find(s => s.id === item.sessionId);
+    const template = getSessionTemplate(item.sessionId);
+    check(item.targetRir === undefined || numeric(item.targetRir, 0, 10), 'invalid target RIR.');
     check(item.customized === undefined || typeof item.customized === 'boolean', 'invalid customization marker.');
     check(template && Array.isArray(item.exercises) && (item.customized ? item.exercises.length >= 1 && item.exercises.length <= 25 : item.exercises.length === template.exercises.length), 'invalid session or exercise list.');
     const movements = new Set();
     let completed = 0; let prescribed = 0;
     item.exercises.forEach((entry, index) => {
-      const [expectedId, count] = template.exercises[index] ?? [];
+      const [expectedId, count, repMin, repMax] = template.exercises[index] ?? [];
       check(object(entry) && Object.hasOwn(EXERCISES, entry.exerciseId) && (item.customized || entry.exerciseId === expectedId) && !movements.has(entry.exerciseId), 'invalid or repeated exercise id or order.');
       movements.add(entry.exerciseId);
       const definition = EXERCISES[entry.exerciseId];
       check(definition.variants.some(v => v.id === entry.variantId), 'invalid exercise substitution.');
       check(typeof entry.setup === 'string' && entry.setup.length <= 120, 'setup must be at most 120 characters.');
-      const expectedSets = item.customized ? entry.prescribedSets : Math.max(1, Math.ceil(count * getPrescription(item.week, item.lightWeek).setMultiplier));
+      const expectedSets = item.customized ? entry.prescribedSets : Math.max(1, Math.ceil(count * getSessionPrescription(value, item.sessionId, item.date, item.lightWeek).setMultiplier));
       check(numeric(expectedSets, 1, 20, true) && numeric(entry.repMin, 1, 100, true) && numeric(entry.repMax, entry.repMin, 100, true), 'invalid exercise prescription bounds.');
-      check(entry.prescribedSets === expectedSets && (item.customized || entry.repMin === definition.repMin && entry.repMax === definition.repMax), 'invalid exercise prescription.');
+      check(entry.prescribedSets === expectedSets && (item.customized || entry.repMin === (repMin ?? definition.repMin) && entry.repMax === (repMax ?? definition.repMax)), 'invalid exercise prescription.');
       check(Array.isArray(entry.sets) && (isDraft ? entry.sets.length === expectedSets : entry.sets.length <= expectedSets), 'invalid set count.');
       prescribed += expectedSets;
       entry.sets.forEach(set => {
@@ -144,7 +149,7 @@ export function findLastEntry(sessions, exerciseId, variantId, unit, setup, befo
   const sorted = sessions.filter(s => s.unit === unit && s.date < beforeDate).slice().reverse().sort((a, b) => b.date.localeCompare(a.date));
   for (const session of sorted) {
     const entry = session.exercises.find(e => e.exerciseId === exerciseId && e.variantId === variantId && e.setup === setup && e.sets.some(s => s.completed));
-    if (entry) return { ...structuredClone(entry), date: session.date, lightWeek: session.lightWeek, targetRir: getPrescription(session.week, session.lightWeek).rir };
+    if (entry) return { ...structuredClone(entry), date: session.date, lightWeek: session.lightWeek, targetRir: session.targetRir ?? getPrescription(session.week, session.lightWeek).rir };
   }
   return null;
 }
@@ -158,4 +163,11 @@ export function progressionSuggestion(entry, targetRir = 2) {
   if (complete.some(s => !s.clean || s.rir < targetRir)) return { action: 'hold', text: 'Keep the load or reduce it to restore clean reps and the target RIR.' };
   if (complete.every(s => s.reps >= entry.repMax)) return { action: 'increase', text: 'All sets reached the top with clean reps and enough reserve. Next time, try the smallest available increase only if you can stay in range at the target RIR.' };
   return { action: 'reps', text: 'Keep the same load and build toward the top of the rep range with clean reps and the target RIR.' };
+}
+
+export function setProgramDay(state, date, cycleDay) {
+  const next = validateTrainingState(state);
+  check(isRealDate(date) && numeric(cycleDay, 1, 7, true), 'choose a valid date and cycle day from 1 to 7.');
+  next.program = { id: PROGRAM_ID, anchorDate: shiftDate(date, -(cycleDay - 1)) };
+  return validateTrainingState(next);
 }

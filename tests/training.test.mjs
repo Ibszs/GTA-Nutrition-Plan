@@ -230,3 +230,108 @@ test('week dates ignore DST and backups are independent clones', () => {
   const result = validateTrainingState(value); result.draft.exercises[0].setup = 'Changed';
   assert.equal(value.draft.exercises[0].setup, '');
 });
+
+// Program changes must not rewrite the original journal contract.
+test('hybrid program defaults, calendar dates and explicit shifts preserve records', async () => {
+  const p = await import('../assets/training-program.js');
+  let value = createTrainingState('2026-09-09');
+  assert.deepEqual(value.program, { id: 'hybrid-5-v1', anchorDate: '2026-09-07' });
+  assert.equal(p.getProgramDay(value, '2026-09-08').kind, 'before-start');
+  assert.equal(p.getProgramDay(value, '2026-09-09').kind, 'rest');
+  value.draft = createDraft(value, 'hybrid5-chest-back-v1', '2026-09-10');
+  value.draft.exercises[0].sets[0] = performed();
+  value = finishDraft(value, 'partial-hybrid');
+  assert.equal(p.getProgramDay(value, '2026-09-10').partial, true);
+  assert.equal(p.getProgramDay(value, '2026-09-10').sessionId, 'hybrid5-chest-back-v1');
+  value.draft = createDraft(value, 'hybrid5-legs-v1', '2026-09-11');
+  const shifted = journal.setProgramDay(value, '2026-09-12', 1);
+  assert.deepEqual(shifted.sessions, value.sessions);
+  assert.deepEqual(shifted.draft, value.draft);
+  assert.equal(shifted.startDate, value.startDate);
+  assert.equal(shifted.program.anchorDate, '2026-09-12');
+  assert.equal(p.getProgramDay(shifted, '2026-09-12').cycleDay, 1);
+  assert.deepEqual(validateTrainingState(JSON.parse(JSON.stringify(shifted))), shifted);
+});
+
+test('hybrid prescriptions are distinct, stable beyond sixteen weeks and permit variants', async () => {
+  const p = await import('../assets/training-program.js');
+  assert.equal(p.NEW_SESSIONS.length, 5);
+  assert.equal(p.NEW_SESSIONS.reduce((n,s) => n+s.exercises.reduce((m,e) => m+e[1],0),0),69);
+  for (const session of p.NEW_SESSIONS) {
+    for (const lighter of [false,true]) {
+      const value = state(); value.draft = createDraft(value,session.id,'2027-09-07',lighter);
+      assert.equal(value.draft.targetRir,lighter?4:2);
+      session.exercises.forEach(([id,count,min,max,variant],i) => {
+        const e=value.draft.exercises[i];
+        assert.deepEqual([e.exerciseId,e.prescribedSets,e.repMin,e.repMax,e.variantId],[id,lighter?Math.ceil(count/2):count,min,max,variant]);
+        e.variantId=EXERCISES[id].variants.at(-1).id;
+      });
+      assert.deepEqual(validateTrainingState(value),value);
+      value.draft.exercises[0].sets[0]=performed();
+      const saved=finishDraft(value,session.id);
+      const e=saved.sessions[0].exercises[0];
+      assert.equal(findLastEntry(saved.sessions,e.exerciseId,e.variantId,'lb','','2027-09-08').targetRir,lighter?4:2);
+    }
+  }
+});
+
+test('legacy states roundtrip without a program and keep their original prescriptions', async () => {
+  const p=await import('../assets/training-program.js');
+  let value={version:1,startDate:'2026-09-07',unit:'lb',sessions:[],draft:null};
+  value.draft=createDraft(value,'upper-a','2026-09-07');
+  assert.equal(value.draft.exercises[0].prescribedSets,4);
+  assert.equal(value.draft.exercises[0].repMin,6);
+  assert.equal(value.draft.targetRir,undefined);
+  value.draft.exercises[0].sets[0]=performed();
+  value=finishDraft(value,'legacy');
+  value.draft=createDraft(value,'lower-a','2026-09-08');
+  assert.deepEqual(validateTrainingState(JSON.parse(JSON.stringify(value))),value);
+  assert.equal(Object.hasOwn(validateTrainingState(value),'program'),false);
+  assert.equal(p.getProgramDay(value,'2026-09-10').sessionId,'upper-b');
+  const switched=journal.setProgramDay(value,'2026-09-10',4);
+  assert.deepEqual(switched.sessions,value.sessions); assert.deepEqual(switched.draft,value.draft);
+  for(const change of [e=>e.repMin=5,e=>e.prescribedSets=4]) {
+    const bad=structuredClone(value);change(bad.draft.exercises[0]);assert.throws(()=>validateTrainingState(bad));
+  }
+});
+
+test('program rejects invalid settings and calendar ignores DST and year boundaries', async () => {
+  const p=await import('../assets/training-program.js');
+  for(const program of [null,{}, {id:'other',anchorDate:'2026-09-07'},{id:'hybrid-5-v1',anchorDate:'2026-02-30'},{id:'hybrid-5-v1',anchorDate:'2026-09-07',extra:true}]) assert.throws(()=>validateTrainingState({...state(),program}));
+  for(const day of [0,8,1.5,'1']) assert.throws(()=>journal.setProgramDay(state(),'2026-09-07',day));
+  for(const [start,end] of [['2026-03-02','2026-03-09'],['2026-10-26','2026-11-02'],['2026-12-28','2027-01-04']]) {
+    const value=createTrainingState(start);assert.equal(p.getProgramDay(value,end).cycleDay,1);
+    assert.equal(p.getProgramDay(value,end).sessionId,'hybrid5-upper-v1');
+  }
+  const value=state();value.draft=createDraft(value,'hybrid5-upper-v1');
+  for(const target of [-1,11,'2',null]) assert.throws(()=>validateTrainingState({...value,draft:{...value.draft,targetRir:target}}));
+});
+
+test('weekly schedule never carries missed work forward and completion matches date plus template', async () => {
+  const p=await import('../assets/training-program.js');
+  const value=state();
+  const expected=['hybrid5-upper-v1','hybrid5-lower-v1',null,'hybrid5-chest-back-v1','hybrid5-legs-v1','hybrid5-shoulders-arms-v1',null];
+  for(let i=0;i<14;i++) assert.equal(p.getProgramDay(value,p.shiftDate('2026-09-07',i)).sessionId,expected[i%7]);
+  value.draft=createDraft(value,'hybrid5-upper-v1','2026-09-07');
+  value.draft.exercises.forEach(e=>{e.sets=e.sets.map(()=>performed());});
+  const saved=finishDraft(value,'full-hybrid');
+  assert.equal(p.getProgramDay(saved,'2026-09-07').completed,true);
+  assert.equal(p.getProgramDay(saved,'2026-09-14').completed,false);
+  const shifted=journal.setProgramDay(saved,'2026-09-07',2);
+  assert.equal(p.getProgramDay(shifted,'2026-09-07').completed,false);
+  assert.deepEqual(shifted.sessions,saved.sessions);
+});
+
+test('legacy immutable tuple and rep contracts stay readable and reject silent rewrites', () => {
+  assert.deepEqual(SESSIONS.map(s=>s.exercises),[
+    [['incline',4],['row',3],['pulldown',3],['lateral',4],['rear',2],['triceps',2],['curl',2]],
+    [['squat',3],['rdl',3],['extension',2],['legcurl',2],['calves',3],['abs',3]],
+    [['pulldown',3],['incline',4],['row',3],['lateral',4],['rear',2],['triceps',2],['curl',2]],
+    [['legpress',3],['split',2],['legcurl',3],['calves',3],['abs',3]],
+  ]);
+  const reps={incline:[6,10],row:[8,12],pulldown:[8,12],lateral:[12,20],rear:[12,20],triceps:[10,15],curl:[10,15],squat:[6,10],rdl:[6,10],extension:[10,15],legcurl:[10,15],calves:[10,15],abs:[10,15],legpress:[8,12],split:[8,12]};
+  for(const [id,bounds] of Object.entries(reps)) assert.deepEqual([EXERCISES[id].repMin,EXERCISES[id].repMax],bounds);
+  const value=state();value.draft=draft();
+  [value.draft.exercises[0],value.draft.exercises[1]]=[value.draft.exercises[1],value.draft.exercises[0]];
+  assert.throws(()=>validateTrainingState(value),/order/);
+});

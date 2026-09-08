@@ -1,5 +1,19 @@
-const CACHE_NAME = 'gta-nutrition-v2.18';
+const CACHE_NAME = 'gta-nutrition-v2.23';
 const APP_SHELL = [
+  './assets/training-scene.js',
+  './assets/training-scene-fallback.svg',
+  './assets/vendor/three.module.min.js',
+  './assets/vendor/three.core.min.js',
+  './assets/fonts/barlow-condensed-bold.woff2',
+  './assets/fonts/manrope-latin.woff2',
+  './assets/training-program.js',
+  './assets/training.css',
+  './assets/images/exercises/flat-barbell-0.jpg',
+  './assets/images/exercises/flat-barbell-1.jpg',
+  './assets/images/exercises/pullup-0.jpg',
+  './assets/images/exercises/pullup-1.jpg',
+  './assets/images/exercises/pullup-weighted-0.jpg',
+  './assets/images/exercises/pullup-weighted-1.jpg',
   './assets/images/exercises/db-calves-0.jpg',
   './assets/images/exercises/db-calves-1.jpg',
   './assets/images/exercises/deadbug-0.jpg',

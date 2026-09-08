@@ -4,45 +4,56 @@ import { createStorage, saveJson } from './common.js';
 import { buildLocalDates, formatLocalDate } from './core.js';
 import { createDefaultTrackerState, validateTrackerState, archiveTracker } from './backup.js';
 import { TRAINING_KEY, createTrainingState, validateTrainingState } from './training-state.js';
-import { SESSIONS, getWeek } from './training-data.js';
+import { getProgramDay, getSessionTemplate } from './training-program.js';
 import { readPlanner, dayMenu, recipeById, el } from './meal-utils.js';
 import { weekDates } from './planner-state.js';
 const {storage,persistent}=createStorage();
-const $=id=>document.getElementById(id),today=formatLocalDate(new Date()),trackerKey='gtaNutrition.tracker.v2';
+const $=id=>document.getElementById(id),trackerKey='gtaNutrition.tracker.v2';
+let today=formatLocalDate(new Date());
 function readTracker(){const raw=storage.getItem(trackerKey);return raw===null?createDefaultTrackerState(today):validateTrackerState(JSON.parse(raw));}
 function status(message,error=false){$('quickWeightStatus').textContent=message;$('quickWeightStatus').dataset.error=String(error);}
 function render(){
+  today=formatLocalDate(new Date());
   $('todayDate').textContent=new Date(`${today}T12:00:00`).toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'});
   try {
     const raw=storage.getItem(TRAINING_KEY),training=raw===null?createTrainingState(today):validateTrainingState(JSON.parse(raw));
-    const blockWeek=today<training.startDate?1:getWeek(training.startDate,today);
-    const next=training.draft?SESSIONS.find(item=>item.id===training.draft.sessionId):SESSIONS.find(item=>!training.sessions.some(session=>session.week===blockWeek&&session.sessionId===item.id&&!session.partial))||SESSIONS[0];
-    $('nextTrainingName').textContent=next.name;
-    $('nextTrainingNote').textContent=training.draft?'Your workout is still open. Pick up where you left off.':`${next.focus} · 60–75 min`;
-    $('trainingWeek').textContent=`WEEK ${blockWeek} OF 16 · ${training.draft?'SESSION IN PROGRESS':'NEXT IN YOUR ROTATION'}`;
-    iconLabel($('startTrainingLink'), training.draft?'Resume workout':'Start your workout', 'arrow-up-right', true);
+    const planned=getProgramDay(training,today),active=training.draft;
+    const next=getSessionTemplate(active?.sessionId ?? planned.sessionId);
+    const savedState=planned.completed?'Completed':planned.partial?'Partial session saved':planned.kind==='rest'?'Rest day':planned.kind==='before-start'?'Not started':'Planned workout';
+    $('nextTrainingName').textContent=active?next.name:next?.name ?? (planned.kind==='rest'?'Rest day':'Your program starts '+training.startDate);
+    $('nextTrainingNote').textContent=active?`Resume your workout from ${active.date}.${planned.kind==='rest'?' Today is a planned rest day.':''}`:planned.completed?'Today’s planned session is saved. Recover and follow the next calendar day.':planned.partial?'Your partial session is saved. Review it in History; the calendar stays unchanged.':next?`${next.focus} · ${next.duration ?? '60–75 min'}`:planned.kind==='rest'?'Recover today. An easy walk is optional; your next workout stays on the calendar.':'Open Train to review your start date and program.';
+    $('trainingWeek').textContent=active?'SESSION IN PROGRESS':`DAY ${planned.cycleDay} OF 7 · ${savedState.toUpperCase()}`;
+    $('startTrainingLink').href=active?'training.html':planned.completed||planned.partial?'training.html#history':next?`training.html?session=${next.id}&date=${today}`:'training.html';
+    iconLabel($('startTrainingLink'),active?'Resume workout':planned.completed||planned.partial?'Review session':next?'Start workout':'View program','arrow-up-right',true);
+    if(!training.program && !active){
+      $('trainingWeek').textContent='PREVIOUS PLAN';
+      $('nextTrainingNote').textContent+=' Your previous plan is preserved. Choose the five-day rotation in Train when ready.';
+      $('startTrainingLink').href='training.html';
+      iconLabel($('startTrainingLink'),'Choose five-day rotation','arrow-up-right',true);
+    }
     const dates=weekDates(today);$('todayWeek').replaceChildren();
     const dateText = date => new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
     $('homeWeekRange').textContent = `${dateText(dates[0])} – ${dateText(dates[6])}, ${dates[6].slice(0,4)}`;
-    const schedule=['Upper A','Lower A','Recover','Upper B','Recover','Lower B','Recover'];
-    for(const [index,date] of dates.entries()){
+    for(const date of dates){
+      const day=getProgramDay(training,date),template=getSessionTemplate(day.sessionId);
       const entries=training.sessions.filter(session=>session.date===date);
       const full=entries.some(session=>!session.partial);
       const node=el('a',undefined,`week-cell${date===today?' today':''}${full?' complete':''}`);
-      node.href=entries.length?'training.html#history':index===2||index===4||index===6?'plan.html':'training.html?session='+['upper-a','lower-a','','upper-b','','lower-b',''][index];
-      if (date === today) node.setAttribute('aria-current', 'date');
-      const heading = el('div', undefined, 'week-date-heading');
-      heading.append(el('span', new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', { weekday: 'short' }), 'week-weekday'), el('strong', String(Number(date.slice(8))), 'week-date'));
-      const sessionName = entries.length ? [...new Set(entries.map(entry => SESSIONS.find(s => s.id === entry.sessionId).name))].join(' + ') : schedule[index];
-      node.append(heading, icon(full ? 'check-check' : sessionName === 'Recover' ? 'moon' : 'dumbbell', 'ui-icon week-session-icon'), el('b', sessionName), el('span', full ? 'Completed' : entries.length ? 'Partial' : date === today ? 'Today' : 'Planned', 'week-state'));
+      node.href=entries.length?'training.html#history':template?`training.html?session=${template.id}&date=${date}`:'training.html';
+      if(date===today)node.setAttribute('aria-current','date');
+      const heading=el('div',undefined,'week-date-heading');
+      heading.append(el('span',new Date(`${date}T12:00:00`).toLocaleDateString('en-CA',{weekday:'short'}),'week-weekday'),el('strong',String(Number(date.slice(8))),'week-date'));
+      const names=entries.length?[...new Set(entries.map(entry=>getSessionTemplate(entry.sessionId).name))].join(' + '):template?.name ?? (day.kind==='rest'?'Rest':'Before start');
+      node.append(heading,icon(full?'check-check':day.kind==='rest'&&!entries.length?'moon':'dumbbell','ui-icon week-session-icon'),el('b',names),el('span',full?'Completed':entries.length?'Partial':day.kind==='rest'?'Recovery':day.kind==='before-start'?'Not started':date===today?'Today':'Planned','week-state'));
       $('todayWeek').append(node);
     }
-    if (matchMedia('(max-width: 760px)').matches) {
-      const current = $('todayWeek').querySelector('.today');
-      $('todayWeek').scrollLeft = current.offsetLeft - $('todayWeek').offsetLeft - $('todayWeek').clientWidth / 2 + current.clientWidth / 2;
+    if(matchMedia('(max-width: 760px)').matches){
+      const current=$('todayWeek').querySelector('.today');
+      if(current)$('todayWeek').scrollLeft=current.offsetLeft-$('todayWeek').offsetLeft-$('todayWeek').clientWidth/2+current.clientWidth/2;
     }
-    const fullCount=new Set(training.sessions.filter(session=>dates.includes(session.date)&&!session.partial).map(session=>session.sessionId)).size;
-    $('weekSessions').textContent=`${fullCount} / 4 sessions`;
+    const plannedDays=dates.map(date=>getProgramDay(training,date)).filter(day=>day.kind==='session');
+    const completeCount=plannedDays.filter(day=>day.completed).length;
+    $('weekSessions').textContent=`${completeCount} / ${plannedDays.length} planned sessions`;
   } catch(error){$('nextTrainingNote').textContent=`Open Train to review saved data. ${error.message}`;}
   try {
     const menu=dayMenu(readPlanner(storage),today),meal=menu.meals.find(item=>!item.done);
@@ -71,4 +82,4 @@ $('quickWeightForm').addEventListener('submit',event=>{
     window.dispatchEvent(new CustomEvent('gta-data-changed'));
   } catch(error){status(`Not saved: ${error.message}`,true);}
 });
-window.addEventListener('gta-data-changed',render);window.addEventListener('storage',render);render();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});window.addEventListener('focus',render);window.addEventListener('gta-data-changed',render);window.addEventListener('storage',render);render();

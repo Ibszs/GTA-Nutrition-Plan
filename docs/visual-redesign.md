@@ -1,5 +1,20 @@
 # Form & Fuel design and verification
 
+## Training studio · version 3.0
+
+The training screen uses a midnight and cobalt palette, locally bundled Manrope and Barlow Condensed fonts, and a real Three.js dumbbell with studio lighting. The scene renders during its short entrance and pointer interaction, then settles. It pauses when hidden, respects reduced motion, caps rendering resolution, and keeps an SVG fallback if the renderer cannot load. Exercise technique remains grounded in the audited photographs, with variation-specific cues and load conventions.
+
+The five-day rotation is Upper, Lower, Rest, Chest + Back, Legs, Shoulders + Arms, Rest. The logger presents one movement and one set at a time, with explicit completion, progress, save feedback and a rest dock above mobile navigation. Program, Library and History remain directly accessible. Legacy records keep their original prescriptions; partial sessions, unfinished inputs and complete backups retain their data.
+
+Release-candidate verification completed September 7, 2026 (Toronto):
+
+- All 150 automated tests passed, including mixed legacy/new backup restoration, calendar shifts, partial sessions, copied-value safeguards, exact photo mapping and complete offline asset coverage. JavaScript syntax and `git diff --check` passed.
+- Browser screenshots reviewed at 320, 375, 390 and 430 pixels, plus a 1366-pixel desktop. Checks included the overview, active logger, saved history, expanded program, movement library and variation sheets. No horizontal document overflow was found. Visual checks caught and fixed faint navigation text, rest-dock overlap and cramped expanded program cards.
+- Entered and saved synthetic sets, confirmed progress and draft persistence, saved partial history and verified load/reps/RIR. Earlier overhaul checks also covered editing, undo, copied values, protected recorded sets, order changes and seven-movement sessions.
+- Actual WebGL rendering and loaded local fonts were verified. Emulated reduced motion disabled panel/button animation while keeping the scene visible. Blocking the vendored renderer produced a loaded SVG fallback and a usable Start action.
+- With the localhost HTTP server stopped and the HTTP cache disabled, the installed service worker loaded the new training screen, WebGL scene, fonts, corrected program layout, exercise thumbnails and a recipe deep link. Existing Today, Meals, Shop, Progress and reference screens were also reviewed for regressions.
+- Tests used isolated localhost records and browser viewport emulation. Physical iPhone/Safari and Android testing was not performed.
+
 ## Version 2.2 component update
 
 - Consistent local Lucide icons, a floating mobile navigation bar, quieter hover feedback, clearer action cards and compact page shortcuts.

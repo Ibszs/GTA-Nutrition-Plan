@@ -4,6 +4,12 @@ const exercise = (id, name, muscle, reps, rest, cues, variants, loadNote = 'Reco
 });
 
 export const EXERCISES = {
+  pullup: exercise('pullup', 'Pull-up', 'Back / biceps', [5, 10], 180,
+    'Use a secure bar and a comfortable overhand grip. Start from a controlled hang, pull your chest toward the bar without kicking, then lower smoothly. Use a pulldown instead if you cannot control this range.',
+    [['bodyweight', 'Bodyweight overhand pull-up'], ['weighted', 'Weighted overhand pull-up']], 'Bodyweight: enter 0. Weighted: record only the added load, not your body weight. Keep grip and range consistent.'),
+  bulgarian: exercise('bulgarian', 'Rear-foot-elevated split squat', 'Quads / glutes', [8, 12], 150,
+    'Place your rear foot on a stable low bench behind you and hold dumbbells at your sides. Keep your front foot planted. Lower through a comfortable range and stand through the front leg without bouncing. Complete both sides.',
+    [['db', 'Dumbbell rear-foot-elevated split squat']], 'Record ONE dumbbell. Reps are per leg; one set includes both legs, using the lower rep count. Note bench height and stance. This differs from the ground-foot supported split squat.'),
   'seated-row': exercise('seated-row', 'Seated cable row', 'Back', [8, 12], 150,
     'Plant your feet, sit tall and brace. Pull the handle toward your lower ribs without rocking backward. Let your shoulder blades reach forward on the controlled return.',
     [['neutral', 'Close neutral-grip cable row'], ['wide', 'Wide cable row']], 'Record the stack load. Note the handle and seat setup; avoid comparing different cable stations.'),

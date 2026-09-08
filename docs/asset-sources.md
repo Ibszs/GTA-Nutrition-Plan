@@ -4,7 +4,7 @@
 
 `assets/icons.svg` contains 42 Lucide symbols from revision `94e4cb9d9db5907053ebf3636a97c45529cf776b` of [lucide-icons/lucide](https://github.com/lucide-icons/lucide). Original path geometry is combined into a local sprite; the upstream ISC and Feather MIT notices are retained in [licenses/lucide.txt](licenses/lucide.txt). No icon service or external font is requested at runtime.
 
-Component inspiration: [Aceternity floating dock](https://ui.aceternity.com/components/floating-dock), [card hover effect](https://ui.aceternity.com/components/card-hover-effect), [bento grid](https://ui.aceternity.com/components/bento-grid), [Magic UI border beam](https://magicui.design/docs/components/border-beam), and [shadcn calendar](https://ui.shadcn.com/docs/components/base/calendar). These informed navigation depth, card feedback and date selection. The application uses its own CSS and native JavaScript implementations; no component-library code, framework or runtime dependency was added.
+Component inspiration: [Aceternity floating dock](https://ui.aceternity.com/components/floating-dock), [card hover effect](https://ui.aceternity.com/components/card-hover-effect), [bento grid](https://ui.aceternity.com/components/bento-grid), [Magic UI border beam](https://magicui.design/docs/components/border-beam), and [shadcn calendar](https://ui.shadcn.com/docs/components/base/calendar). These informed navigation depth, card feedback and date selection. The application uses its own CSS and native JavaScript implementations; no component-library code or UI framework was added. The later 3D runtime is credited below.
 
 The app ships all artwork locally. No third-party image requests are made while using it.
 
@@ -30,9 +30,21 @@ Seventy unmodified JPEGs under `assets/images/exercises/` come from [Free Exerci
 
 Pinned source revision: `a859101d633a01c4a1a920d6a8ce41dabba0705f`.
 
-`assets/exercise-visuals.js` maps each app exercise to its exact upstream exercise ID and name. Source paths are `exercises/<sourceId>/0.jpg` and `exercises/<sourceId>/1.jpg`. The guide names the variation pictured; chest-supported rows and lateral raises use dumbbell variations. Two-position playback alternates the original photos; it is not continuous video. Existing app coaching and programming remain authoritative for this plan.
+Accuracy review, September 2026: all original 70 files were checked against the pinned source and their paired positions visually reviewed. The guide now receives the selected variant and current rep prescription. Only entries in `EXACT_VISUAL_VARIANTS` display photographs; unmatched choices receive a text guide, not a differently equipped demonstration. Row photographs match dumbbells, lateral-raise photographs match dumbbells, and neither illustrates the default machine/cable selection. The original `split` photographs show a rear-foot-elevated split squat, so they are used only for the new `bulgarian` exercise. Existing supported split-squat records keep their original ground-foot meaning and show text guidance.
 
-The double-f app icon was generated with GPT image generation and resized to 192 and 512 pixels. The layout and rep demonstration use local HTML/CSS/SVG. System fonts avoid external requests and font downloads.
+Six additional unmodified files were downloaded from the same pinned revision and visually checked: `flat-barbell-0.jpg` / `1.jpg` from `Barbell_Bench_Press_-_Medium_Grip`, `pullup-0.jpg` / `1.jpg` from `Pullups`, and `pullup-weighted-0.jpg` / `1.jpg` from `Weighted_Pull_Ups`. They show a flat barbell bench press, an overhand bodyweight pull-up and a weighted overhand pull-up, respectively. This brings the local movement photographs to 76. The new rear-foot-elevated exercise reuses the original split pair without duplicating files. Photographs demonstrate two positions only; they do not verify a user's form or establish a required range of motion.
+
+`assets/exercise-visuals.js` records upstream source IDs and maps audited variants to their local image IDs. Source paths are `exercises/<sourceId>/0.jpg` and `exercises/<sourceId>/1.jpg`. Two-position playback alternates the original photos; it is not continuous video. Variant-specific coaching and the current workout prescription accompany the selected movement.
+
+The double-f app icon was generated with GPT image generation and resized to 192 and 512 pixels. The layout and rep demonstration use local HTML/CSS/SVG. The training interface uses bundled fonts described below; other views retain system-font fallbacks. No runtime font service is required.
+
+## Training 3D and typography
+
+`assets/training-scene.js` builds an original sculpted dumbbell from geometric meshes. It is decorative equipment artwork, separate from the audited exercise photographs; it does not demonstrate lifting technique. `assets/training-scene-fallback.svg` is the local static fallback. Motion respects reduced-motion preferences and rendering is limited to visible interaction and animation. These implementation choices follow the official [on-demand rendering](https://threejs.org/manual/en/rendering-on-demand.html) and [responsive sizing](https://threejs.org/manual/en/responsive.html) guidance.
+
+The locally bundled Three.js version is **0.180.0 / r180**, sourced from [the r180 release](https://github.com/mrdoob/three.js/tree/r180). `assets/vendor/three.module.min.js` (338,908 bytes) imports `three.core.min.js` (381,124 bytes). Both are precached for offline use. The MIT notice is retained in [licenses/three.txt](licenses/three.txt).
+
+Local Google Fonts files: `assets/fonts/barlow-condensed-bold.woff2` supplies Barlow Condensed 700 (22,444 bytes); `assets/fonts/manrope-latin.woff2` supplies Manrope Latin 400–800 (24,836 bytes). Sources are [Barlow Condensed](https://fonts.google.com/specimen/Barlow+Condensed) and [Manrope](https://fonts.google.com/specimen/Manrope). Their SIL Open Font License 1.1 notices are retained in [licenses/barlow-condensed.txt](licenses/barlow-condensed.txt) and [licenses/manrope.txt](licenses/manrope.txt). The font files are local and precached; loading the app does not contact Google Fonts.
 
 Icon final edit prompt: “Preserve the elegant overlapping white and lavender double-f symbol. Replace the background with solid ink navy #202941 to the square edges. Keep the symbol fully visible and centered with 15% safe margins. Flat clean vector-like edges. No text, extra border, rounded outer corners, shadow or grain. Opaque background.”
 

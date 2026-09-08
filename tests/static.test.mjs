@@ -5,6 +5,43 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { EXERCISES } from '../assets/training-data.js';
 import { EXERCISE_VISUALS } from '../assets/exercise-visuals.js';
+import * as exerciseVisuals from '../assets/exercise-visuals.js';
+
+test('exercise guides match selected equipment and preserve legacy split meaning', () => {
+  assert.equal(typeof exerciseVisuals.getExerciseGuide, 'function');
+  const guide = exerciseVisuals.getExerciseGuide;
+  assert.equal(guide('row', 'machine').visual, null);
+  assert.equal(guide('row', 'db').visual.imageId, 'row');
+  assert.equal(guide('lateral').visual, null);
+  assert.equal(guide('lateral', 'db').visual.imageId, 'lateral');
+  assert.equal(guide('flat', 'barbell').visual.imageId, 'flat-barbell');
+  assert.equal(guide('flat', 'machine').visual, null);
+  assert.equal(guide('split', 'db').visual, null);
+  assert.match(guide('split', 'db').cues, /rear.*floor/i);
+  assert.doesNotMatch(guide('row', 'cable').cues, /chest on.*pad/i);
+  const prescribed = guide('flat', 'barbell', { repMin: 4, repMax: 6, rest: 240 });
+  assert.equal(prescribed.name, 'Barbell bench press');
+  assert.equal(prescribed.repMin, 4); assert.equal(prescribed.repMax, 6); assert.equal(prescribed.rest, 240);
+  assert.equal(EXERCISES.flat.repMin, 6);
+  assert.equal(guide('flat', 'unknown'), null);
+  assert.equal(guide('__proto__'), null);
+  assert.equal(guide('flat', 'db', {repMin: 12, repMax: 2}).repMin, 6);
+  assert.equal(guide('bulgarian', 'db').visual.imageId, 'split');
+  assert.equal(guide('pullup', 'weighted').visual.imageId, 'pullup-weighted');
+  assert.match(guide('pullup', 'bodyweight').loadNote, /0/);
+  assert.match(guide('lateral', 'machine').loadNote, /stack|indicated/);
+  for (const [id, variant, imageId] of [['row','cable','seated-row'],['legcurl','lying','lying-legcurl'],['split','lunge','reverse-lunge'],['legpress','hack','squat'],['triceps','pushdown','pushdown']]) {
+    assert.equal(guide(id, variant).visual.imageId, imageId);
+  }
+  assert.match(guide('legpress', 'hack').loadNote, /same machine/);
+  assert.doesNotMatch(guide('legpress', 'hack').loadNote, /sled/);
+  assert.equal(guide('flat', 'db').loadLabel, 'One dumbbell');
+  assert.equal(guide('flat', 'barbell').loadLabel, 'Bar + plates');
+  assert.equal(guide('pulldown', 'neutral').loadLabel, 'Stack load');
+  assert.equal(guide('pullup', 'bodyweight').loadLabel, '0 added load');
+  assert.equal(guide('pullup', 'weighted').loadLabel, 'Added load only');
+  assert.match(guide('rdl', 'smith').loadLabel, /Smith/);
+});
 
 const root = path.resolve(import.meta.dirname, '..');
 const pages = [
@@ -203,9 +240,15 @@ test('manifest defines installable relative-scope application', () => {
 
 test('service worker precaches every shipped application asset', () => {
   const worker = read('sw.js');
+  function shippedAssets(directory) {
+    return fs.readdirSync(path.join(root, directory), { withFileTypes: true }).flatMap(entry => {
+      const relative = `${directory}/${entry.name}`;
+      return entry.isDirectory() ? shippedAssets(relative) : /\.(js|css|svg|woff2|jpg|jpeg|png)$/i.test(entry.name) ? [`./${relative}`] : [];
+    });
+  }
   const expected = [
     './training.html', './meals.html',
-    ...fs.readdirSync(path.join(root,'assets')).filter(name=>/\.(js|css|svg)$/.test(name)).map(name=>'./assets/'+name),
+    ...shippedAssets('assets'),
     './', './index.html', './quick-start.html', './shopping.html', './tracker.html',
     './plan.html', './cooking.html', './assets/styles.css', './assets/common.js',
     './assets/core.js', './assets/shopping-state.js', './assets/backup.js',
@@ -221,10 +264,12 @@ test('service worker precaches every shipped application asset', () => {
   }
 });
 
-test('every exercise has two local demonstration photos available offline', () => {
+test('every mapped demonstration has two local photos available offline', () => {
   assert.deepEqual(Object.keys(EXERCISE_VISUALS).sort(), Object.keys(EXERCISES).sort());
   const worker = read('sw.js');
-  for (const id of Object.keys(EXERCISES)) {
+  const imageIds = new Set(Object.entries(EXERCISE_VISUALS).map(([id, visual]) => visual.imageId ?? id));
+  for (const variants of Object.values(exerciseVisuals.EXACT_VISUAL_VARIANTS)) for (const imageId of Object.values(variants)) imageIds.add(imageId);
+  for (const id of imageIds) {
     for (const position of [0, 1]) {
       const asset = `assets/images/exercises/${id}-${position}.jpg`;
       assert.ok(fs.statSync(path.join(root, asset)).size > 1000, asset);

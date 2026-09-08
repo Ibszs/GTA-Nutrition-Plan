@@ -1,14 +1,14 @@
 import { EXERCISES } from './training-data.js';
 import { ACTIVE_RECIPES as RECIPES } from './food-data.js';
 import { el } from './meal-utils.js';
-import { EXERCISE_VISUALS } from './exercise-visuals.js';
+import { getExerciseGuide } from './exercise-visuals.js';
 import { initUpdates } from './updates.js';
 import { icon, iconLabel } from './ui-icons.js';
 
 const route = location.pathname.split('/').pop() || 'index.html';
 const guides = {
   'index.html': ['Make today simple.', 'Pick one thing to do now. Everything else can wait.', [['Train', 'Choose your session and log one set at a time.', 'training.html'], ['Eat', 'Open a recipe, cook it, then check off your meal.', 'meals.html'], ['Check in', 'Record your morning weight and watch the trend.', 'tracker.html']]],
-  'training.html': ['Your first set, explained.', 'Choose your workout. Warm up. Record only the sets you perform.', [['Load', 'Enter the weight. For dumbbells, usually one dumbbell; read the exercise note.'], ['Reps', 'Count the repetitions you actually completed.'], ['Reps in reserve', 'Estimate how many more clean reps you could have done.']]],
+  'training.html': ['Training guide', 'Choose your workout. Warm up. Record only the sets you perform.', [['Load', 'Enter the weight. For dumbbells, usually one dumbbell; read the exercise note.'], ['Reps', 'Count the repetitions you actually completed.'], ['Reps in reserve', 'Estimate how many more clean reps you could have done.']]],
   'meals.html': ['A menu you can actually follow.', 'Select a day, choose its menu, then make it your own.', [['Choose', 'Browse complete-day plans to change all six meals.'], ['Cook', 'Open the Recipe book, save favourites, then use Start cooking to follow the method.'], ['Check', 'Tick Eaten after eating. Swap changes the meal and your grocery list.']]],
   'shopping.html': ['From kitchen to cart.', 'Your seven menus already make the list. Start with your pantry.', [['Check the kitchen', 'Enter what you already have in the unit shown.'], ['Shop the difference', 'Buy is the remaining amount. Round up to your package size.'], ['Tick as you go', 'Use shopping mode to hide bought items. Your pantry stays manual.']]],
   'tracker.html': ['See a pattern, not a single number.', 'Log a little each day. Compare the weeks when you have enough entries.', [['Morning', 'Enter weight after the bathroom and before breakfast.'], ['Evening', 'Add your actual intake and how you felt.'], ['Review', 'Weekly averages and consistency guide your next decision.']]],
@@ -54,30 +54,51 @@ export function openGuide() {
   s.content.append(steps);if(route==='training.html'||route==='index.html')practiceSet(s.content);s.open();
 }
 
-export function openExercise(id) {
-  const ex=EXERCISES[id];if(!ex)return;
+export function openExercise(id, variantId, prescription) {
+  const ex=getExerciseGuide(id,variantId,prescription);if(!ex)return;
   const s=sheet(ex.name,ex.muscle.toUpperCase());
-  const visual=EXERCISE_VISUALS[id];
+  let interval;
+  s.d.addEventListener('close',()=>clearInterval(interval));
+  function renderGuide(selectedVariant,restoreFocus=false){
+  clearInterval(interval);
+  const ex=getExerciseGuide(id,selectedVariant,prescription);
+  s.content.replaceChildren();
+  s.d.querySelector('h2').textContent=ex.name;
+  if(EXERCISES[id].variants.length>1){
+    const label=el('label','Guide variation'),select=el('select');
+    EXERCISES[id].variants.forEach(v=>{const option=el('option',v.name);option.value=v.id;select.append(option);});
+    select.value=selectedVariant ?? EXERCISES[id].variants[0].id;
+    select.addEventListener('change',()=>renderGuide(select.value,true));
+    label.append(select);s.content.append(label);
+    if(prescription)s.content.append(el('p','Guide preview only. Change your workout in Setup.','small'));
+    if(restoreFocus)select.focus();
+  }
+  const visual=ex.visual;
+  if (visual) {
   const demo=el('div',undefined,'movement-demo'),photos=el('div',undefined,'movement-photos');
-  const frames=[0,1].map(i=>{const figure=el('figure');const img=el('img');img.src=`assets/images/exercises/${id}-${i}.jpg`;img.alt=`${visual.name}, position ${i+1}`;figure.append(img,el('figcaption',`Position ${i+1}`));photos.append(figure);return figure;});
-  let playing=false,frame=0,interval;
+  const frames=[0,1].map(i=>{const figure=el('figure');const img=el('img');img.src=`assets/images/exercises/${visual.imageId}-${i}.jpg`;img.alt=`${visual.name}, position ${i+1}`;figure.append(img,el('figcaption',`Position ${i+1}`));photos.append(figure);return figure;});
+  let playing=false,frame=0;
   const play=action('Play positions',()=>{playing=!playing;clearInterval(interval);demo.classList.toggle('is-playing',playing);iconLabel(play,playing?'Pause positions':'Play positions',playing?'pause':'play');play.setAttribute('aria-pressed',String(playing));frames.forEach(f=>f.classList.remove('active'));if(playing){frames[frame].classList.add('active');interval=setInterval(()=>{frames[frame].classList.remove('active');frame=1-frame;frames[frame].classList.add('active');},1400);}},'button secondary','play');
-  play.setAttribute('aria-pressed','false');s.d.addEventListener('close',()=>clearInterval(interval));
-  demo.append(photos,play,el('p',`Two-position reference · ${visual.name}. This shows one variation, not every available machine or setup.`,'tiny'));
-  s.content.append(demo,el('p',`${ex.repMin}–${ex.repMax} reps · ${ex.rest/60} min rest`,'macro-line'));
+  play.setAttribute('aria-pressed','false');
+  demo.append(photos,play,el('p',`Two-position reference · ${visual.name}. The positions are still photographs, not continuous movement.`,'tiny'));
+  s.content.append(demo);
+  } else s.content.append(el('p',`Text guide for ${ex.name}. A matching photo demonstration is not available.`,'small'));
+  const restMinutes=Math.floor(ex.rest/60),restSeconds=ex.rest%60;
+  s.content.append(el('p',`${ex.repMin}–${ex.repMax} reps · ${restMinutes ? restMinutes+' min' : ''}${restSeconds ? ' '+restSeconds+' sec' : ''} rest`,'macro-line'));
   const list=el('ol',undefined,'cue-list');ex.cues.split(/(?<=\.)\s+/).forEach(c=>list.append(el('li',c)));
-  s.content.append(list,el('h3','What goes in the Load box?'),el('p',ex.loadNote,'callout'),el('h3','Available exercise choices'));
-  const choices=el('div',undefined,'variant-pills');ex.variants.forEach(v=>choices.append(el('span',v.name,'tag')));s.content.append(choices);
-  s.content.append(el('p','Use the same setup for comparable logs. These cues describe the main exercise; ask a qualified coach to check an unfamiliar variation.','small'));
+  s.content.append(list,el('h3','What goes in the Load box?'),el('p',ex.loadNote,'callout'));
+  s.content.append(el('p','Use the same setup for comparable logs. Ask a qualified coach to check an unfamiliar variation.','small'));
   s.content.append(action('Show me how to log a set',()=>{s.d.close();const practice=sheet('A set, made simple.','LEARN BY DOING');practiceSet(practice.content);practice.open();},'button secondary'));
-  const credit=el('a','Movement photos: Free Exercise DB','tiny');credit.href='https://github.com/yuhonas/free-exercise-db';s.content.append(credit);s.open();
+  if(visual){const credit=el('a','Movement photos: Free Exercise DB','tiny');credit.href='https://github.com/yuhonas/free-exercise-db';s.content.append(credit);}
+  }
+  renderGuide(variantId);s.open();
 }
 
 function openSearch() {
   const s=sheet('What are you looking for?','FIND YOUR WAY');
   const label=el('label','Search pages, recipes or exercises'),input=el('input');input.type='search';input.placeholder='Try chicken, shoulders, backup…';label.append(input);
   const list=el('div',undefined,'search-results');list.setAttribute('aria-live','polite');
-  const pages=[['Today','Your next step','index.html'],['Train','Workouts and exercise library','training.html'],['Meals','Menu and recipes','meals.html'],['Shop','Groceries and pantry','shopping.html'],['Progress','Weight, calories and trends','tracker.html'],['Backup & settings','Export, import and whey label','index.html#backup'],['Kitchen guide','Cooking and storage','cooking.html'],['16-week guide','Training and nutrition sources','plan.html']];
+  const pages=[['Today','Your next step','index.html'],['Train','Workouts and exercise library','training.html'],['Meals','Menu and recipes','meals.html'],['Shop','Groceries and pantry','shopping.html'],['Progress','Weight, calories and trends','tracker.html'],['Backup & settings','Export, import and whey label','index.html#backup'],['Kitchen guide','Cooking and storage','cooking.html'],['Training guide','Training and nutrition sources','plan.html']];
   function render(){const term=input.value.toLowerCase().trim();list.replaceChildren();
     const results=[...pages.map(([name,copy,url])=>({name,copy,url})),...RECIPES.map(r=>({name:r.name,copy:`Recipe · ${r.category} · ${r.minutes} min`,url:`meals.html?recipe=${r.id}`})),...Object.values(EXERCISES).map(e=>({name:e.name,copy:`Exercise · ${e.muscle}`,exercise:e.id}))].filter(r=>`${r.name} ${r.copy}`.toLowerCase().includes(term));
     results.slice(0,term?40:8).forEach(r=>{const item=el(r.exercise?'button':'a',undefined,'search-result');if(r.url)item.href=r.url;else item.addEventListener('click',()=>{s.d.close();openExercise(r.exercise);});const mark=el('span',undefined,'search-result-icon');mark.append(icon(r.exercise?'dumbbell':r.copy.startsWith('Recipe')?'cooking-pot':'arrow-up-right'));item.append(mark,el('strong',r.name),el('span',r.copy,'small'),icon('arrow-up-right','ui-icon result-arrow'));list.append(item);});

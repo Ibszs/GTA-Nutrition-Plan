@@ -2,6 +2,8 @@
 
 Reviewed September 5, 2026. This is the canonical source record for the current web guide, not an individualized clinical assessment or a new PDF deliverable.
 
+Training update: the four-day training assumptions and training claim ledger below are historical. The current five-day program is documented in [the September 2026 training evidence review](training-evidence-2026.md). Nutrition and food-preparation evidence in this record remains applicable.
+
 ## Scope and working assumptions
 
 Age 21; 6 ft 3 in; approximately 170 lb; intermediate lifting experience; four full-gym sessions of roughly 60–75 minutes; no injury reported. The user wants a wider-looking upper body, strength, familiar meals retained and richer new meals. A 195 lb goal is longer term. No 25 lb lean-tissue gain or deadline outcome is promised.
