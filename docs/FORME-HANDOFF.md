@@ -1,6 +1,6 @@
 # Forme 4.0 handoff
 
-Written 17 Nov 2026 on the branch `fable/forme-rebuild`. Nothing is committed and nothing is pushed.
+Written 17 Nov 2026 on the branch `fable/forme-rebuild`. The work is committed on that branch in two commits (the 4.0 rebuild, then the third design pass). Nothing is pushed, so the published copy and your phone are still on Form & Fuel 3.0.
 
 ## What changed
 
@@ -92,7 +92,26 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **Contrast, measured:** every text colour against every surface it sits on, in dark and light, on the page and inside the inverted block, for all four papers (304 pairs). All pass 4.5 to 1. The blue day-marker dot is 3.7 to 1 on the light papers; it is a marker, not text.
 - **Not looked at as pictures:** Habits and Reset after their header fix, Private and the pause screen, Search, Progress, Backup, Credits, Use it first, the fridge finder, the replays, most sheets and dialogs, and the Butter and Grey papers. They use the same components as the screens above, but nobody has seen them.
 - **Not checked:** animations by eye (the headline wipe, the block wipe and the replays were written but not watched), a real phone, Safari, a screen reader, and your real data. The earlier "not checked" list below still applies.
-- **Backup of the second pass:** the working tree as it was before this pass is saved in git at `refs/backup/pre-design-pass-3`. Nothing is committed on the branch.
+- **Backup of the second pass:** it is the first of the two commits on the branch, and also saved at `refs/backup/pre-design-pass-3`.
+
+## Final review (17 Nov 2026)
+
+- **Static audit:** no style variable is used without being defined, and every icon named in the code exists in the sprite.
+- **Every route, both appearances:** 67 routes with empty data and 44 with data in them, in dark and light. Checked for a crashed screen, console errors, sideways overflow, broken images, missing icons, clipped buttons, stray typefaces and broken text. None found.
+- **Flows driven in a real browser with throwaway data:** start a workout, enter and edit a set, leave, resume, finish as partial, find it in History; open tonight's recipe, switch to the lighter version, scale servings, add to groceries, cook mode to the end, log as cooked, rate a leftover; week plan mode switch, swap, portion change; tick, hide and add grocery items; start movement, pause, skip through, rate it, 2-minute version; add and tick a habit and see it on Today; private pause on and discarded; quick add a weight; search; Reset timer and the one thing; side quest, Night Drive, replay, month; every Settings control; Just got home, Pick for me, Edit layout. No errors.
+- **Fixed during the review:** the browser bar colour lagged one screen behind a theme or paper change; "1 sets" and "1 weeks"; two fridge chips both reading "Plain Greek yogurt"; the top bar was cramped when the private shortcut showed; a squeezed stepper on the oil meter; an unsized header photo on Habits and Reset; three leftover slogan headings.
+- **Looked at as pictures with data in them:** Today, Habits, Reset, Use it first, Progress, Private, the month, the replay and a teaching card, on top of the screens listed above.
+- **Still not checked:** the handover from the 3.0 service worker to this one on a real phone, your real data going through the first-run copy, backup export and import by hand in this pass (the automated tests cover them), animations by eye, Safari, and a screen reader.
+
+## Updating your phone
+
+Your phone runs the published copy at https://ibszs.github.io/GTA-Nutrition-Plan/, which GitHub Pages serves from `main`. Nothing changes on the phone until this branch is merged into `main` and pushed.
+
+1. **Before publishing, on the phone:** open the app you have now and export a complete backup. Your data should carry over by itself, but this pass has never been run against your real records.
+2. **Publish:** merge `fable/forme-rebuild` into `main` and push. Pages takes a minute or two.
+3. **On the phone, online:** open the app from its home-screen icon. The old version shows a "Reload app" banner once the new one has downloaded; tap it. If no banner appears, use its "Check for update" button, or close the app fully and open it again.
+4. **Check:** Train, History should list your sessions. Then You, Backup and data, and export a fresh backup.
+5. **The icon and name.** You do not need to re-add anything for the app to work: the address is the same, so the data and the icon keep working. On Android, Chrome swaps in the new name and icon by itself, usually within a day. On an iPhone the old "Form & Fuel" name and icon stay until you delete the icon and add it again from Safari (Share, Add to Home Screen). Deleting a home-screen app on an iPhone can delete its data with it, so only do that after step 4, and restore the backup afterwards under You, Backup and data.
 
 ## Things you should know
 
