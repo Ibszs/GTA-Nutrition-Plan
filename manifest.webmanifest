@@ -1,12 +1,12 @@
 {
-  "name": "Form & Fuel - Personal Training Journal",
-  "short_name": "Form & Fuel",
-  "description": "Your 16-week training, meals, groceries and progress journal.",
+  "name": "Forme",
+  "short_name": "Forme",
+  "description": "Training, kitchen, movement practice and daily habits. Everything stays on this device.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f4f8",
-  "theme_color": "#f3f4f8",
+  "background_color": "#100f0d",
+  "theme_color": "#100f0d",
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -19,6 +19,44 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Train",
+      "short_name": "Train",
+      "url": "index.html#/train",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Eat",
+      "short_name": "Eat",
+      "url": "index.html#/eat",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Move",
+      "short_name": "Move",
+      "url": "index.html#/move",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

@@ -1,93 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-CA">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Shop · Form &amp; Fuel</title>
-  <meta name="description" content="Editable, saved shopping list for the GTA Nutrition Plan.">
-  <meta name="theme-color" content="#f3f4f8">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/experience.css"><link rel="stylesheet" href="assets/components.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forme</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=index.html#/eat/list">
+<link rel="canonical" href="index.html">
+<script>location.replace('index.html#/eat/list');</script>
+<style>body{margin:0;padding:2rem 1rem;background:#100f0d;color:#f2ead9;font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}a{color:#f2ead9}</style>
 </head>
-<body class="shopping-page">
-  <a class="skip-link" href="#main-content">Skip to main content</a><header class="site-header"><a class="brand" href="index.html"><img class="brand-icon" src="icons/icon-192.png" alt="" width="44" height="44"><span>Form &amp; Fuel<small>FORM. FUEL. REPEAT.</small></span></a><nav class="site-nav" aria-label="Primary navigation"><a href="index.html"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="assets/icons.svg#house"/></svg><span>Today</span></a><a href="training.html"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dumbbell"/></svg><span>Train</span></a><a href="meals.html"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="assets/icons.svg#utensils-crossed"/></svg><span>Meals</span></a><a href="shopping.html" aria-current="page"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="assets/icons.svg#shopping-basket"/></svg><span>Shop</span></a><a href="tracker.html"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart-no-axes-combined"/></svg><span>Progress</span></a></nav><div class="side-bottom"><a href="plan.html">The 16-week guide</a><a href="cooking.html">Kitchen guide</a><a href="quick-start.html">Original meal plan</a><a href="index.html#backup">Backup &amp; settings</a><p>One session. One meal.<br>A little stronger, every week.</p></div></header>
-
-  <main class="wrap" id="main-content">
-    <header class="hero"><div class="kicker">FROM YOUR MENU TO YOUR CART</div><h1>Your menu.<br><em>Meet your basket.</em></h1><p>The ingredients you need, minus what you already have.</p></header>
-<section id="plannedGroceries"><div class="week-toolbar"><label>Week containing<input id="shopWeek" type="date"></label><label>Group by<select id="shopGroup"><option value="category">Grocery aisle</option><option value="store">Suggested store</option></select></label><a class="button ghost" href="meals.html">Edit meals</a><button id="copyPlannedGroceries" class="secondary">Copy this list</button></div><div class="shop-legend"><span id="plannedSummary"></span><span>Required → have now → to buy</span></div><p class="small">Quantities are for one person and all seven selected days. “Have now” is a manual stock check; eating meals does not subtract inventory. Recheck it each trip. Buy the next practical package size.</p><div id="generatedGroceries"></div><p id="plannedStatus" class="status-line" role="status"></p><div class="callout"><b>Three useful stops.</b> Costco for bulk staples; Food Basics for dairy and produce; Iqbal when lentils or spices need restocking. Store assignments are suggestions. Current prices and availability have not been checked.</div></section>
-<details id="customLists"><summary>Your editable store lists &amp; extras</summary><p class="small">These are your saved shopping lists, kept separate from the menu calculation above. Use them for household extras or store notes; avoid buying the same item twice. The old starter list describes pack sizes, not this week's required amount.</p>
-
-    <div class="progress">
-      <div class="progress-row">
-        <b id="shoppingCounter">0 of 0 items</b>
-        <button class="ghost" id="clearChecksButton" type="button">Clear checks</button>
-      </div>
-      <div class="bar" aria-hidden="true"><i id="shoppingBar"></i></div>
-    </div>
-
-    <div class="storage-notice" id="shoppingStorageNotice" data-mode="persistent" role="status">Shopping edits save in this browser.</div>
-
-    <section aria-labelledby="list-tools-title">
-      <h2 id="list-tools-title">List tools</h2>
-      <div class="button-row">
-        <button id="addStoreButton" type="button">Add store</button>
-        <button class="secondary" id="copyListButton" type="button">Copy list</button>
-        <button class="ghost" id="exportShoppingButton" type="button">Export shopping JSON</button>
-        <label class="button ghost" for="importShoppingInput">Import shopping JSON</label>
-        <input class="visually-hidden" id="importShoppingInput" type="file" accept="application/json,.json">
-        <button class="danger-button" id="restoreDefaultsButton" type="button">Restore supplied list</button>
-      </div>
-      <p class="status-line" id="shoppingStatus" aria-live="polite"></p>
-    </section>
-
-    <div class="note"><b>Packaged-item rule:</b> read physical ingredient list before buying yogurt, milk, peanut butter, frozen vegetables, raisins, honey or supplements. Reject pork gelatin, lard, fish or oyster sauce, anchovy, beef or blended stock, and ambiguous animal enzymes.</div>
-    <div id="stores" aria-live="polite"></div>
-    <div class="cost"><b>Budget interpretation:</b> zero-pantry first cart is about $232.72 because bulk staples carry forward. Baseline food consumed is estimated around $104.60 including restaurant meal and excluding owned whey. Keep a $160 weekly envelope; unused room is not a spending target.</div>
-  </details></main>
-
-  <dialog id="storeDialog" aria-labelledby="storeDialogTitle">
-    <form class="dialog-body" id="storeForm">
-      <h2 id="storeDialogTitle">Add store</h2>
-      <input id="storeId" name="storeId" type="hidden">
-      <label for="storeName">Store name</label>
-      <input id="storeName" name="storeName" required maxlength="120" autocomplete="organization">
-      <div class="button-row">
-        <button type="submit">Save store</button>
-        <button class="ghost" id="cancelStoreButton" type="button">Cancel</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="itemDialog" aria-labelledby="itemDialogTitle">
-    <form class="dialog-body" id="itemForm">
-      <h2 id="itemDialogTitle">Add item</h2>
-      <input id="itemStoreId" name="storeId" type="hidden">
-      <input id="itemId" name="itemId" type="hidden">
-      <div class="form-grid">
-        <label class="span-12" for="itemName">Item name
-          <input id="itemName" name="name" required maxlength="160">
-        </label>
-        <label class="span-6" for="itemQuantity">Quantity
-          <input id="itemQuantity" name="quantity" maxlength="100" placeholder="1 pack">
-        </label>
-        <label class="span-6" for="itemTag">Tag
-          <input id="itemTag" name="tag" maxlength="24" placeholder="PLAIN or LABEL">
-        </label>
-        <label class="span-12" for="itemNote">Note
-          <textarea id="itemNote" name="note" maxlength="300"></textarea>
-        </label>
-      </div>
-      <div class="button-row">
-        <button type="submit">Save item</button>
-        <button class="ghost" id="cancelItemButton" type="button">Cancel</button>
-      </div>
-    </form>
-  </dialog>
-
-  <footer class="site-footer">Built for personal use. Check package labels and current shelf prices.</footer>
-  <script type="module" src="assets/common.js"></script>
-  <script type="module" src="assets/shopping.js"></script><script type="module" src="assets/groceries.js"></script>
-<script type="module" src="assets/experience.js"></script></body>
+<body>
+<p>This page moved.</p>
+<p><a href="index.html#/eat/list">Open Forme</a></p>
+</body>
 </html>
