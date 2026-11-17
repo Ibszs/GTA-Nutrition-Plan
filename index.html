@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Forme</title>
 <meta name="description" content="Forme: your training, kitchen, movement practice and daily habits. Everything stays on this device.">
-<meta name="theme-color" content="#100f0d">
+<meta name="theme-color" content="#131012">
 <meta name="color-scheme" content="dark light">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="preload" href="assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/sofia-sans-extra-condensed-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/sofia-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app/css/base.css">
 <link rel="stylesheet" href="app/css/rooms.css">
 </head>
@@ -20,9 +21,10 @@
 <div class="app" id="app">
   <div class="ambience" aria-hidden="true"><i></i><i></i><i></i></div>
   <header class="topbar" id="topbar">
-    <a class="stamp" id="stampLink" href="#/fun/sheet" aria-label="Open this month's contact sheet"></a>
+    <a class="wordmark" href="#/today" aria-label="Forme, go to Today">Forme</a>
     <span class="topbar__where" id="where">Today</span>
     <span class="topbar__spacer"></span>
+    <a class="stamp" id="stampLink" href="#/fun/sheet" aria-label="Open this month"></a>
     <a class="icon-btn" id="privateLink" href="#/private" aria-label="Private space" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#eye-off"/></svg></a>
     <a class="icon-btn" href="#/search" aria-label="Search Forme"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#search"/></svg></a>
     <a class="icon-btn" href="#/you" aria-label="You: goals, progress and settings"><span class="avatar" id="avatar">F</span></a>
@@ -38,9 +40,8 @@
     <a class="dock__item" href="#/move" data-nav="move"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#figure"/></svg><span>Move</span></a>
   </nav>
   <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
-  <div class="grain" aria-hidden="true"></div>
 </div>
-<noscript><p style="padding:24px;color:#f2ead9;font-family:system-ui">Forme needs JavaScript to run. Your saved journals are untouched.</p></noscript>
+<noscript><p style="padding:24px;color:#fdecef;font-family:system-ui">Forme needs JavaScript to run. Your saved journals are untouched.</p></noscript>
 <script type="module" src="app/main.js"></script>
 </body>
 </html>

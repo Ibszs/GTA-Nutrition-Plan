@@ -55,7 +55,7 @@ function logSheet(habit, day) {
     body: () => { const state = store.get('habits'); const value = countOn(state.log, habit, day); const skipped = isSkipped(state.log, habit, day); return html`
       ${habit.kind === 'count' ? html`<div class="spread"><div><p class="eyebrow">${habit.unit || 'Count'}</p><p class="title">Target ${habit.target}</p></div><span class="stepper"><button type="button" data-act="adj" data-d="-1" aria-label="Less">−</button><output>${value}</output><button type="button" data-act="adj" data-d="1" aria-label="More">+</button></span></div>`
     : html`<button class="switch" type="button" role="switch" aria-checked="${value >= 1 ? 'true' : 'false'}" data-act="toggle"><span class="switch__t"><span class="title" style="font-size:.98rem">Done</span></span><span class="switch__k"></span></button>`}
-      <button class="switch" type="button" role="switch" aria-checked="${skipped ? 'true' : 'false'}" data-act="skip"><span class="switch__t"><span class="title" style="font-size:.98rem">Skip this day</span><span class="tiny muted" style="display:block">Sick, travelling, or just not today. A skip does not break anything.</span></span><span class="switch__k"></span></button>`; },
+      <button class="switch" type="button" role="switch" aria-checked="${skipped ? 'true' : 'false'}" data-act="skip"><span class="switch__t"><span class="title" style="font-size:.98rem">Skip this day</span><span class="tiny muted" style="display:block">For a sick day, travel or a day off. A skipped day does not count against you.</span></span><span class="switch__k"></span></button>`; },
     actions: {
       adj: (d, _e, _ev, self) => { store.update('habits', state => { state.log = setCount(state.log, habit, day, countOn(state.log, habit, day) + Number(d.d)); }); self.update(); },
       toggle: (_d, _e, _ev, self) => { store.update('habits', state => { state.log = tap(state.log, habit, day); }); self.update(); },
@@ -76,7 +76,7 @@ export function render(ctx) {
     <div class="segc" role="group" aria-label="Which day"><button type="button" aria-pressed="${viewDay === yesterday ? 'true' : 'false'}" data-act="when" data-d="${yesterday}">Yesterday</button><button type="button" aria-pressed="${viewDay === today() ? 'true' : 'false'}" data-act="when" data-d="${today()}">Today</button></div>
 
     ${!active.length ? html`<div class="empty"><p class="empty__t">No habits yet</p><p class="muted small">Add your own, or start from a suggestion and edit it. Suggestions are only examples.</p></div>
-      ${sec('Suggestions', 'Tap to add, then edit')}<div class="stack">${SEEDS.map((seed, index) => html`<button class="frame frame--press" type="button" data-act="seed" data-i="${index}"><div class="frame__rebate"><span>Suggestion</span><span>${dayLetters(seed.days)}</span></div><div class="frame__body"><p class="title">${seed.name}${seed.kind === 'count' ? html` <span class="muted">· ${seed.target} ${seed.unit}</span>` : ''}</p><p class="tiny muted">${seed.tiny}</p></div></button>`)}</div>` : ''}
+      ${sec('Suggestions', 'Tap to add, then edit')}<div class="stack">${SEEDS.map((seed, index) => html`<button class="frame frame--press" type="button" data-act="seed" data-i="${index}"><div class="frame__head"><span>Suggestion</span><span>${dayLetters(seed.days)}</span></div><div class="frame__body"><p class="title">${seed.name}${seed.kind === 'count' ? html` <span class="muted">· ${seed.target} ${seed.unit}</span>` : ''}</p><p class="tiny muted">${seed.tiny}</p></div></button>`)}</div>` : ''}
 
     ${due.length ? html`<div class="stack">${due.map(habit => { const done = isDone(state.log, habit, viewDay); const skipped = isSkipped(state.log, habit, viewDay); const value = countOn(state.log, habit, viewDay); const run = streak(habit, state.log, today()); const step = viewDay === today() ? nextStep(habit, state.log, today()) : null; const cells = weekPattern(habit, state.log, today());
     return html`<article class="hb ${done ? 'hb--done' : ''}">
@@ -93,10 +93,10 @@ export function render(ctx) {
     <button class="btn btn--block" type="button" data-act="new">${icon('plus')} New habit</button>
 
     ${active.length ? html`<section aria-label="Four weeks">${sec('Last four weeks', state.muteStreaks ? 'Streaks muted' : 'Share of due days done')}
-      <div class="list">${active.filter(habit => !habit.paused).map(habit => { const r = rate(habit, state.log, today()); return html`<div class="list__i"><span class="list__m"><span class="title">${habit.name}</span><span class="tiny muted" style="display:block">${r.due ? `${r.done} of ${r.due} due days` : 'No due days yet'}</span></span><span class="list__e mono num">${r.ratio === null ? '-' : `${Math.round(r.ratio * 100)}%`}</span></div>`; })}</div></section>` : ''}
+      <div class="list">${active.filter(habit => !habit.paused).map(habit => { const r = rate(habit, state.log, today()); return html`<div class="list__i"><span class="list__m"><span class="title">${habit.name}</span><span class="tiny muted" style="display:block">${r.due ? `${r.done} of ${r.due} due days` : 'No due days yet'}</span></span><span class="list__e data num">${r.ratio === null ? '-' : `${Math.round(r.ratio * 100)}%`}</span></div>`; })}</div></section>` : ''}
 
     <button class="switch" type="button" role="switch" aria-checked="${state.muteStreaks ? 'true' : 'false'}" data-act="mute"><span class="switch__t"><span class="title" style="font-size:.98rem">Mute streaks</span><span class="tiny muted" style="display:block">Hides every "in a row" count. The weekly pattern stays.</span></span><span class="switch__k"></span></button>
-    <details class="fold"><summary>Why Forme goes easy on streaks</summary><div class="fold__b">${HABIT_CLAIMS.map(claim => html`<p class="small">${claim.text} <span class="muted">${claim.level}. ${extLink(SOURCES[claim.src].url, SOURCES[claim.src].cite.split('.')[0])}, ${SOURCES[claim.src].date}.</span></p>`)}</div></details>
+    <details class="fold"><summary>Why streaks are optional here</summary><div class="fold__b">${HABIT_CLAIMS.map(claim => html`<p class="small">${claim.text} <span class="muted">${claim.level}. ${extLink(SOURCES[claim.src].url, SOURCES[claim.src].cite.split('.')[0])}, ${SOURCES[claim.src].date}.</span></p>`)}</div></details>
   </div>`;
   const find = id => store.get('habits').habits.find(habit => habit.id === id);
   return { room: 'street', where: 'Habits', body,
@@ -108,7 +108,7 @@ export function render(ctx) {
         actions: { today: (_x, _e, _ev, self) => { self.close(); logSheet(habit, viewDay); }, yday: (_x, _e, _ev, self) => { self.close(); logSheet(habit, yesterday); }, edit: (_x, _e, _ev, self) => { self.close(); editSheet(habit); } } }); },
       edit: d => editSheet(find(d.id)),
       new: () => editSheet(null),
-      seed: d => { const seed = SEEDS[Number(d.i)]; store.update('habits', next => { next.habits.push({ id: uid(), ...seed, days: [...seed.days], reminder: '', createdOn: today(), paused: false, fromSuggestion: true }); next.seeded = true; }); toast(`Added "${seed.name}". Edit it to make it yours.`); },
+      seed: d => { const seed = SEEDS[Number(d.i)]; store.update('habits', next => { next.habits.push({ id: uid(), ...seed, days: [...seed.days], reminder: '', createdOn: today(), paused: false, fromSuggestion: true }); next.seeded = true; }); toast(`Added "${seed.name}". Edit it to suit you.`); },
       mute: () => store.update('habits', next => { next.muteStreaks = !next.muteStreaks; }),
     } };
 }

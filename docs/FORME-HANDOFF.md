@@ -8,22 +8,28 @@ Written 17 Nov 2026 on the branch `fable/forme-rebuild`. Nothing is committed an
 
 **Your data.** The earlier journals are not converted. Training, the private log and your custom store lists are still read and written through the original modules, under the original storage keys, in the original format. Forme adds its own records beside them (`forme.*`). On first run it copies your daily tracker rows into the new body log, carries your calorie and protein targets into Lean gain (flagged as carried, so you can review them) and carries your whey label. Backups are version 3: the old envelope plus a `forme` section. Version 1 and 2 backups still import.
 
-**Design.** One palette in every area: warm black, bone, amber for anything you act on, red for what has been recorded or marked. Areas differ by material, not by theme: night street photographs and wide title type for Today, Train and Habits; flash-lit dish colours and a serif for the kitchen; line figures on a measured backdrop for movement. Appearance (dark, light, match device) is one setting for the whole app. Mono type is used only for measured numbers.
+**Design.** This is the third pass, done on 17 Nov 2026 after you said the second still looked AI-made. It replaces the colours, the typefaces and the on-screen writing. Structure, data and features are unchanged.
 
-This is the second pass. The first used a green-black home, a cream kitchen and a light grey studio. It was replaced after your note about the green, using the Taste skill and Anthropic's frontend-design skill as the audit. The Taste skill is written for landing pages and says so, so only the parts that transfer were applied: one accent, one theme at a time, no cream-and-serif default, far fewer small capital labels, no glow effects, one icon family, short button labels, no em dashes.
+- **The idea.** Forme is set like a sports daily printed on coloured paper. Pink stock, black ink, one spot red. Dark appearance is the night edition: black page, with the pink kept for the block you act on. Light appearance prints black on the pink.
+- **Colour.** No amber, no bone, no warm black. Red is only used for a record, a recording in progress or a warning. Working muscle (red) and lengthening (blue hatch) on the movement drawings are separate from the brand colours. Settings has a Paper choice: Pink (default), Sky, Butter or Grey. Every tint in the app is mixed from that one paper colour, so the whole app follows it.
+- **Type.** One family in three widths instead of four unrelated faces: Sofia Sans Extra Condensed for headlines, buttons, dish names and big numerals; Sofia Sans Condensed for figures, tables and labels; Sofia Sans for reading. No serif, no monospace, no LED-clock face.
+- **Layout.** Each main tab opens with one inverted block for the thing to do now (today's session, tonight's dinner, today's practice). Sections sit under a 2px rule. Corners are square. Tags lean the same way the headlines do. Nutrition and comparison tables are set like box scores.
+- **Removed.** Film grain, the camera date stamp, sprocket holes on the dock, scanlines on the replays, the receipt zigzag and barcode, the rotated masking-tape labels, vignettes and filters on photographs.
+- **Writing.** Screen titles are plain names (Settings, Progress, Week plan) instead of slogans. Film terms are gone: Contact sheet is now Month, The sheet is Stickers, "on tape" is "logged". Lines built as "not X, just Y" or reassurance nobody asked for were rewritten or cut. Researched content (recipes, drill cards, evidence notes) was left as written.
+- **Icon.** Redrawn: black italic F on pink with a red rule.
 
 **New and rebuilt areas**
 
 | Area | What is there |
 |---|---|
-| Today | Workout start or resume, the week as a contact strip, dinner, movement, habits, morning numbers, Use It First, the one thing, side quest. Pin, hide, reorder. "Just got home" and "Pick for me". |
+| Today | Workout start or resume, the week, dinner, movement, habits, morning numbers, Use It First, the one thing, side quest. Pin, hide, reorder. "Just got home" and "Pick for me". |
 | Train | Same program and history. Faster logger with last-time values, undo, rest timer, rough or clean reps. Quick log for a past day. Leg and hamstring view. Record replay. |
-| Eat | 16 recipes rebuilt from scratch, recipe page, cook mode, two sample weeks, grocery receipt, prep flows, Use It First, fridge finder, the old recipe book as an archive. |
+| Eat | 16 recipes rebuilt from scratch, recipe page, cook mode, two sample weeks, grocery list, prep flows, Use It First, fridge finder, the old recipe book as an archive. |
 | Move | 7-day practice with a Day 7 choice and an opt-in 30-day plan, guided player, 18 teaching cards, evidence page, "when to get checked". |
 | Habits | Create and edit, days of week, count or yes/no, skip, yesterday, undo, mute streaks, reminders while the app is open. |
 | Reset | Four editable actions and an evening check-in. |
 | Private | Opt-in "A minute" pause tool, plus the earlier private log unchanged. |
-| Play | Sticker sheet, side quest, Night Drive, month contact sheet, weekly replay with a cover made from what you cooked. |
+| Play | Stickers, side quest, Night Drive, the month at a glance, weekly replay with a cover made from what you cooked. |
 | You | Goal mode and targets, trends, appearance, motion, backup, credits. |
 | Everywhere | Quick add (the red button), search, toasts with undo. |
 
@@ -79,6 +85,15 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **Safari and a screen reader.** Not tried. Controls have labels and keyboard focus styles, but nobody has listened to it.
 - **Taste.** No recipe was cooked. Timings and quantities are careful estimates.
 
+## Checks for the third design pass (17 Nov 2026)
+
+- **Automated:** `npm test`, 628 tests, all passing. One test list was updated for the new font files. One copy change was reverted because a test pins that wording on purpose (the habit "Yesterday did not happen" line).
+- **Looked at as pictures, phone width (390), throwaway data:** Today (dark and light), Train, the workout logger, Kitchen, a recipe page, cook mode, Week plan, Groceries, Move, the movement setup screen, Stickers, Settings, and Today at 1280 wide. Also Today on the Sky paper.
+- **Contrast, measured:** every text colour against every surface it sits on, in dark and light, on the page and inside the inverted block, for all four papers (304 pairs). All pass 4.5 to 1. The blue day-marker dot is 3.7 to 1 on the light papers; it is a marker, not text.
+- **Not looked at as pictures:** Habits and Reset after their header fix, Private and the pause screen, Search, Progress, Backup, Credits, Use it first, the fridge finder, the replays, most sheets and dialogs, and the Butter and Grey papers. They use the same components as the screens above, but nobody has seen them.
+- **Not checked:** animations by eye (the headline wipe, the block wipe and the replays were written but not watched), a real phone, Safari, a screen reader, and your real data. The earlier "not checked" list below still applies.
+- **Backup of the second pass:** the working tree as it was before this pass is saved in git at `refs/backup/pre-design-pass-3`. Nothing is committed on the branch.
+
 ## Things you should know
 
 - **The repository is public.** Pushing publishes the code. It does not publish your data, which never leaves your browser.
@@ -88,4 +103,4 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **The private areas are hidden, not protected.** No password, no encryption.
 - **Movement content is general practice guidance**, not assessment or treatment. The drawings are diagrams, not anatomy plates.
 - **Old documents.** `docs/visual-redesign.md`, `docs/implementation-plan.md`, `docs/exercise-audit-2026.md` and `research/` describe version 3. The exercise audit still applies to the gym photographs.
-- **Removed files.** The old page scripts and stylesheets, Three.js, two fonts and three generated images are deleted from the working tree. Git still has them.
+- **Removed files.** The old page scripts and stylesheets, Three.js, two fonts and three generated images are deleted from the working tree. Git still has them. The four typefaces from the second pass (Archivo, Young Serif, Martian Mono, DSEG7) are also removed; they exist only in the backup ref above.

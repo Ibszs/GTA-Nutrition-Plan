@@ -333,7 +333,7 @@ test('every url() in app/css that is not a data: URI or fragment exists', () => 
 
 // ---------- service worker ----------
 
-const FONTS = ['assets/fonts/archivo-var.woff2', 'assets/fonts/young-serif.woff2', 'assets/fonts/martian-mono-var.woff2', 'assets/fonts/dseg7-classic-bold.woff2'];
+const FONTS = ['assets/fonts/sofia-sans.woff2', 'assets/fonts/sofia-sans-italic.woff2', 'assets/fonts/sofia-sans-condensed.woff2', 'assets/fonts/sofia-sans-extra-condensed.woff2', 'assets/fonts/sofia-sans-extra-condensed-italic.woff2'];
 
 function precache() {
   const worker = read('sw.js');

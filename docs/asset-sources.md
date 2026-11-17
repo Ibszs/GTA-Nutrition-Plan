@@ -54,20 +54,19 @@ The jointed figure, its 18 pairs of poses and the target overlays are original t
 - 42 carried over from the previous version, from revision `94e4cb9d9db5907053ebf3636a97c45529cf776b` of lucide-icons/lucide.
 - 21 added for Forme from `lucide-static` 1.73.0, stored under the short ids the app uses: `figure` (person-standing), `minus`, `trash` (trash-2), `pencil`, `more` (ellipsis), `grip` (grip-vertical), `arrow-up`, `arrow-down`, `arrow-left`, `snow` (snowflake), `fridge` (refrigerator), `receipt` (receipt-text), `film`, `star`, `lock`, `bell`, `bolt` (zap), `door` (door-open), `dice` (dices), `oil` (droplet), `ext` (external-link).
 
-The app icon (`icons/icon-192.png`, `icons/icon-512.png`) was drawn for Forme: a slab F in bone on warm black with a red record dot. It replaces the earlier generated icon.
+The app icon (`icons/icon-192.png`, `icons/icon-512.png`) was drawn for Forme: a heavy italic F in black on the pink stock with a red slanted rule under it, set in Sofia Sans Extra Condensed and rendered from HTML on 17 Nov 2026. It replaces the earlier generated icon.
 
 ## Typefaces
 
-Four families, all SIL Open Font License 1.1, bundled as WOFF2 in `assets/fonts/`:
+One superfamily in three widths, SIL Open Font License 1.1, bundled as WOFF2 in `assets/fonts/`. Designed by Lettersoup (Botio Nikoltchev and Ani Petrova). Licence text: `docs/licenses/sofia-sans.txt`.
 
-| File | Family | By | Role | Licence text |
-|---|---|---|---|---|
-| `archivo-var.woff2` | Archivo (variable width and weight) | Omnibus-Type | All words; wide heavy cuts for titles | `docs/licenses/archivo.txt` |
-| `young-serif.woff2` | Young Serif | Bastien Sozeau | Dish names and kitchen headlines | `docs/licenses/young-serif.txt` |
-| `martian-mono-var.woff2` | Martian Mono (variable) | Evil Martians | Measured numbers, receipts | `docs/licenses/martian-mono.txt` |
-| `dseg7-classic-bold.woff2` | DSEG7 Classic Bold | Keshikan | Clocks and the camera date stamp | `docs/licenses/dseg7.txt` |
+| File | Family | Role |
+|---|---|---|
+| `sofia-sans-extra-condensed.woff2`, `sofia-sans-extra-condensed-italic.woff2` | Sofia Sans Extra Condensed (variable weight, upright and italic) | Headlines, buttons, dish names, clocks and big numerals |
+| `sofia-sans-condensed.woff2` | Sofia Sans Condensed (variable weight) | Figures, tables, labels |
+| `sofia-sans.woff2`, `sofia-sans-italic.woff2` | Sofia Sans (variable weight, upright and italic) | Everything you read |
 
-Archivo, Young Serif and Martian Mono came from Google Fonts; DSEG7 from the `dseg` npm package, version 0.46.0.
+All five are the Latin subsets served by Google Fonts (`fonts.gstatic.com`), downloaded 17 Nov 2026 and not modified. They replace Archivo, Young Serif, Martian Mono and DSEG7 from the previous design pass.
 
 ## Nutrition values
 

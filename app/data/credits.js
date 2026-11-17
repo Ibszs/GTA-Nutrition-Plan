@@ -25,7 +25,7 @@ export const PHOTOS = Object.freeze({
 });
 
 export const OTHER_CREDITS = Object.freeze([
-  { what: 'Typefaces', detail: 'Archivo (Omnibus-Type), Young Serif (Bastien Sozeau), Martian Mono (Evil Martians): SIL Open Font License 1.1, from Google Fonts. DSEG7 Classic (Keshikan): SIL Open Font License 1.1. All four are bundled locally; nothing loads from a font service.', url: 'https://openfontlicense.org/' },
+  { what: 'Typefaces', detail: 'Sofia Sans, Sofia Sans Condensed and Sofia Sans Extra Condensed, by Lettersoup (Botio Nikoltchev and Ani Petrova): SIL Open Font License 1.1, from Google Fonts. The five files are bundled locally; nothing loads from a font service.', url: 'https://openfontlicense.org/' },
   { what: 'Interface icons', detail: '63 Lucide icons (ISC licence): 42 carried over from the earlier app and 21 added from lucide-static 1.73.0. One icon family throughout, bundled in a local sprite.', url: 'https://lucide.dev/license' },
   { what: 'App icon', detail: 'Drawn for Forme: a slab F with the record dot. No outside artwork.', url: null },
   { what: 'Gym movement photographs', detail: '76 unmodified photographs from Free Exercise DB (public domain, Unlicense), carried over from the earlier app and shown only for the exact variation they picture.', url: 'https://github.com/yuhonas/free-exercise-db' },

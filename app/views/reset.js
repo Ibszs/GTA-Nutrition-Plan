@@ -21,7 +21,7 @@ export const resetActions = () => store.get('reset').actions ?? DEFAULT_ACTIONS;
 function mealSheet() {
   const kitchen = store.get('kitchen');
   const picks = pickDinner({ minutes: 10, energy: 'low', onHand: kitchen.onHand ?? [], memory: kitchen.recipes }).slice(0, 3);
-  sheet({ title: 'Quick meal', eyebrow: 'Lowest effort first', body: html`<div class="list">${picks.map(pick => { const per = recipeTotals(pick.recipe, {}, whey()).per; return html`<a class="list__i list__i--tap" href="#/eat/r/${pick.recipe.id}" data-act="__close"><span class="list__m"><span class="title">${pick.recipe.short}</span><span class="tiny muted" style="display:block">${pick.recipe.time.total} min · ${Math.round(per.kcal)} kcal · ${Math.round(per.protein)} g protein</span></span><span class="list__e">${icon('chevron-right')}</span></a>`; })}</div><p class="tiny muted">Not hungry enough for any of it? The house shake is the fallback to the fallback.</p>` });
+  sheet({ title: 'Quick meal', eyebrow: 'Lowest effort first', body: html`<div class="list">${picks.map(pick => { const per = recipeTotals(pick.recipe, {}, whey()).per; return html`<a class="list__i list__i--tap" href="#/eat/r/${pick.recipe.id}" data-act="__close"><span class="list__m"><span class="title">${pick.recipe.short}</span><span class="tiny muted" style="display:block">${pick.recipe.time.total} min · ${Math.round(per.kcal)} kcal · ${Math.round(per.protein)} g protein</span></span><span class="list__e">${icon('chevron-right')}</span></a>`; })}</div><p class="tiny muted">Not hungry enough for any of these? Have the house shake.</p>` });
 }
 
 export function render(ctx) {
@@ -32,9 +32,9 @@ export function render(ctx) {
   const left = running ? Math.max(0, (running.until - Date.now()) / 1000) : 0;
   const body = html`<div class="wrap cut">
     <a class="linkish linkish--quiet" href="#/today">${icon('arrow-left', 'ic--sm')} Today</a>
-    <header class="reset__head"><img src="assets/photos/street-quiet.jpg" alt="" width="1024" height="683" loading="lazy"><div><p class="eyebrow" style="color:var(--bone-dim)">Reset</p><h1 class="display display--l">Pick one small thing.</h1><p style="color:var(--bone-dim)">The afternoon is not ruined. It just needs a next move.</p></div></header>
+    <header class="reset__head"><img src="assets/photos/street-quiet.jpg" alt="" width="1024" height="683" loading="lazy"><div><h1 class="display display--l">Reset</h1><p>Four short things to do when the afternoon has gone badly. One is enough.</p></div></header>
 
-    ${running ? html`<section class="frame timerbox" aria-label="Timer"><div class="frame__body center"><p class="eyebrow">${running.label}</p><p class="seg timerbox__t" id="resetClock" role="timer">${clock(left)}</p><div class="row" style="justify-content:center"><button class="btn btn--quiet btn--sm" type="button" data-act="stop">Stop</button><button class="btn btn--quiet btn--sm" type="button" data-act="plus">+1 min</button></div></div></section>` : ''}
+    ${running ? html`<section class="frame timerbox" aria-label="Timer"><div class="frame__body center"><p class="eyebrow">${running.label}</p><p class="clock timerbox__t" id="resetClock" role="timer">${clock(left)}</p><div class="row" style="justify-content:center"><button class="btn btn--quiet btn--sm" type="button" data-act="stop">Stop</button><button class="btn btn--quiet btn--sm" type="button" data-act="plus">+1 min</button></div></div></section>` : ''}
 
     <div class="rgrid2">${actions.map(action => html`<div class="rtile">${editMode
     ? html`<label class="field"><span class="field__l">Name</span><input class="input" maxlength="40" value="${action.label}" data-change="rename" data-id="${action.id}"></label>
@@ -43,12 +43,12 @@ export function render(ctx) {
     : html`<button class="rtile__b" type="button" data-act="run" data-id="${action.id}"><span class="rtile__k">${action.kind === 'timer' ? `${action.minutes} min` : action.kind === 'meal' ? 'Food' : 'Write'}</span><span class="rtile__t">${action.label}</span><span class="tiny muted">${action.note}</span></button>`}</div>`)}</div>
     <div class="row row--wrap"><button class="btn btn--quiet btn--sm grow" type="button" data-act="edit">${editMode ? 'Done editing' : 'Edit these'}</button>${editMode ? html`<button class="btn btn--quiet btn--sm" type="button" data-act="addtimer">${icon('plus', 'ic--sm')} Add a timer</button><button class="btn btn--quiet btn--sm" type="button" data-act="defaults">Restore the four</button>` : ''}</div>
 
-    <section class="frame" aria-label="The one thing"><div class="frame__rebate"><span>The one thing</span><span>${one ? 'Open' : 'Empty'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="The one thing"><div class="frame__head"><span>The one thing</span><span>${one ? 'Open' : 'Empty'}</span></div><div class="frame__body">
       ${one ? html`<p class="title">${one.text}</p><p class="tiny muted">Written ${fmtDay(one.date, { weekday: 'short', day: 'numeric', month: 'short' })}. It shows on Today until you tick it.</p><div class="row"><button class="btn btn--sm grow" type="button" data-act="onedone">${icon('check', 'ic--sm')} Done</button><button class="btn btn--quiet btn--sm" type="button" data-act="oneclear">Clear</button></div>`
     : html`<form data-form="one" class="row"><label class="vh" for="oneText">The one thing I need to do</label><input class="input grow" id="oneText" maxlength="120" placeholder="Call the landlord. Book the shift. Wash the gym bag."><button class="btn btn--sm" type="submit">Keep</button></form>`}
     </div></section>
 
-    <section class="frame" aria-label="Evening check-in"><div class="frame__rebate"><span>Evening check-in</span><span>Optional, ten seconds</span></div><div class="frame__body">
+    <section class="frame" aria-label="Evening check-in"><div class="frame__head"><span>Evening check-in</span><span>Optional, ten seconds</span></div><div class="frame__body">
       <div><p class="eyebrow">Energy now</p><div class="segc" style="margin-top:6px" role="group" aria-label="Energy, 1 to 5">${[1, 2, 3, 4, 5].map(n => html`<button type="button" aria-pressed="${evening.energy === n ? 'true' : 'false'}" data-act="energy" data-v="${n}">${n}</button>`)}</div></div>
       <div><p class="eyebrow">Appetite</p><div class="segc" style="margin-top:6px" role="group" aria-label="Appetite">${[['low', 'Low'], ['ok', 'Normal'], ['high', 'Hungry']].map(([id, label]) => html`<button type="button" aria-pressed="${evening.appetite === id ? 'true' : 'false'}" data-act="appetite" data-v="${id}">${label}</button>`)}</div></div>
       ${evening.appetite === 'low' ? html`<p class="small">Low appetite? <a href="#/eat/r/house-shake">The house shake</a> is the easiest calories in the kitchen, and the week plan has a <a href="#/eat/week">low appetite day</a>.</p>` : ''}

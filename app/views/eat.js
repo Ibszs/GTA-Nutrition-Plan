@@ -1,7 +1,7 @@
 // Eat: the recipe index, a recipe page that shows every number it claims, and a hands-busy cook mode.
 
 import * as store from '../store.js';
-import { html, raw, icon, sheet, toast, haptic, blip, today, fmtDay, clock, sec, meter, ticks, plural, fmt, round, extLink, motionOK, stamp } from '../ui.js';
+import { html, raw, icon, sheet, toast, haptic, blip, today, fmtDay, clock, sec, meter, ticks, plural, fmt, round, extLink, motionOK } from '../ui.js';
 import { whey, recipeRecord, updateRecipe, markCooked, addBatch, award, textureScore } from '../actions.js';
 import { RECIPES, RECIPE_BY_ID, COLLECTIONS, FILTERS, CRAVINGS } from '../data/recipes.js';
 import { FOODS, foodSource, OIL_TBSP_G } from '../data/foods.js';
@@ -29,16 +29,16 @@ export function photoBlock(recipe, { size = 'card', eager = false } = {}) {
   const photo = recipe.photo ? PHOTOS[recipe.photo] : null;
   if (photo) return html`<div class="shot shot--${size} bd-${recipe.backdrop}"><img src="${photo.file}" alt="${photo.alt}" width="${photo.w}" height="${photo.h}" ${eager ? raw('fetchpriority="high"') : ''} decoding="async"></div>`;
   // No verified photo of this dish, so it gets a designed card in its own colour instead of a stand-in picture.
-  if (size === 'thumb') return html`<div class="shot shot--thumb tcard bd-${recipe.backdrop}" aria-hidden="true"><span class="tcard__m serif">${recipe.short.split(' ').slice(0, 2).map(word => word.charAt(0)).join('')}</span></div>`;
+  if (size === 'thumb') return html`<div class="shot shot--thumb tcard bd-${recipe.backdrop}" aria-hidden="true"><span class="tcard__m dish">${recipe.short.split(' ').slice(0, 2).map(word => word.charAt(0)).join('')}</span></div>`;
   return html`<div class="shot shot--${size} tcard bd-${recipe.backdrop}" role="img" aria-label="${recipe.name}: ${recipe.kicker} No verified photo of this dish, so this is a text card.">
-    <span class="tcard__k">${recipe.cuisine}</span><span class="tcard__t serif">${recipe.kicker}</span></div>`;
+    <span class="tcard__k">${recipe.cuisine}</span><span class="tcard__t dish">${recipe.kicker}</span></div>`;
 }
 
 function card(recipe, wide = false) {
   const per = recipeTotals(recipe, {}, whey()).per; const record = recipeRecord(recipe.id); const why = reason(recipe);
   return html`<a class="rcard ${wide ? 'rcard--wide' : ''}" href="#/eat/r/${recipe.id}" aria-label="${recipe.name}, ${recipe.time.total} minutes, ${round(per.kcal)} calories, ${round(per.protein)} grams protein">
     ${photoBlock(recipe)}
-    <span class="rcard__b"><span class="rcard__t serif">${recipe.short}</span>
+    <span class="rcard__b"><span class="rcard__t dish">${recipe.short}</span>
       <span class="meta"><span>${recipe.time.total} min</span><span>${round(per.kcal / 10) * 10} kcal</span><span>${round(per.protein)} g protein</span></span>
       <span class="rcard__tags">${record.saved ? html`<span class="tag tag--amber">Saved</span>` : ''}${why && !record.saved ? html`<span class="tag tag--ghost">${why}</span>` : ''}${recipe.storage.freezes === 'well' ? html`<span class="tag tag--line">Freezes</span>` : ''}${recipe.fallback ? html`<span class="tag tag--line">Fallback</span>` : ''}</span></span></a>`;
 }
@@ -59,15 +59,12 @@ function index() {
   const inFridge = kitchen.batches.filter(batch => batch.left > 0).length;
   const legacySaved = Object.values(legacy.planner().value?.recipeBook ?? {}).filter(item => item.saved || item.note).length;
   return html`<div class="wrap kitchen">
-    <header class="mast"><p class="mast__k"><span>Forme Kitchen</span><span>${mode.name} week</span></p>
-      <h1 class="mast__t serif stretch-in">Food you would eat twice.</h1>
-      <p class="mast__d">Sixteen recipes, no seafood anywhere, every calorie traced to an ingredient. Measured oil, real leftovers.</p></header>
-
+    <h1 class="vh">Kitchen</h1>
     ${tonightRecipe ? html`<a class="tonight" href="#/eat/r/${tonightRecipe.id}">
       ${photoBlock(tonightRecipe, { size: 'tonight', eager: true })}
-      <span class="tonight__b bd-${tonightRecipe.backdrop}"><span class="tag">Tonight · ${DAYS[dayIndex]}</span><span class="tonight__t serif">${tonightRecipe.name}</span>
+      <span class="tonight__b"><span class="slab__k"><span>Tonight · ${DAYS[dayIndex]}</span><span>${mode.name} week</span></span><span class="tonight__t dish head-in">${tonightRecipe.name}</span>
         <span class="meta"><span>${tonightRecipe.time.total} min</span><span>${round(recipeTotals(tonightRecipe, { version: tonight.ver, levers: tonight.levers }, whey()).per.kcal / 10) * 10} kcal</span><span>${tonight.ver === 'light' ? 'Lighter version' : 'As written'}</span></span>
-        <span class="tonight__go">Open recipe ${icon('arrow-right', 'ic--sm')}</span></span></a>` : ''}
+        <span class="tonight__go">Open recipe ${icon('arrow-right')}</span></span></a>` : html`<header class="mast"><p class="mast__k"><span>${mode.name} week</span><span>Nothing planned tonight</span></p><p class="mast__t display display--l">Kitchen</p></header>`}
 
     <nav class="qrow" aria-label="Kitchen tools">
       <a class="qtile" href="#/eat/week">${icon('calendar-days')}<span>Week plan</span><small>${mode.short}</small></a>
@@ -83,8 +80,8 @@ function index() {
       ${list.length ? html`<div class="rgrid">${list.map(recipe => card(recipe))}</div>` : html`<div class="empty"><p class="empty__t">Nothing matches that</p><p class="muted small">Try an ingredient you have, a time, or clear the filters.</p><button class="btn btn--sm" type="button" data-act="clear">Clear search</button></div>`}`
     : html`${COLLECTIONS.map(collection => { const items = RECIPES.filter(collection.test).sort((a, b) => score(b) - score(a)); return items.length ? html`<section aria-label="${collection.name}">${sec(collection.name, collection.note)}<div class="scroller" style="margin-top:10px">${items.map(recipe => card(recipe, true))}</div></section>` : ''; })}
       <section aria-label="All recipes">${sec('Everything', 'Sorted by what you save, rate and cook')}<div class="rgrid" style="margin-top:10px">${list.map(recipe => card(recipe))}</div></section>
-      <section aria-label="Snack swaps">${sec('When a craving hits', 'Swaps that actually satisfy')}
-        <div class="stack" style="margin-top:10px">${CRAVINGS.map(item => html`<a class="frame frame--press" href="#/eat/r/${item.swap}"><div class="frame__rebate"><span>${item.want}</span><span>Try: ${RECIPE_BY_ID[item.swap].short}</span></div><div class="frame__body"><p>${item.why}</p><p class="tiny muted">${item.usual}</p><p class="tiny muted">Also works: ${item.also}</p></div></a>`)}</div></section>`}
+      <section aria-label="Snack swaps">${sec('When a craving hits', 'What to have instead')}
+        <div class="stack" style="margin-top:10px">${CRAVINGS.map(item => html`<a class="frame frame--press" href="#/eat/r/${item.swap}"><div class="frame__head"><span>${item.want}</span><span>Try: ${RECIPE_BY_ID[item.swap].short}</span></div><div class="frame__body"><p>${item.why}</p><p class="tiny muted">${item.usual}</p><p class="tiny muted">Also works: ${item.also}</p></div></a>`)}</div></section>`}
     ${legacySaved ? html`<a class="linkish linkish--quiet" href="#/eat/archive">${icon('book-open', 'ic--sm')} Your earlier recipe book (${plural(legacySaved, 'saved item')})</a>` : html`<a class="linkish linkish--quiet" href="#/eat/archive">${icon('book-open', 'ic--sm')} Earlier Form & Fuel recipes (archive)</a>`}
   </div>`;
 }
@@ -105,7 +102,7 @@ function recipePage(recipe) {
   return html`<article class="wrap kitchen rp">
     <a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>
     <header class="rp__hero ${photo ? '' : 'rp__hero--text'}">${photo ? photoBlock(recipe, { size: 'hero', eager: true }) : ''}
-      <div class="rp__title bd-${recipe.backdrop}"><p class="meta"><span>${recipe.cuisine}</span><span>${recipe.time.total} min</span><span>Makes ${recipe.yield.n} ${recipe.yield.unit}</span></p><h1 class="serif rp__h stretch-in">${recipe.name}</h1><p>${recipe.kicker}</p></div></header>
+      <div class="rp__title"><p class="meta"><span>${recipe.cuisine}</span><span>${recipe.time.total} min</span><span>Makes ${recipe.yield.n} ${recipe.yield.unit}</span></p><h1 class="dish rp__h head-in">${recipe.name}</h1><p>${recipe.kicker}</p></div></header>
     ${recipe.photoNote ? html`<p class="tiny muted">${photo ? recipe.photoNote : ''}</p>` : !photo ? html`<p class="tiny muted">No properly licensed photo of this exact dish was found, so Forme shows no picture rather than a stand-in.</p>` : ''}
 
     <div class="rp__acts">
@@ -116,12 +113,12 @@ function recipePage(recipe) {
     </div>
     ${record.cooked?.length || record.rating || record.skips ? html`<p class="tiny muted">${record.cooked?.length ? `Cooked ${plural(record.cooked.length, 'time')}, last ${fmtDay(record.cooked.at(-1), { month: 'short', day: 'numeric' })}. ` : ''}${record.rating ? `You rated it ${record.rating}/5. ` : ''}${record.skips ? 'Marked not for me. ' : ''}${tex !== null ? `Reheats ${fmt(tex, 1)}/5 for you.` : ''}</p>` : ''}
 
-    <section class="frame" aria-label="Nutrition per serving"><div class="frame__rebate"><span>Per ${recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '')}</span><span>${state.version === 'light' ? 'Lighter version' : 'As written'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Nutrition per serving"><div class="frame__head"><span>Per ${recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '')}</span><span>${state.version === 'light' ? 'Lighter version' : 'As written'}</span></div><div class="frame__body">
       <div class="statrow"><div class="stat"><div class="stat__v num">${round(totals.per.kcal)}</div><div class="stat__l">kcal</div></div><div class="stat"><div class="stat__v num">${round(totals.per.protein)}<small>g</small></div><div class="stat__l">Protein</div></div><div class="stat"><div class="stat__v num">${round(totals.per.carbs)}<small>g</small></div><div class="stat__l">Carbs</div></div><div class="stat"><div class="stat__v num">${round(totals.per.fat)}<small>g</small></div><div class="stat__l">Fat</div></div></div>
-      <p class="tiny muted">Fat is part of the meal, not a problem to remove: ${round(totals.addedFatPerServing)} g of it comes from added oil, butter, cream, mayo or nut butter, the rest from the food itself.${targets ? ` One serving is ${round((totals.per.kcal / targets.kcal) * 100)}% of your ${MODES[store.get('profile').mode].name.toLowerCase()} calories and ${round((totals.per.protein / targets.protein) * 100)}% of your protein.` : ''}</p>
+      <p class="tiny muted">Fat is part of the meal. ${round(totals.addedFatPerServing)} g of it comes from added oil, butter, cream, mayo or nut butter, the rest from the food itself.${targets ? ` One serving is ${round((totals.per.kcal / targets.kcal) * 100)}% of your ${MODES[store.get('profile').mode].name.toLowerCase()} calories and ${round((totals.per.protein / targets.protein) * 100)}% of your protein.` : ''}</p>
     </div></section>
 
-    ${compare ? html`<section class="frame" aria-label="Standard and lighter versions"><div class="frame__rebate"><span>Two ways to cook it</span><span>Saves ${round(compare.saved.kcal)} kcal a serving</span></div><div class="frame__body">
+    ${compare ? html`<section class="frame" aria-label="Standard and lighter versions"><div class="frame__head"><span>Two ways to cook it</span><span>Saves ${round(compare.saved.kcal)} kcal a serving</span></div><div class="frame__body">
       <div class="segc" role="group" aria-label="Version"><button type="button" aria-pressed="${state.version === 'std' ? 'true' : 'false'}" data-act="ver" data-v="std">As written</button><button type="button" aria-pressed="${state.version === 'light' ? 'true' : 'false'}" data-act="ver" data-v="light">Lighter</button></div>
       <table class="cmp"><thead><tr><th scope="col"><span class="vh">Measure</span></th><th scope="col">As written</th><th scope="col">Lighter</th></tr></thead><tbody>
         <tr><th scope="row">Calories</th><td>${round(compare.std.per.kcal)}</td><td>${round(compare.light.per.kcal)}</td></tr>
@@ -138,11 +135,11 @@ function recipePage(recipe) {
       ${recipe.tags.includes('template') ? html`<button class="btn btn--quiet btn--sm" type="button" data-act="keeplevers">Keep these portions</button>` : ''}
     </div></section>
 
-    ${totals.oil.g > 0 ? html`<section class="frame oilm" aria-label="Oil meter"><div class="frame__rebate"><span>${icon('oil', 'ic--sm')} Oil meter</span><span>${round(oilBatch * 8.84)} kcal in the batch</span></div><div class="frame__body">
+    ${totals.oil.g > 0 ? html`<section class="frame oilm" aria-label="Oil meter"><div class="frame__head"><span>${icon('oil', 'ic--sm')} Oil meter</span><span>${round(oilBatch * 8.84)} kcal in the batch</span></div><div class="frame__body">
       <p><strong>${oilText(oilBatch)}</strong> of cooking oil for ${fmt(state.servings)} ${recipe.yield.unit}: <strong>${oilText(oilBatch / state.servings)}</strong> a serving, ${round((oilBatch / state.servings) * 8.84)} kcal.</p>
-      <div class="spread"><div><p class="eyebrow">What you actually poured</p><p class="tiny muted">Measure into a spoon once and you will know.</p></div>
+      <div class="spread"><div><p class="eyebrow">What you poured</p><p class="tiny muted">Measure it into a spoon once to find out.</p></div>
         <span class="stepper"><button type="button" data-act="oil" data-d="-1" aria-label="Less oil used">−</button><output>${state.oilTsp === null ? '-' : household(state.oilTsp, 'tsp')}</output><button type="button" data-act="oil" data-d="1" aria-label="More oil used">+</button></span></div>
-      ${usedG !== null ? html`<div class="note ${usedG > oilBatch * 1.25 ? 'note--warn' : 'note--good'}"><p>${Math.abs(usedG - oilBatch) < 2 ? 'Right on the recipe.' : usedG > oilBatch ? `That is ${round(((usedG - oilBatch) / state.servings) * 8.84)} kcal more per serving than written. Nothing wrong with it; it is just worth seeing.` : `That is ${round(((oilBatch - usedG) / state.servings) * 8.84)} kcal less per serving than written.`}</p></div>` : ''}
+      ${usedG !== null ? html`<div class="note ${usedG > oilBatch * 1.25 ? 'note--warn' : 'note--good'}"><p>${Math.abs(usedG - oilBatch) < 2 ? 'Right on the recipe.' : usedG > oilBatch ? `That is ${round(((usedG - oilBatch) / state.servings) * 8.84)} kcal more per serving than written.` : `That is ${round(((oilBatch - usedG) / state.servings) * 8.84)} kcal less per serving than written.`}</p></div>` : ''}
     </div></section>` : ''}
 
     <section aria-label="Ingredients">${sec('Ingredients', html`<button type="button" data-act="togroceries">Add to groceries</button>`)}
@@ -158,11 +155,11 @@ function recipePage(recipe) {
       ${recipe.variations ? recipe.variations.map(variation => html`<div class="note" id="v-${variation.id}"><p><strong>${variation.name}.</strong> ${variation.text}</p></div>`) : ''}
     </section>
 
-    <section class="frame" aria-label="Taste profile"><div class="frame__rebate"><span>Taste</span><span>Out of five</span></div><div class="frame__body tastes">${[['Heat', 'heat'], ['Tang', 'tang'], ['Richness', 'rich'], ['Crunch', 'crunch'], ['Sweetness', 'sweet']].map(([label, key]) => html`<div class="spread"><span>${label}</span><span class="row">${ticks(recipe.taste[key], 5, 'ticks--mark')}<span class="vh">${recipe.taste[key]} of 5</span></span></div>`)}</div></section>
+    <section class="frame" aria-label="Taste profile"><div class="frame__head"><span>Taste</span><span>Out of five</span></div><div class="frame__body tastes">${[['Heat', 'heat'], ['Tang', 'tang'], ['Richness', 'rich'], ['Crunch', 'crunch'], ['Sweetness', 'sweet']].map(([label, key]) => html`<div class="spread"><span>${label}</span><span class="row">${ticks(recipe.taste[key], 5, 'ticks--mark')}<span class="vh">${recipe.taste[key]} of 5</span></span></div>`)}</div></section>
 
     <details class="fold"><summary>Swaps and flavour notes</summary><div class="fold__b"><ul class="dots">${recipe.subs.map(item => html`<li>${item}</li>`)}</ul><p class="eyebrow">Flavour without more fat</p><ul class="dots">${recipe.tips.map(item => html`<li>${item}</li>`)}</ul></div></details>
 
-    <section class="frame" aria-label="Leftovers"><div class="frame__rebate"><span>Worth reheating?</span><span>${recipe.storage.freezes === 'well' ? 'Freezes well' : recipe.storage.freezes === 'ok' ? 'Freezes okay' : 'Does not freeze well'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Leftovers"><div class="frame__head"><span>Worth reheating?</span><span>${recipe.storage.freezes === 'well' ? 'Freezes well' : recipe.storage.freezes === 'ok' ? 'Freezes okay' : 'Does not freeze well'}</span></div><div class="frame__body">
       <p class="title">${recipe.storage.verdict}. <span style="font-weight:420">${recipe.storage.line}</span></p>
       ${tex !== null && tex <= 2 ? html`<div class="note note--warn"><p><strong>Cook this one fresh.</strong> You rated its leftovers ${fmt(tex, 1)} out of 5. Halve the batch, or freeze what you will not eat the same day.</p></div>` : ''}
       ${recipe.storage.parts.map(part => html`<div class="part"><p class="tag">${part.name}</p><dl class="kv"><dt>Fridge</dt><dd>${part.fridge}</dd><dt>Freezer</dt><dd>${part.freezer}</dd><dt>Reheat</dt><dd>${part.reheat}</dd><dt>Texture</dt><dd>${part.texture}</dd></dl></div>`)}
@@ -172,7 +169,7 @@ function recipePage(recipe) {
       <button class="btn btn--quiet btn--block btn--sm" type="button" data-act="cooked">${icon('check')} I cooked this</button>
     </div></section>
 
-    <section class="frame" aria-label="Where this recipe came from"><div class="frame__rebate"><span>${src.type === 'creator' ? 'Creator credit' : 'House recipe'}</span><span>${src.type === 'creator' ? 'Adapted' : 'Forme'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Where this recipe came from"><div class="frame__head"><span>${src.type === 'creator' ? 'Creator credit' : 'House recipe'}</span><span>${src.type === 'creator' ? 'Adapted' : 'Forme'}</span></div><div class="frame__body">
       ${src.type === 'creator' ? html`<p class="title">${src.creator}, ${src.outlet}</p><p class="small muted">${src.where}. ${src.rating}.</p>
         <p>${extLink(src.url, `“${src.title}”`)}</p>
         ${src.second ? html`<p class="small">Also drawn on: ${src.second.creator}, ${extLink(src.second.url, `“${src.second.title}”`)}.</p>` : ''}
@@ -182,7 +179,7 @@ function recipePage(recipe) {
         <p class="tiny muted">Instructions here are written from scratch. The idea and the credit belong to the creator.</p>`
     : html`<p>${src.note}</p>`}
       ${photo ? html`<p class="tiny muted">Photo: “${photo.title}” by ${photo.creator ?? 'an unnamed photographer'}, ${extLink(photo.licenceUrl, photo.licence)}, via ${extLink(photo.source, photo.via)}. ${photo.changes}.</p>` : ''}
-      <details class="fold"><summary>Where every number comes from</summary><div class="fold__b"><p class="small muted">Per 100 g values from USDA FoodData Central (SR Legacy). Estimates, not lab results; your package label wins.</p>
+      <details class="fold"><summary>Where every number comes from</summary><div class="fold__b"><p class="small muted">Per 100 g values from USDA FoodData Central (SR Legacy). These are estimates. If your package label differs, use the label.</p>
         <table class="cmp cmp--left"><thead><tr><th scope="col">Ingredient</th><th scope="col">Amount</th><th scope="col">kcal</th><th scope="col">P</th></tr></thead><tbody>${totals.lines.map(line => { const source = foodSource(FOODS[line.f]); return html`<tr><th scope="row">${source.url ? extLink(source.url, FOODS[line.f].name) : FOODS[line.f].name}</th><td>${metric(line.g, line.f)}</td><td>${round(line.nut.kcal)}</td><td>${round(line.nut.protein, 1)}</td></tr>`; })}
           <tr class="cmp__sum"><th scope="row">Batch of ${recipe.yield.n}</th><td></td><td>${round(totals.batch.kcal)}</td><td>${round(totals.batch.protein)}</td></tr></tbody></table></div></details>
     </div></section>
@@ -204,8 +201,8 @@ function cookPage(recipe) {
     <main class="cookm__main">${done ? html`<p class="eyebrow" style="color:inherit;opacity:.7">Done</p><h1 class="cookm__t">Plate it. Eat it hot.</h1>
         <p class="cookm__sub">${recipe.storage.fresh}</p>
         <button class="btn btn--block" type="button" data-act="cooked">${icon('check')} Log it</button>`
-    : html`<p class="cookm__n seg">${String(i + 1).padStart(2, '0')}<span>/${String(steps.length).padStart(2, '0')}</span></p><h1 class="cookm__t">${steps[i].t}</h1>
-        ${steps[i].timer ? html`<button class="cookm__timer ${timerLeft !== null ? 'cookm__timer--on' : ''}" type="button" data-act="ctimer" data-s="${steps[i].timer}"><span class="seg" id="cookClock">${timerLeft !== null ? clock(timerLeft) : clock(steps[i].timer)}</span><span>${timerLeft !== null ? 'Tap to stop' : 'Start timer'}</span></button>` : ''}
+    : html`<p class="cookm__n clock">${String(i + 1).padStart(2, '0')}<span>/${String(steps.length).padStart(2, '0')}</span></p><h1 class="cookm__t">${steps[i].t}</h1>
+        ${steps[i].timer ? html`<button class="cookm__timer ${timerLeft !== null ? 'cookm__timer--on' : ''}" type="button" data-act="ctimer" data-s="${steps[i].timer}"><span class="clock" id="cookClock">${timerLeft !== null ? clock(timerLeft) : clock(steps[i].timer)}</span><span>${timerLeft !== null ? 'Tap to stop' : 'Start timer'}</span></button>` : ''}
         ${recipe.temp && /74|71/.test(steps[i].t) ? html`<p class="cookm__sub">Check ${recipe.temp.c}°C in the thickest part.</p>` : ''}`}</main>
     <footer class="cookm__nav"><button class="btn btn--quiet" type="button" data-act="cprev" ${i === 0 ? 'disabled' : ''}>${icon('arrow-left')} Back</button>
       ${done ? html`<button class="btn" type="button" data-act="exitcook">Close</button>` : html`<button class="btn" type="button" data-act="cnext">${i === steps.length - 1 ? 'Finish' : 'Next'} ${icon('arrow-right')}</button>`}</footer>
@@ -228,7 +225,7 @@ async function archiveBody() {
 
 function archivePage() {
   return html`<div class="wrap kitchen"><a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>
-    <header><p class="eyebrow">Archive</p><h1 class="serif rp__h">The earlier recipe book</h1><p class="muted">The 21 Form & Fuel recipes, with anything you saved and every kitchen note, exactly as they were. They are kept for reference; the meal plans built on them are retired.</p></header>
+    <header><p class="eyebrow">Archive</p><h1 class="display display--l">Earlier recipe book</h1><p class="muted">The 21 Form & Fuel recipes, with anything you saved and every kitchen note, exactly as they were. They are kept for reference; the meal plans built on them are retired.</p></header>
     <div id="archive" class="stack"><div class="leader" role="status" aria-label="Loading the archive"></div></div></div>`;
 }
 
@@ -267,7 +264,7 @@ function weekSheet(recipe) {
 }
 
 function moreSheet(recipe) {
-  sheet({ title: recipe.short, eyebrow: 'Tell Forme what you think',
+  sheet({ title: recipe.short, eyebrow: 'Rate this recipe',
     body: () => { const record = recipeRecord(recipe.id); return html`
       <div><p class="eyebrow">Your rating</p><div class="row" style="margin-top:6px" role="group" aria-label="Rate out of five">${[1, 2, 3, 4, 5].map(value => html`<button class="icon-btn icon-btn--line" type="button" aria-pressed="${record.rating >= value ? 'true' : 'false'}" aria-label="${value} out of 5" data-act="rate" data-v="${value}" style="${record.rating >= value ? 'background:var(--accent);color:var(--accent-ink);border-color:var(--accent)' : ''}">${icon('star')}</button>`)}</div></div>
       <button class="switch" type="button" role="switch" aria-checked="${record.skips ? 'true' : 'false'}" data-act="skip"><span class="switch__t"><span class="title" style="font-size:.98rem">Not for me</span><span class="tiny muted" style="display:block">Forme stops suggesting it. It stays in the index.</span></span><span class="switch__k"></span></button>

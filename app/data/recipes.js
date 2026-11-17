@@ -331,7 +331,7 @@ export const RECIPES = [
       fresh: 'Fresh at serving: roti, cilantro, lemon.' },
   },
   {
-    id: 'breakfast-burritos', name: 'Freezer Breakfast Burritos', short: 'Breakfast burritos', kicker: 'Two trays, six burritos, breakfast sorted for the week.',
+    id: 'breakfast-burritos', name: 'Freezer Breakfast Burritos', short: 'Breakfast burritos', kicker: 'Two trays, six burritos, breakfast for the week.',
     course: 'breakfast', slots: ['breakfast', 'lunch'], tags: ['batch', 'freezes', 'breakfast', 'shift'], cuisine: 'Meal prep',
     backdrop: 'butter', photo: 'burrito', photoNote: 'Photo shows a breakfast burrito with egg and meat, served with salsa and beans; the beans are not part of this recipe.',
     source: { type: 'creator', creator: 'Stealth Health', outlet: 'Stealth Health Meal Prep Weekly', where: 'Short-form creator; this is his newsletter post', title: 'Sheet Pan Breakfast Burritos',
@@ -489,10 +489,10 @@ export const RECIPE_BY_ID = Object.freeze(Object.fromEntries(RECIPES.map(recipe 
 export const COLLECTIONS = [
   { id: 'after-shift', name: 'After a shift', note: '20 minutes or less, start to plate', test: recipe => recipe.time.total <= 20 && recipe.course === 'main' },
   { id: 'prep2', name: 'Prep once, eat twice', note: 'One batch, two different dinners', test: recipe => recipe.tags.includes('prep2') },
-  { id: 'freezer', name: 'Batch and freeze', note: 'Tastes right after thawing', test: recipe => recipe.storage.freezes === 'well' && recipe.course !== 'snack' },
-  { id: 'shift', name: 'Shift lunches', note: 'Packs well, eats well at work', test: recipe => recipe.tags.includes('shift') },
-  { id: 'breakfast', name: 'Breakfast, sorted', note: 'Made ahead or made in 3 minutes', test: recipe => recipe.slots.includes('breakfast') },
-  { id: 'cravings', name: 'Cravings', note: 'Sweet or salty, without the regret', test: recipe => recipe.course === 'snack' },
+  { id: 'freezer', name: 'Batch and freeze', note: 'Still good after thawing', test: recipe => recipe.storage.freezes === 'well' && recipe.course !== 'snack' },
+  { id: 'shift', name: 'Shift lunches', note: 'Pack in the morning, eat at work', test: recipe => recipe.tags.includes('shift') },
+  { id: 'breakfast', name: 'Breakfast', note: 'Made ahead or made in 3 minutes', test: recipe => recipe.slots.includes('breakfast') },
+  { id: 'cravings', name: 'Cravings', note: 'Sweet and salty snacks', test: recipe => recipe.course === 'snack' },
   { id: 'nocook', name: 'No cooking', note: 'Assemble and eat', test: recipe => recipe.tags.includes('nocook') },
 ];
 

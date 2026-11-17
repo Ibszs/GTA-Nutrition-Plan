@@ -60,22 +60,20 @@ function home(ctx, info) {
   const done = planned?.completed; const partial = planned?.partial;
   const heroMeta = draft ? `In progress · ${draftProgress(draft).done} of ${draftProgress(draft).total} sets · ${relDay(draft.date)}`
     : planned?.kind === 'session' ? `${template.focus}${template.duration ? `, ${template.duration.replace(/–/g, ' to ')}` : ''}`
-    : planned?.kind === 'rest' ? 'Nothing planned. Walk, eat, sleep.' : `Your journal starts ${fmtDay(state.startDate)}.`;
+    : planned?.kind === 'rest' ? 'Nothing is planned in the gym today.' : `Your journal starts ${fmtDay(state.startDate)}.`;
   return html`<div class="wrap cut">
-    <section class="frame frame--hero" aria-label="Today in the gym">
-      <img class="hero__img" src="assets/photos/gym-rack.jpg" alt="" width="1280" height="1035" fetchpriority="high">
-      <div class="hero__body">
-        <p class="hero__meta">${draft ? html`<span class="tag tag--mark">Recording</span>` : done ? 'Done today' : partial ? 'Partly done today' : planned?.kind === 'session' ? `Planned for today, day ${planned.cycleDay} of 7` : `Day ${planned?.cycleDay ?? 1} of 7`}</p>
-        <h1 class="display stretch-in">${heroTitle}</h1>
-        <p class="hero__meta">${heroMeta}</p>
-        ${!state.program && !draft ? html`<p class="tiny" style="color:var(--bone-dim)">Your earlier four-session plan is still in use. <button class="linkish" style="min-height:0;color:var(--tungsten)" type="button" data-act="adopt">Switch to the five-day rotation</button></p>` : ''}
-        <div class="row row--wrap">
-          ${draft ? html`<a class="btn btn--mark grow" href="#/train/go">${icon('play')} Resume workout</a>`
-    : planned?.kind === 'session' && !done ? html`<button class="btn grow" type="button" data-act="start" data-session="${template.id}">${icon('play')} Start ${template.name}</button>`
-    : html`<button class="btn btn--quiet grow" type="button" data-act="pick">${icon('plus')} Train anyway</button>`}
-          <button class="btn btn--quiet" type="button" data-act="quicklog" aria-label="Quick log a workout you forgot to track">${icon('clock-3')} Forgot to log</button>
-        </div>
-        ${last && !draft && planned?.kind === 'session' && !done ? html`<button class="linkish linkish--quiet tiny" style="color:var(--bone-dim)" type="button" data-act="repeat" data-id="${last.id}">Or repeat the lineup from ${fmtDay(last.date, { month: 'short', day: 'numeric' })} (${sessionStats(last).sets} sets)</button>` : ''}
+    <section class="slab slab--bleed slab--lead" aria-label="Today in the gym">
+      <p class="slab__k"><span>${draft ? html`<span class="tag tag--mark">Recording</span>` : done ? 'Done today' : partial ? 'Partly done today' : planned?.kind === 'session' ? 'Planned for today' : 'Today'}</span><span>Day ${planned?.cycleDay ?? 1} of 7</span></p>
+      <h1 class="display ${String(heroTitle).length <= 6 ? 'display--xl' : ''} head-in">${heroTitle}</h1>
+      <p class="slab__sub">${heroMeta}</p>
+      <figure class="slab__ph"><img src="assets/photos/gym-rack.jpg" alt="" width="1280" height="1035" fetchpriority="high"></figure>
+      ${!state.program && !draft ? html`<p class="hero-note">Your earlier four-session plan is still in use. <button class="linkish" type="button" data-act="adopt">Switch to the five-day rotation</button></p>` : ''}
+      <div class="slab__go stack">
+        ${draft ? html`<a class="btn btn--go btn--mark" href="#/train/go"><span>Resume workout</span>${icon('arrow-right')}</a>`
+    : planned?.kind === 'session' && !done ? html`<button class="btn btn--go" type="button" data-act="start" data-session="${template.id}"><span>Start ${template.name}</span>${icon('arrow-right')}</button>`
+    : html`<button class="btn btn--go btn--ghost" type="button" data-act="pick"><span>Train anyway</span>${icon('plus')}</button>`}
+        <button class="btn btn--ghost btn--sm btn--block" type="button" data-act="quicklog" aria-label="Quick log a workout you forgot to track">${icon('clock-3')} Forgot to log</button>
+        ${last && !draft && planned?.kind === 'session' && !done ? html`<button class="linkish tiny" type="button" data-act="repeat" data-id="${last.id}">Or repeat the lineup from ${fmtDay(last.date, { month: 'short', day: 'numeric' })} (${plural(sessionStats(last).sets, 'set')})</button>` : ''}
       </div>
     </section>
 
@@ -93,7 +91,7 @@ function home(ctx, info) {
 
     <div class="cols">
       <a class="frame frame--press" href="#/train/hams">
-        <div class="frame__rebate"><span>Legs and hamstrings</span><span>Last 6 weeks</span></div>
+        <div class="frame__head"><span>Legs and hamstrings</span><span>Last 6 weeks</span></div>
         <div class="frame__body">
           ${hams.some(row => row.sets.Hamstrings) ? html`<div class="row" style="align-items:flex-end;gap:6px;height:64px" role="img" aria-label="Hamstring sets per week: ${hams.map(row => row.sets.Hamstrings ?? 0).join(', ')}">${hams.map((row, index) => html`<span style="flex:1;background:${index === hams.length - 1 ? 'var(--accent)' : 'var(--line-2)'};height:${Math.max(4, ((row.sets.Hamstrings ?? 0) / maxHam) * 100)}%;border-radius:1px"></span>`)}</div>` : ''}
           <p class="title">${hams.at(-1).sets.Hamstrings ?? 0} hamstring sets this week</p>
@@ -101,11 +99,11 @@ function home(ctx, info) {
         </div>
       </a>
       <a class="frame frame--press" href="#/train/records">
-        <div class="frame__rebate"><span>Records</span><span>${plural(records.length, 'record')}</span></div>
+        <div class="frame__head"><span>Records</span><span>${plural(records.length, 'record')}</span></div>
         <div class="frame__body">${records.length ? (() => { const record = records.at(-1); return html`
           <p class="eyebrow">${fmtDay(record.date)}</p><p class="title">${EXERCISES[record.exerciseId].name}</p>
-          <p class="mono">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="tag tag--amber" style="margin-left:6px">▶ Replay</span></p>`; })()
-    : html`<p class="title">No records yet</p><p class="tiny muted">The second time you log a movement, Forme starts comparing. A record gets a quiet replay here.</p>`}</div>
+          <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="tag tag--amber" style="margin-left:6px">▶ Replay</span></p>`; })()
+    : html`<p class="title">No records yet</p><p class="tiny muted">Forme starts comparing from the second time you log a movement. Records are listed here, each with a replay.</p>`}</div>
       </a>
     </div>
 
@@ -142,10 +140,10 @@ function logger(ctx, info) {
       <div class="grow"><p class="eyebrow">${past ? `Logging for ${fmtDay(draft.date)}` : 'Recording'} · RIR ${rir}${draft.lightWeek ? ' · lighter' : ''}</p><h1 class="display display--m">${template.name}${draft.customized ? html` <span class="tag tag--line">Adapted</span>` : ''}</h1></div>
       <button class="icon-btn icon-btn--line" type="button" data-act="undo" aria-label="Undo the last change" ${undoStack.length ? '' : 'disabled style="opacity:.4"'}>${icon('rotate-ccw')}</button>
     </header>
-    <div class="lg__prog" role="img" aria-label="${progress.done} of ${progress.total} sets done"><span class="mono num">${progress.done}/${progress.total} sets</span>${meter(progress.total ? progress.done / progress.total : 0, 'meter--amber')}</div>
+    <div class="lg__prog" role="img" aria-label="${progress.done} of ${progress.total} sets done"><span class="data num">${progress.done}/${progress.total} sets</span>${meter(progress.total ? progress.done / progress.total : 0, 'meter--amber')}</div>
     <div class="restbar" id="restBar" ${rest ? '' : 'hidden'} role="timer" aria-label="Rest timer">
       <span class="restbar__fill" data-rest-fill></span>
-      <span class="eyebrow">Rest</span><span class="seg restbar__t" data-rest-time>${rest ? clock((rest.until - Date.now()) / 1000) : '0:00'}</span>
+      <span class="eyebrow">Rest</span><span class="clock restbar__t" data-rest-time>${rest ? clock((rest.until - Date.now()) / 1000) : '0:00'}</span>
       <button type="button" data-act="restplus">+30 s</button><button type="button" data-act="restskip">Skip</button>
     </div>
     ${past ? html`<div class="note"><p>Fill in what you remember. <button class="linkish" style="min-height:0" type="button" data-act="fillall">Fill every blank set from last time</button>, then tick the ones you did.</p></div>` : ''}
@@ -178,7 +176,7 @@ function exerciseCard(state, draft, entry, index, isOpen, rir) {
       <button class="icon-btn" type="button" data-act="guide" data-i="${index}" aria-label="How to do ${exercise.name}">${icon('info')}</button>
       <button class="icon-btn" type="button" data-act="more" data-i="${index}" aria-label="Swap, reorder or edit ${exercise.name}">${icon('more')}</button>
     </div>
-    <div class="lgx__last"><span class="eyebrow">Last time</span><span class="${last ? 'mono num' : 'small muted'}">${lastLine}</span>${last && entry.sets.some(set => !set.completed && set.load === '') ? html`<button class="btn btn--xs btn--quiet" type="button" data-act="copylast" data-i="${index}">Fill</button>` : ''}</div>
+    <div class="lgx__last"><span class="eyebrow">Last time</span><span class="${last ? 'data num' : 'small muted'}">${lastLine}</span>${last && entry.sets.some(set => !set.completed && set.load === '') ? html`<button class="btn btn--xs btn--quiet" type="button" data-act="copylast" data-i="${index}">Fill</button>` : ''}</div>
     <div class="lgs" role="group" aria-label="Sets">
       <div class="lgs__h"><span>Set</span><span>Load (${draft.unit})</span><span>Reps</span><span>RIR</span><span class="vh">Done</span></div>
       ${entry.sets.map((set, s) => {
@@ -213,10 +211,10 @@ function sessionPage(ctx, info, id) {
     ${ctx.query.has('new') ? html`<div class="note note--good stamp-in"><p><strong>Saved.</strong> ${plural(stats.sets, 'set')} in the journal.${records.length ? ` ${plural(records.length, 'record')} today.` : ''}</p></div>` : ''}
     <div class="statrow statrow--3"><div class="stat"><div class="stat__v num">${stats.sets}</div><div class="stat__l">Sets</div></div><div class="stat"><div class="stat__v num">${stats.exercises}</div><div class="stat__l">Movements</div></div><div class="stat"><div class="stat__v num">${fmt(stats.volume)}<small>${session.unit}</small></div><div class="stat__l">Load × reps</div></div></div>
     ${records.map(record => html`<button class="frame frame--press" type="button" data-act="replay" data-id="${id}" data-ex="${record.exerciseId}">
-      <div class="frame__rebate"><span>Record</span><span>▶ Replay</span></div><div class="frame__body"><p class="title">${EXERCISES[record.exerciseId].name}</p>
-      <p class="mono">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="muted">· was ${record.previous.load > 0 ? `${fmt(record.previous.load, 1)} × ${record.previous.reps}` : `${record.previous.reps} reps`}</span></p></div></button>`)}
+      <div class="frame__head"><span>Record</span><span>▶ Replay</span></div><div class="frame__body"><p class="title">${EXERCISES[record.exerciseId].name}</p>
+      <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="muted">· was ${record.previous.load > 0 ? `${fmt(record.previous.load, 1)} × ${record.previous.reps}` : `${record.previous.reps} reps`}</span></p></div></button>`)}
     <div class="list">${session.exercises.map(entry => html`<div class="list__i"><span class="list__m"><span class="title">${variantName(entry)}</span>
-      <span class="mono num" style="display:block">${entry.sets.map(set => `${fmt(set.load, 1)}×${set.reps}`).join('   ')}</span>${entry.setup ? html`<span class="tiny muted">${entry.setup}</span>` : ''}</span></div>`)}</div>
+      <span class="data num" style="display:block">${entry.sets.map(set => `${fmt(set.load, 1)}×${set.reps}`).join('   ')}</span>${entry.setup ? html`<span class="tiny muted">${entry.setup}</span>` : ''}</span></div>`)}</div>
     <button class="btn btn--quiet btn--block" type="button" data-act="repeat" data-id="${id}">${icon('rotate-ccw')} Repeat this lineup</button>
   </div>`;
 }
@@ -227,7 +225,7 @@ function historyPage(info) {
     <h1 class="display display--l">History</h1>
     ${sessions.length ? html`<div class="list">${sessions.map(session => html`<a class="list__i list__i--tap" href="#/train/s/${session.id}"><span class="list__m"><span class="title">${getSessionTemplate(session.sessionId).name}</span>
       <span class="tiny muted" style="display:block">${fmtDay(session.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} · ${plural(sessionStats(session).sets, 'set')}${session.partial ? ' · partial' : ''}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>`
-    : html`<div class="empty"><p class="empty__t">Nothing logged yet</p><p class="muted small">Finished workouts land here, newest first.</p><a class="btn" href="#/train">Start one</a></div>`}</div>`;
+    : html`<div class="empty"><p class="empty__t">Nothing logged yet</p><p class="muted small">Finished workouts are listed here, newest first.</p><a class="btn" href="#/train">Start one</a></div>`}</div>`;
 }
 
 function recordsPage(info) {
@@ -235,7 +233,7 @@ function recordsPage(info) {
   return html`<div class="wrap cut"><a class="linkish linkish--quiet" href="#/train">${icon('arrow-left', 'ic--sm')} Train</a>
     <h1 class="display display--l">Records</h1><p class="muted">A record is a set that beats your best estimated max for that exact movement and setup. The first log of a movement is a baseline, not a record.</p>
     ${records.length ? html`<div class="list">${records.map(record => html`<button class="list__i list__i--tap" type="button" data-act="replay" data-id="${record.sessionId}" data-ex="${record.exerciseId}"><span class="list__m"><span class="title">${EXERCISES[record.exerciseId].name}</span>
-      <span class="mono num" style="display:block">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`}</span><span class="tiny muted">${fmtDay(record.date)}</span></span><span class="list__e"><span class="tag tag--amber">▶ Replay</span></span></button>`)}</div>`
+      <span class="data num" style="display:block">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`}</span><span class="tiny muted">${fmtDay(record.date)}</span></span><span class="list__e"><span class="tag tag--amber">▶ Replay</span></span></button>`)}</div>`
     : html`<div class="empty"><p class="empty__t">No records yet</p><p class="muted small">Log a movement twice and Forme starts comparing.</p></div>`}</div>`;
 }
 
@@ -245,12 +243,12 @@ function hamsPage(info) {
   const lifts = ['rdl', 'legcurl', 'lying-legcurl', 'hip-thrust', 'squat', 'legpress'].map(id => ({ id, rows: liftHistory(info.state.sessions, id, 6) })).filter(item => item.rows.length);
   const now = weeks.at(-1).sets;
   return html`<div class="wrap cut"><a class="linkish linkish--quiet" href="#/train">${icon('arrow-left', 'ic--sm')} Train</a>
-    <header><p class="eyebrow">Focus view</p><h1 class="display display--l">Legs and hamstrings</h1><p class="muted">What your legs actually got, week by week. Counts are completed sets from your journal.</p></header>
-    ${LEG_GROUPS.map(group => html`<section class="frame"><div class="frame__rebate"><span>${group}</span><span>${now[group] ?? 0} sets this week</span></div><div class="frame__body">
-      <div class="row" style="align-items:flex-end;gap:6px;height:72px" role="img" aria-label="${group} sets per week, oldest first: ${weeks.map(row => row.sets[group] ?? 0).join(', ')}">${weeks.map((row, index) => html`<span style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:3px;align-items:center"><span class="mono" style="font-size:.56rem">${row.sets[group] ?? 0}</span><span style="width:100%;background:${index === weeks.length - 1 ? 'var(--accent)' : 'var(--line-2)'};height:${Math.max(3, ((row.sets[group] ?? 0) / max) * 74)}%;border-radius:1px"></span></span>`)}</div>
+    <header><p class="eyebrow">Focus view</p><h1 class="display display--l">Legs and hamstrings</h1><p class="muted">Completed leg sets per week, counted from your journal.</p></header>
+    ${LEG_GROUPS.map(group => html`<section class="frame"><div class="frame__head"><span>${group}</span><span>${now[group] ?? 0} sets this week</span></div><div class="frame__body">
+      <div class="row" style="align-items:flex-end;gap:6px;height:72px" role="img" aria-label="${group} sets per week, oldest first: ${weeks.map(row => row.sets[group] ?? 0).join(', ')}">${weeks.map((row, index) => html`<span style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:3px;align-items:center"><span class="data" style="font-size:.56rem">${row.sets[group] ?? 0}</span><span style="width:100%;background:${index === weeks.length - 1 ? 'var(--accent)' : 'var(--line-2)'};height:${Math.max(3, ((row.sets[group] ?? 0) / max) * 74)}%;border-radius:1px"></span></span>`)}</div>
     </div></section>`)}
-    <div class="note"><p><strong>Reading it.</strong> Your five-day plan gives hamstrings about 8 sets a week across Lower and Legs (Romanian deadlift and leg curl). If the hamstring bar sits well under the quads bar most weeks, the simplest lever is one extra set of leg curls on each leg day. Forme offers that inside the workout.</p></div>
-    ${lifts.length ? html`${sec('Top sets')}<div class="list">${lifts.map(lift => html`<a class="list__i list__i--tap" href="#/train/x/${lift.id}"><span class="list__m"><span class="title">${EXERCISES[lift.id].name}</span><span class="mono num" style="display:block">${lift.rows.map(row => (row.loaded ? `${fmt(row.load, 1)}×${row.reps}` : `${row.reps}r`)).join('  →  ')}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>`
+    <div class="note"><p><strong>Reading it.</strong> Your five-day plan gives hamstrings about 8 sets a week across Lower and Legs (Romanian deadlift and leg curl). If the hamstring bar sits well under the quads bar most weeks, the simplest fix is one extra set of leg curls on each leg day. Forme offers that inside the workout.</p></div>
+    ${lifts.length ? html`${sec('Top sets')}<div class="list">${lifts.map(lift => html`<a class="list__i list__i--tap" href="#/train/x/${lift.id}"><span class="list__m"><span class="title">${EXERCISES[lift.id].name}</span><span class="data num" style="display:block">${lift.rows.map(row => (row.loaded ? `${fmt(row.load, 1)}×${row.reps}` : `${row.reps}r`)).join('  →  ')}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>`
     : html`<div class="empty"><p class="empty__t">No leg sets logged yet</p><p class="muted small">After your first Lower or Legs session, the top sets for RDL, leg curl, squat and leg press show up here.</p></div>`}
   </div>`;
 }
@@ -281,7 +279,7 @@ function guideBody(exerciseId, variantId, state) {
     <p class="lead">${guide.cues}</p>
     <dl class="kv"><dt>Works</dt><dd>${guide.muscle}</dd><dt>Reps</dt><dd>${guide.repMin}-${guide.repMax}</dd><dt>Rest</dt><dd>${clock(guide.rest)}</dd><dt>Log as</dt><dd>${guide.loadLabel ?? 'Total load'}</dd></dl>
     <p class="tiny muted">${guide.loadNote}</p>
-    ${rows.length ? html`<div><p class="eyebrow">Your top sets</p><p class="mono num">${rows.map(row => `${row.loaded ? `${fmt(row.load, 1)}×${row.reps}` : `${row.reps}r`} (${fmtDay(row.date, { month: 'short', day: 'numeric' })})`).join('  ·  ')}</p></div>` : ''}
+    ${rows.length ? html`<div><p class="eyebrow">Your top sets</p><p class="data num">${rows.map(row => `${row.loaded ? `${fmt(row.load, 1)}×${row.reps}` : `${row.reps}r`} (${fmtDay(row.date, { month: 'short', day: 'numeric' })})`).join('  ·  ')}</p></div>` : ''}
     <div><p class="eyebrow">Variations</p><div class="chips" style="margin-top:6px">${exercise.variants.map(variant => html`<span class="tag ${variant.id === (variantId ?? exercise.variants[0].id) ? '' : 'tag--line'}">${variant.name}</span>`)}</div></div>`;
 }
 
@@ -335,11 +333,11 @@ function replay(state, sessionId, exerciseId) {
   const oldValue = record.previous.value; const newValue = record.value;
   const label = value => (record.load > 0 ? `${fmt(value, 0)} ${record.unit} est. max` : `${fmt(value)} reps`);
   const body = () => html`<div class="pr ${motionOK() ? 'pr--play' : ''}" aria-live="polite">
-      <div class="pr__tape"><span>▶ Replay</span><span class="seg">${fmtDay(record.date, { year: '2-digit', month: '2-digit', day: '2-digit' }).replaceAll('-', ' ')}</span></div>
+      <div class="pr__kick"><span>Record</span><span>${fmtDay(record.date, { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
       <p class="eyebrow">${EXERCISES[record.exerciseId].name}</p>
       <p class="display display--l">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`}</p>
-      <div class="pr__bars"><div><span class="eyebrow">Before</span><div class="pr__bar pr__bar--old" style="--w:${(oldValue / newValue) * 100}%"></div><span class="mono">${label(oldValue)}</span></div>
-        <div><span class="eyebrow">This set</span><div class="pr__bar pr__bar--new" style="--w:100%"></div><span class="mono">${label(newValue)}</span></div></div>
+      <div class="pr__bars"><div><span class="eyebrow">Before</span><div class="pr__bar pr__bar--old" style="--w:${(oldValue / newValue) * 100}%"></div><span class="data">${label(oldValue)}</span></div>
+        <div><span class="eyebrow">This set</span><div class="pr__bar pr__bar--new" style="--w:100%"></div><span class="data">${label(newValue)}</span></div></div>
       <p class="muted small">Up ${fmt(((newValue - oldValue) / oldValue) * 100, 1)}% on your previous best for this exact setup.</p></div>`;
   sheet({ title: 'New best', eyebrow: 'Record', body, footer: html`<button class="btn btn--quiet" type="button" data-act="again">${icon('rotate-ccw')} Replay</button><button class="btn" type="button" data-act="__close">Done</button>`, actions: { again: (_d, _e, _ev, self) => self.update() } });
 }
@@ -385,7 +383,7 @@ function settingsSheet(state) {
     body: () => { const now = store.training.read().value; return html`
       <div><p class="eyebrow">Load unit</p><div class="segc" style="margin-top:6px">${['lb', 'kg'].map(unit => html`<button type="button" aria-pressed="${now.unit === unit ? 'true' : 'false'}" data-act="unit" data-u="${unit}">${unit}</button>`)}</div><p class="tiny muted" style="margin-top:6px">Applies to new workouts. Saved sessions keep the unit they were logged in.</p></div>
       <dl class="kv"><dt>Journal starts</dt><dd>${fmtDay(now.startDate, { day: 'numeric', month: 'short', year: 'numeric' })}</dd><dt>Program</dt><dd>${now.program ? 'Five-day rotation' : 'Earlier four-session plan'}</dd><dt>Sessions saved</dt><dd>${now.sessions.length}</dd></dl>
-      <p class="small muted">The rotation is Upper, Lower, Rest, Chest and Back, Legs, Shoulders and Arms, Rest. A missed day is not carried forward; shift the rotation when life moves it.</p>
+      <p class="small muted">The rotation is Upper, Lower, Rest, Chest and Back, Legs, Shoulders and Arms, Rest. A missed day is not carried forward; shift the rotation when your week changes.</p>
       <button class="btn btn--quiet btn--block" type="button" data-act="shift">Shift rotation</button>`; },
     actions: {
       unit: (data, _e, _ev, self) => { const now = store.training.read().value; if (now.draft) return toast('Finish the workout in progress before changing units.'); if (write({ ...now, unit: data.u }, { undo: false })) self.update(); },
@@ -407,7 +405,7 @@ function shiftSheet() {
 // ---------- entry ----------
 export function render(ctx) {
   const info = trainingInfo();
-  if (info.error) return { room: 'street', where: 'Train', body: html`<div class="wrap"><div class="frame"><div class="frame__rebate"><span>Training journal</span><span>Not overwritten</span></div><div class="frame__body">
+  if (info.error) return { room: 'street', where: 'Train', body: html`<div class="wrap"><div class="frame"><div class="frame__head"><span>Training journal</span><span>Not overwritten</span></div><div class="frame__body">
       <h1 class="display display--m">Your training journal could not be read.</h1><p class="muted">${info.error}</p><p>Forme has not changed it. Restore a backup, or export what is here first.</p><a class="btn" href="#/you/data">Backup and data</a></div></div></div>`, actions: {} };
   const sub = ctx.path[1];
   const state = info.state;

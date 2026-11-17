@@ -109,7 +109,7 @@ export const EXPERIENCE_NOTE = 'Reddit could not be read without signing in from
 
 /** Source-backed prompts for seeing someone. Wording follows HealthLink BC; Ontario users can call Health811. */
 export const GET_CHECKED = {
-  intro: 'Forme is practice, not assessment. These are the signs that mean a person, not an app, should look at it.',
+  intro: 'Forme guides practice and cannot assess you. If any of these apply, have a clinician look at it.',
   urgent: { label: 'Emergency: call 911', items: ['Back pain with chest pain or other heart-attack symptoms', 'After a crash, fall or blow to the spine: unable to move part of the body, severe back or neck pain, or weakness, tingling or numbness in the arms or legs', 'Sudden, severe weakness or numbness of a whole arm or hand, or an arm that is blue, very pale or cold'], src: 'hlbcBack' },
   lanes: {
     pelvis: { label: 'Back and pelvis: call your doctor now', src: 'hlbcBack', items: ['New or worse numbness or weakness in your legs', 'A new loss of bowel or bladder control', 'New or increased back pain with fever or painful urination', 'Long-term back pain that suddenly gets much worse without a change in activity', 'Pain that wakes you from sleep', 'A history of cancer or HIV with new or increased back pain'],

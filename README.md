@@ -20,12 +20,12 @@ A browser keeps separate data for each address. Use the same address you used be
 
 ## What is in it
 
-- **Today.** Start or resume a workout, tonight's dinner, the short movement session, habits, morning weight and sleep. Pin, hide and reorder the modules. "Just got home" and "Pick for me" answer a tired evening in one sheet.
+- **Today.** Start or resume a workout, tonight's dinner, the short movement session, habits, morning weight and sleep. Pin, hide and reorder the modules. "Just got home" and "Pick for me" are two shortcuts for the evening.
 - **Train.** The five-day rotation and every earlier session. Logging shows the last load and reps beside each set; tick, undo, swap, resume. Quick log for a workout you forgot to track, a leg and hamstring focus view, and a quiet replay when a set is a new best.
 - **Eat.** Sixteen recipes with every calorie traced to an ingredient, measured oil, a lighter version side by side, metric and household measures, a serving scaler and a hands-busy cook mode. Two sample weeks (lean gain and recomp) built on mostly the same groceries, a combined grocery list with a pantry check, Prep Once Eat Twice, a Use It First shelf with date labels, and a "what can I make" finder.
 - **Move.** A guided posture and movement practice: 7 days, then an explicit choice to repeat, change focus, opt into 30 days or stop. Eighteen drills, each with a teaching card, a start and finish drawing, named targets, an easier version and what to do if it bothers something. Evidence and its limits are listed per claim.
-- **Habits, Reset, Private, Play.** Editable habits with skips and no pressure from streaks. Reset for an afternoon that got away. An opt-in private pause tool and the earlier private log, both kept off the main screens. Stickers, a side quest, Night Drive and a weekly replay, all optional.
-- **You.** Goal mode and targets, weekly trends, appearance (dark, light or match the device), motion, sound, backup and import, and every credit and source.
+- **Habits, Reset, Private, Play.** Editable habits with skips and no pressure from streaks. Reset has four short actions for a bad afternoon. An opt-in private pause tool and the earlier private log, both kept off the main screens. Stickers, a side quest, Night Drive and a weekly replay, all optional.
+- **You.** Goal mode and targets, weekly trends, appearance (dark, light or match the device, and a choice of paper colour), motion, sound, backup and import, and every credit and source.
 
 The red button in the dock is quick add: type `181.4`, `sleep 7.5`, a habit or a dish.
 

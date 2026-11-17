@@ -14,6 +14,7 @@ import { EXERCISES as LIFTS } from '../../assets/training-data.js';
 export const VERSION = '4.0.0';
 let logDay = today();
 
+const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['sky', 'Sky', '#a9d3f2'], ['butter', 'Butter', '#f5dc7d'], ['news', 'Grey', '#d9d7d2']];
 const back = (label = 'You', to = 'you') => html`<a class="linkish linkish--quiet" href="#/${to}">${icon('arrow-left', 'ic--sm')} ${label}</a>`;
 
 function hub() {
@@ -22,7 +23,7 @@ function hub() {
     ['you/goal', 'target', 'Goal and targets', `${MODES[profile.mode].name}${targets ? ` · ${fmt(targets.kcal)} kcal · ${targets.protein} g protein` : ' · set your weight'}`],
     ['you/progress', 'chart-no-axes-combined', 'Progress', 'Weight, waist and lifts across weeks'],
     ['habits', 'check-check', 'Habits', `${plural(store.get('habits').habits.filter(habit => !habit.archived).length, 'habit')}`],
-    ['reset', 'rotate-ccw', 'Reset', 'For an afternoon that got away'],
+    ['reset', 'rotate-ccw', 'Reset', 'Short actions for a bad afternoon'],
     ['private', 'lock', 'Private', priv.enabled ? 'A minute is on' : 'Opt-in, off the main screens'],
     ['fun', 'sparkles', 'Stickers, quests and replays', fun.enabled ? `${Object.keys(fun.stickers).length} stickers` : 'Off'],
     ['you/settings', 'sliders-horizontal', 'Settings', 'Appearance, diet, motion, sound'],
@@ -31,7 +32,7 @@ function hub() {
   ];
   return html`<div class="wrap cut">
     <header><p class="eyebrow">You</p><h1 class="display display--l">${profile.name || 'Forme'}</h1>
-      <p class="muted">${profile.weight ? `${fmt(profile.weight, 1)} lb · ` : ''}${MODES[profile.mode].name}. Everything here lives in this browser and nowhere else.</p></header>
+      <p class="muted">${profile.weight ? `${fmt(profile.weight, 1)} lb · ` : ''}${MODES[profile.mode].name}. Everything is stored in this browser only.</p></header>
     <div class="list">${rows.map(([route, glyph, title, note]) => html`<a class="list__i list__i--tap" href="#/${route}"><span class="icon-btn icon-btn--line" aria-hidden="true">${icon(glyph)}</span><span class="list__m"><span class="title">${title}</span><span class="tiny muted" style="display:block">${note}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>
     <p class="tiny muted">Forme ${VERSION}. Rebuilt from Form & Fuel 3.0; your earlier journals are intact.</p>
   </div>`;
@@ -43,21 +44,21 @@ function goalPage() {
   const maintenance = profile.maintenance ?? (profile.weight ? guessMaintenance(profile.weight, profile.activity) : null);
   const kg = profile.weight ? profile.weight / LB_PER_KG : null;
   return html`<div class="wrap cut">${back()}
-    <header><p class="eyebrow">Goal</p><h1 class="display display--l">Two ways forward.</h1><p class="muted">Pick one. Switch whenever you like: your logs, saved recipes and history stay exactly where they are.</p></header>
+    <header><h1 class="display display--l">Goal</h1><p class="muted" style="margin-top:10px">Pick one of two. You can switch at any time and your logs, saved recipes and history are kept.</p></header>
     <div class="segc" role="group" aria-label="Goal mode">${Object.values(MODES).map(item => html`<button type="button" aria-pressed="${mode === item.id ? 'true' : 'false'}" data-act="mode" data-m="${item.id}">${item.name}</button>`)}</div>
-    <div class="cols">${Object.values(MODES).map(item => html`<section class="frame ${mode === item.id ? 'frame--lift' : ''}" style="${mode === item.id ? 'border-color:var(--accent)' : ''}"><div class="frame__rebate"><span>${item.name}</span><span>${mode === item.id ? 'Current' : 'Other option'}</span></div><div class="frame__body">
+    <div class="cols">${Object.values(MODES).map(item => html`<section class="frame ${mode === item.id ? 'frame--lift' : ''}" style="${mode === item.id ? 'border-color:var(--accent)' : ''}"><div class="frame__head"><span>${item.name}</span><span>${mode === item.id ? 'Current' : 'Other option'}</span></div><div class="frame__body">
       <p>${item.plain}</p><p class="small"><strong>Pace.</strong> ${item.pace}</p>
       <p class="eyebrow">What you watch, over weeks</p><ul class="dots">${item.watch.map(line => html`<li>${line}</li>`)}</ul><p class="small"><strong>When to adjust.</strong> ${item.adjust}</p></div></section>`)}</div>
 
-    <section class="frame" aria-label="Your numbers"><div class="frame__rebate"><span>Your numbers</span><span>All editable</span></div><div class="frame__body">
+    <section class="frame" aria-label="Your numbers"><div class="frame__head"><span>Your numbers</span><span>All editable</span></div><div class="frame__body">
       <div class="grid2"><label class="field"><span class="field__l">Current weight (lb)</span><input class="input input--num" id="gWeight" inputmode="decimal" value="${profile.weight ?? ''}" placeholder="180" data-change="weight"></label>
         <label class="field"><span class="field__l">Maintenance guess (kcal)</span><input class="input input--num" id="gMaint" inputmode="numeric" value="${maintenance ?? ''}" placeholder="2900" data-change="maint"></label></div>
       <div><p class="eyebrow">Your day job</p><div class="segc" style="margin-top:6px" role="group" aria-label="Activity at work">${[['desk', 'Mostly seated'], ['feet', 'On my feet'], ['heavy', 'Heavy manual']].map(([id, label]) => html`<button type="button" aria-pressed="${profile.activity === id ? 'true' : 'false'}" data-act="activity" data-a="${id}">${label}</button>`)}</div></div>
-      <p class="tiny muted">Maintenance is a starting guess from your weight and how active your job is${profile.maintenance ? ' (you set this one yourself)' : ''}. It is rough on purpose. Two to four weeks of weigh-ins correct it better than any formula.${profile.maintenance ? html` <button class="linkish" style="min-height:0" type="button" data-act="unmaint">Use the guess again</button>` : ''}</p>
+      <p class="tiny muted">Maintenance is a starting guess from your weight and how active your job is${profile.maintenance ? ' (you set this one yourself)' : ''}. It is a rough estimate. Two to four weeks of weigh-ins will correct it.${profile.maintenance ? html` <button class="linkish" style="min-height:0" type="button" data-act="unmaint">Use the guess again</button>` : ''}</p>
     </div></section>
 
     ${Object.values(MODES).map(item => { const t = activeTargets(profile, item.id); const suggested = profile.weight && maintenance ? suggestTargets(profile.weight, maintenance, item.id) : null; const saved = profile.targets[item.id];
-    return html`<section class="frame" aria-label="${item.name} targets"><div class="frame__rebate"><span>${item.name} targets</span><span>${!t ? 'Needs your weight' : t.source === 'carried' ? 'Carried from your old plan' : t.source === 'saved' ? 'Set by you' : 'Suggested'}</span></div><div class="frame__body">
+    return html`<section class="frame" aria-label="${item.name} targets"><div class="frame__head"><span>${item.name} targets</span><span>${!t ? 'Needs your weight' : t.source === 'carried' ? 'Carried from your old plan' : t.source === 'saved' ? 'Set by you' : 'Suggested'}</span></div><div class="frame__body">
         ${t ? html`<div class="grid2">${[['kcal', 'Calories'], ['protein', 'Protein (g)'], ['fat', 'Fat (g)'], ['carbs', 'Carbs (g)']].map(([key, label]) => html`<label class="field"><span class="field__l">${label}</span><input class="input input--num" inputmode="numeric" value="${t[key]}" data-change="target" data-m="${item.id}" data-k="${key}"></label>`)}</div>
           ${kg ? html`<p class="tiny muted">That is ${fmt(t.protein / kg, 1)} g protein and ${fmt(t.fat / kg, 1)} g fat per kg of body weight. Reviews put protein for muscle gain at 1.6 to 2.2 g per kg and fat at 0.5 to 1.5 g per kg.</p>` : ''}
           ${suggested && saved ? html`<p class="small">Forme’s suggestion from your weight: ${fmt(suggested.kcal)} kcal, ${suggested.protein} g protein, ${suggested.fat} g fat, ${suggested.carbs} g carbs. <button class="linkish" style="min-height:0" type="button" data-act="usesuggest" data-m="${item.id}">Use it</button></p>` : ''}
@@ -65,11 +66,11 @@ function goalPage() {
     : html`<p class="muted small">Enter your weight above and Forme suggests a starting point. You can overwrite every number.</p>`}
       </div></section>`; })}
 
-    <section class="frame" aria-label="Long-term marker"><div class="frame__rebate"><span>Long-term marker</span><span>An ambition, not a forecast</span></div><div class="frame__body">
-      <label class="field"><span class="field__l">Somewhere to aim, eventually (lb)</span><input class="input input--num" inputmode="decimal" value="${profile.longTerm ?? ''}" data-change="longterm"></label>
+    <section class="frame" aria-label="Long-term marker"><div class="frame__head"><span>Long-term marker</span><span>An ambition, not a forecast</span></div><div class="frame__body">
+      <label class="field"><span class="field__l">Long-term target (lb)</span><input class="input input--num" inputmode="decimal" value="${profile.longTerm ?? ''}" data-change="longterm"></label>
       <p class="small">${GOAL_NOTE}</p></div></section>
 
-    <section class="frame" aria-label="Whey label"><div class="frame__rebate"><span>Your whey, per scoop</span><span>${profile.whey.custom ? 'From your tub' : 'Assumed label'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Whey label"><div class="frame__head"><span>Your whey, per scoop</span><span>${profile.whey.custom ? 'From your tub' : 'Assumed label'}</span></div><div class="frame__body">
       <div class="grid2">${[['kcal', 'Calories'], ['protein', 'Protein (g)'], ['carbs', 'Carbs (g)'], ['fat', 'Fat (g)']].map(([key, label]) => html`<label class="field"><span class="field__l">${label}</span><input class="input input--num" inputmode="decimal" value="${profile.whey[key]}" data-change="whey" data-k="${key}"></label>`)}</div>
       <p class="tiny muted">Used anywhere a recipe has whey in it, so the shake totals match your tub.</p></div></section>
 
@@ -97,26 +98,26 @@ function progressPage() {
   const days = Object.keys(entries).sort().reverse().slice(0, 14);
   const targets = activeTargets(profile);
   return html`<div class="wrap cut">${back()}
-    <header><p class="eyebrow">Progress</p><h1 class="display display--l">Weeks, not days.</h1><p class="muted">Weekly averages for weight and waist, and your top sets. Optional, all of it. No forecast of when you reach a weight or how you will look.</p></header>
+    <header><h1 class="display display--l">Progress</h1><p class="muted" style="margin-top:10px">Weekly averages for weight and waist, and your top sets. All of it is optional. Forme does not forecast when you will reach a weight or how you will look.</p></header>
 
-    <section class="frame" aria-label="Log"><div class="frame__rebate"><span>Log</span><span>${fmtDay(logDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Log"><div class="frame__head"><span>Log</span><span>${fmtDay(logDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span></div><div class="frame__body">
       <div class="segc" role="group" aria-label="Day"><button type="button" aria-pressed="${logDay === addDays(today(), -1) ? 'true' : 'false'}" data-act="logday" data-d="${addDays(today(), -1)}">Yesterday</button><button type="button" aria-pressed="${logDay === today() ? 'true' : 'false'}" data-act="logday" data-d="${today()}">Today</button></div>
       <div class="grid2">${[['weight', 'Weight (lb)', 'decimal'], ['waist', 'Waist (in)', 'decimal'], ['sleep', 'Sleep (h)', 'decimal'], ['kcal', 'Calories eaten', 'numeric'], ['protein', 'Protein eaten (g)', 'numeric']].map(([key, label, modeAttr]) => html`<label class="field"><span class="field__l">${label}</span><input class="input input--num" inputmode="${modeAttr}" value="${entry[key] ?? ''}" data-change="body" data-k="${key}" id="b-${key}"></label>`)}</div>
       <p class="tiny muted">Weigh after the bathroom, before breakfast. Measure the waist at the navel, relaxed. Calories and protein are only worth logging if you already track them.</p></div></section>
 
-    <section class="frame" aria-label="Weight trend"><div class="frame__rebate"><span>Weight, weekly average</span><span>${trend.enough ? `${trend.perWeek > 0 ? '+' : ''}${fmt(trend.perWeek, 2)} lb a week` : 'Not enough yet'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Weight trend"><div class="frame__head"><span>Weight, weekly average</span><span>${trend.enough ? `${trend.perWeek > 0 ? '+' : ''}${fmt(trend.perWeek, 2)} lb a week` : 'Not enough yet'}</span></div><div class="frame__body">
       ${spark(weights.map(w => ({ v: w.avg })))}
       <p>${reading.text}</p>
-      ${trend.enough ? html`<p class="tiny muted">${fmt(trend.from, 1)} to ${fmt(trend.to, 1)} lb across ${fmt(trend.spanWeeks, 0)} weeks, ${trend.ratePct > 0 ? '+' : ''}${fmt(trend.ratePct, 2)}% of body weight a week. Weeks with fewer than three weigh-ins are left out.</p>` : ''}
+      ${trend.enough ? html`<p class="tiny muted">${fmt(trend.from, 1)} to ${fmt(trend.to, 1)} lb across ${plural(Number(fmt(trend.spanWeeks, 0)), 'week')}, ${trend.ratePct > 0 ? '+' : ''}${fmt(trend.ratePct, 2)}% of body weight a week. Weeks with fewer than three weigh-ins are left out.</p>` : ''}
       ${profile.longTerm && profile.weight ? html`<p class="tiny muted">Long-term marker: ${fmt(profile.longTerm)} lb, ${fmt(Math.abs(profile.longTerm - profile.weight), 1)} lb from today’s ${fmt(profile.weight, 1)}. Shown for orientation only.</p>` : ''}</div></section>
 
-    <section class="frame" aria-label="Waist trend"><div class="frame__rebate"><span>Waist, weekly average</span><span>${waists.length ? `${fmt(waists.at(-1).avg, 1)} in` : 'Optional'}</span></div><div class="frame__body">${waists.length >= 2 ? spark(waists.map(w => ({ v: w.avg })), { mark: true }) : html`<p class="muted small">Log a waist measurement once a week if you want a second signal. In a lean gain, weight rising while the waist holds is the pattern to look for; in a recomp, weight flat while the waist eases.</p>`}</div></section>
+    <section class="frame" aria-label="Waist trend"><div class="frame__head"><span>Waist, weekly average</span><span>${waists.length ? `${fmt(waists.at(-1).avg, 1)} in` : 'Optional'}</span></div><div class="frame__body">${waists.length >= 2 ? spark(waists.map(w => ({ v: w.avg })), { mark: true }) : html`<p class="muted small">Log a waist measurement once a week if you want a second signal. In a lean gain, weight rising while the waist holds is the pattern to look for; in a recomp, weight flat while the waist eases.</p>`}</div></section>
 
-    <section class="frame" aria-label="Gym performance"><div class="frame__rebate"><span>Gym performance</span><span>Top sets</span></div><div class="frame__body">
-      ${lifts.length ? html`<div class="list">${lifts.map(lift => { const first = lift.rows[0]; const last = lift.rows.at(-1); const change = first.value ? ((last.value - first.value) / first.value) * 100 : 0; return html`<a class="list__i list__i--tap" href="#/train/x/${lift.id}"><span class="list__m"><span class="title">${LIFTS[lift.id].name}</span><span class="mono num" style="display:block">${first.loaded ? `${fmt(first.load, 1)}×${first.reps}` : `${first.reps}r`} → ${last.loaded ? `${fmt(last.load, 1)}×${last.reps}` : `${last.reps}r`}</span></span><span class="list__e mono num">${change >= 0 ? '+' : ''}${fmt(change, 0)}%</span></a>`; })}</div><p class="tiny muted">Change in estimated max between your first and latest logged top set, last 8 sessions. Different variations are not strictly comparable.</p>`
+    <section class="frame" aria-label="Gym performance"><div class="frame__head"><span>Gym performance</span><span>Top sets</span></div><div class="frame__body">
+      ${lifts.length ? html`<div class="list">${lifts.map(lift => { const first = lift.rows[0]; const last = lift.rows.at(-1); const change = first.value ? ((last.value - first.value) / first.value) * 100 : 0; return html`<a class="list__i list__i--tap" href="#/train/x/${lift.id}"><span class="list__m"><span class="title">${LIFTS[lift.id].name}</span><span class="data num" style="display:block">${first.loaded ? `${fmt(first.load, 1)}×${first.reps}` : `${first.reps}r`} → ${last.loaded ? `${fmt(last.load, 1)}×${last.reps}` : `${last.reps}r`}</span></span><span class="list__e data num">${change >= 0 ? '+' : ''}${fmt(change, 0)}%</span></a>`; })}</div><p class="tiny muted">Change in estimated max between your first and latest logged top set, last 8 sessions. Different variations are not strictly comparable.</p>`
     : html`<p class="muted small">Once a movement has two logged sessions, its top sets line up here. Holding or adding reps is the clearest sign either goal mode is working.</p>`}</div></section>
 
-    ${targets && days.some(day => entries[day].kcal) ? html`<section class="frame"><div class="frame__rebate"><span>Intake, last 14 logged days</span><span>Against your target</span></div><div class="frame__body">${(() => { const logged = days.filter(day => Number.isFinite(entries[day].kcal)); const avg = logged.reduce((sum, day) => sum + entries[day].kcal, 0) / logged.length; const p = days.filter(day => Number.isFinite(entries[day].protein)); const avgP = p.length ? p.reduce((sum, day) => sum + entries[day].protein, 0) / p.length : null; return html`<p>${fmt(round(avg / 10) * 10)} kcal a day on average across ${plural(logged.length, 'logged day')}${avgP ? `, ${round(avgP)} g protein` : ''}. Target: ${fmt(targets.kcal)} kcal, ${targets.protein} g.</p>${meter(avg / targets.kcal, 'meter--amber')}`; })()}</div></section>` : ''}
+    ${targets && days.some(day => entries[day].kcal) ? html`<section class="frame"><div class="frame__head"><span>Intake, last 14 logged days</span><span>Against your target</span></div><div class="frame__body">${(() => { const logged = days.filter(day => Number.isFinite(entries[day].kcal)); const avg = logged.reduce((sum, day) => sum + entries[day].kcal, 0) / logged.length; const p = days.filter(day => Number.isFinite(entries[day].protein)); const avgP = p.length ? p.reduce((sum, day) => sum + entries[day].protein, 0) / p.length : null; return html`<p>${fmt(round(avg / 10) * 10)} kcal a day on average across ${plural(logged.length, 'logged day')}${avgP ? `, ${round(avgP)} g protein` : ''}. Target: ${fmt(targets.kcal)} kcal, ${targets.protein} g.</p>${meter(avg / targets.kcal, 'meter--amber')}`; })()}</div></section>` : ''}
 
     <section aria-label="Entries">${sec('Recent entries', html`<button type="button" data-act="csv">Export CSV</button>`)}
       ${days.length ? html`<div class="list">${days.map(day => { const e = entries[day]; return html`<button class="list__i list__i--tap" type="button" data-act="logday" data-d="${day}"><span class="list__m"><span class="title">${fmtDay(day, { weekday: 'short', day: 'numeric', month: 'short' })}</span><span class="tiny muted" style="display:block">${[e.weight ? `${e.weight} lb` : '', e.waist ? `${e.waist} in` : '', e.sleep ? `${e.sleep} h` : '', e.kcal ? `${e.kcal} kcal` : '', e.protein ? `${e.protein} g protein` : '', e.note ?? ''].filter(Boolean).join(' · ') || 'Empty'}</span></span><span class="list__e">${icon('pencil', 'ic--sm')}</span></button>`; })}</div>` : html`<div class="empty"><p class="empty__t">No entries yet</p><p class="muted small">A weight a few mornings a week is enough to start.</p></div>`}</section>
@@ -128,27 +129,30 @@ function settingsPage() {
   const profile = store.get('profile'); const ui = store.get('ui'); const fun = store.get('fun');
   const toggle = (act, on, title, hint) => html`<button class="switch" type="button" role="switch" aria-checked="${on ? 'true' : 'false'}" data-act="${act}"><span class="switch__t"><span class="title" style="font-size:.98rem">${title}</span>${hint ? html`<span class="tiny muted" style="display:block">${hint}</span>` : ''}</span><span class="switch__k"></span></button>`;
   return html`<div class="wrap cut">${back()}
-    <header><p class="eyebrow">Settings</p><h1 class="display display--l">Make it yours.</h1></header>
-    <section class="frame"><div class="frame__rebate"><span>You</span><span>Optional</span></div><div class="frame__body"><label class="field"><span class="field__l">Name on the home screen</span><input class="input" maxlength="30" value="${profile.name}" placeholder="Leave blank for no greeting by name" data-change="name"></label></div></section>
-    <section class="frame"><div class="frame__rebate"><span>Food</span><span>Used by every recipe</span></div><div class="frame__body">
+    <header><h1 class="display display--l">Settings</h1></header>
+    <section class="frame"><div class="frame__head"><span>You</span><span>Optional</span></div><div class="frame__body"><label class="field"><span class="field__l">Name</span><input class="input" maxlength="30" value="${profile.name}" placeholder="Shown on the You screen and as the initial in the top bar" data-change="name"></label></div></section>
+    <section class="frame"><div class="frame__head"><span>Food</span><span>Used by every recipe</span></div><div class="frame__body">
       ${toggle('halal', profile.diet.halal, 'Halal-friendly ingredients', 'Meat is listed as halal-certified and recipes flag broths, cheeses and rotisserie chicken that often are not.')}
       <div class="switch" aria-disabled="true"><span class="switch__t"><span class="title" style="font-size:.98rem">No seafood</span><span class="tiny muted" style="display:block">Always on. No fish, shellfish, fish sauce, oyster sauce, anchovy or Worcestershire in any recipe, sauce or seasoning. Recipes warn where a store-bought item might hide it.</span></span><span class="tag">Locked on</span></div>
       <div><p class="eyebrow">How hot do you like it</p><div class="segc" style="margin-top:6px">${[[1, 'Mild'], [2, 'Medium'], [3, 'Hot']].map(([value, label]) => html`<button type="button" aria-pressed="${profile.diet.heat === value ? 'true' : 'false'}" data-act="heat" data-v="${value}">${label}</button>`)}</div></div>
     </div></section>
-    <section class="frame"><div class="frame__rebate"><span>Appearance</span><span>Every screen at once</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>Appearance</span><span>Applies to every screen</span></div><div class="frame__body">
       <div class="segc" role="group" aria-label="Appearance">${[['dark', 'Dark'], ['light', 'Light'], ['auto', 'Match device']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.theme ?? 'dark') === id ? 'true' : 'false'}" data-act="theme" data-v="${id}">${label}</button>`)}</div>
-      <p class="tiny muted">Dark is the default. Cook mode and the one-minute pause stay dark either way, so they are easy on the eyes at night.${fun.enabled && fun.night ? ' Night Drive is on, which keeps everything dark until you turn it off.' : ''}</p>
+      <p class="tiny muted">Cook mode and the pause timer are always dark.${fun.enabled && fun.night ? ' Night Drive is on, which keeps everything dark until you turn it off.' : ''}</p>
+      <p class="field__l" style="margin-top:16px">Paper</p>
+      <div class="stocks" role="group" aria-label="Paper colour">${PAPERS.map(([id, label, swatch]) => html`<button class="stock" type="button" aria-pressed="${(ui.paper ?? 'rosa') === id ? 'true' : 'false'}" data-act="paper" data-v="${id}"><i style="--sw:${swatch}"></i>${label}</button>`)}</div>
+      <p class="tiny muted">The colour Forme is printed on. Pink is the house colour.</p>
     </div></section>
-    <section class="frame"><div class="frame__rebate"><span>Motion, sound, touch</span><span>All optional</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>Motion, sound, touch</span><span>All optional</span></div><div class="frame__body">
       <div><p class="eyebrow">Motion</p><div class="segc" style="margin-top:6px">${[['system', 'Follow device'], ['reduced', 'Reduced'], ['full', 'Full']].map(([id, label]) => html`<button type="button" aria-pressed="${ui.motion === id ? 'true' : 'false'}" data-act="motion" data-v="${id}">${label}</button>`)}</div><p class="tiny muted" style="margin-top:6px">Reduced swaps every animation for a plain state change. Timers and counts still update.</p></div>
-      ${toggle('haptics', ui.haptics !== false, 'Haptics', 'A short buzz when a set, habit or timer lands. Only on phones that support it.')}
+      ${toggle('haptics', ui.haptics !== false, 'Haptics', 'A short buzz when you finish a set, tick a habit or a timer ends. Only on phones that support it.')}
       ${toggle('sound', ui.sound === true, 'Sounds', 'A soft tone for timers and finished sets. Off by default.')}
     </div></section>
-    <section class="frame"><div class="frame__rebate"><span>Play</span><span></span></div><div class="frame__body">
-      ${toggle('fun', fun.enabled, 'Stickers, quests and replays', 'Turn the playful layer off and it disappears everywhere. Nothing is deleted.')}
-      ${toggle('night', fun.enabled && fun.night, 'Night Drive', 'Slow streetlight passes across the top of every screen. Always dark while it is on.')}
+    <section class="frame"><div class="frame__head"><span>Play</span><span></span></div><div class="frame__body">
+      ${toggle('fun', fun.enabled, 'Stickers, quests and replays', 'Off hides them on every screen. Nothing is deleted.')}
+      ${toggle('night', fun.enabled && fun.night, 'Night Drive', 'Slow streetlight sweeps across the top of every screen. The app stays dark while it is on.')}
     </div></section>
-    <section class="frame"><div class="frame__rebate"><span>Today</span><span></span></div><div class="frame__body"><p class="small muted">Pin, hide and reorder the Today modules from the "Edit layout" button at the bottom of Today.</p><button class="btn btn--quiet btn--sm" type="button" data-act="layoutreset">Reset Today layout</button></div></section>
+    <section class="frame"><div class="frame__head"><span>Today</span><span></span></div><div class="frame__body"><p class="small muted">Pin, hide and reorder the sections of Today with the "Edit layout" button at the bottom of that screen.</p><button class="btn btn--quiet btn--sm" type="button" data-act="layoutreset">Reset Today layout</button></div></section>
   </div>`;
 }
 
@@ -158,17 +162,17 @@ function dataPage() {
   const counts = { workouts: store.training.read().value?.sessions?.length ?? 0, body: Object.keys(store.get('body').entries).length, cooked: Object.values(store.get('kitchen').recipes).reduce((sum, record) => sum + (record.cooked?.length ?? 0), 0), move: store.get('move').sessions.length, habits: store.get('habits').habits.length };
   const problems = store.SECTIONS.map(section => [section, store.sectionProblem(section)]).filter(([, problem]) => problem);
   return html`<div class="wrap cut">${back()}
-    <header><p class="eyebrow">Backup and data</p><h1 class="display display--l">It stays here.</h1><p class="muted">Forme has no account, no server and no analytics. Your logs live in this browser on this device. That also means clearing browser data deletes them, so export a backup now and then.</p></header>
+    <header><h1 class="display display--l">Backup and data</h1><p class="muted" style="margin-top:10px">Forme has no account, no server and no analytics. Your logs live in this browser on this device. That also means clearing browser data deletes them, so export a backup now and then.</p></header>
     ${!store.isPersistent ? html`<div class="note note--bad"><p>This browser is blocking storage. Nothing you enter will survive closing the tab.</p></div>` : ''}
     ${problems.length ? html`<div class="note note--bad"><p><strong>Some saved data could not be read</strong> and has not been overwritten: ${problems.map(([section]) => section).join(', ')}. Export a backup, then restore an older one or reset those parts below.</p></div>` : ''}
-    <section class="frame"><div class="frame__rebate"><span>On this device</span><span>${store.isPersistent ? 'Saved' : 'Temporary'}</span></div><div class="frame__body"><dl class="kv"><dt>Workouts</dt><dd>${counts.workouts}</dd><dt>Body-log days</dt><dd>${counts.body}</dd><dt>Meals cooked</dt><dd>${counts.cooked}</dd><dt>Movement sessions</dt><dd>${counts.move}</dd><dt>Habits</dt><dd>${counts.habits}</dd></dl>
+    <section class="frame"><div class="frame__head"><span>On this device</span><span>${store.isPersistent ? 'Saved' : 'Temporary'}</span></div><div class="frame__body"><dl class="kv"><dt>Workouts</dt><dd>${counts.workouts}</dd><dt>Body-log days</dt><dd>${counts.body}</dd><dt>Meals cooked</dt><dd>${counts.cooked}</dd><dt>Movement sessions</dt><dd>${counts.move}</dd><dt>Habits</dt><dd>${counts.habits}</dd></dl>
       <div class="row row--wrap"><button class="btn grow" type="button" data-act="export">${icon('download')} Export everything</button><label class="btn btn--quiet grow" for="importFile">${icon('upload')} Import a backup</label><input class="vh" id="importFile" type="file" accept="application/json,.json" data-change="import"></div>
       <p class="tiny muted">One file holds everything, including the private log and private check-ins, so keep it somewhere only you can reach. Imports are checked before anything is written and rolled back if a write fails. Backups from Form & Fuel (versions 1 and 2) still import.</p></div></section>
-    <section class="frame"><div class="frame__rebate"><span>From the earlier app</span><span>${report ? fmtDay(report.at.slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>From the earlier app</span><span>${report ? fmtDay(report.at.slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span></div><div class="frame__body">
       <ul class="dots"><li>Training journal: used as is. Same sessions, drafts and program.</li><li>Progress tracker: ${report?.bodyDays ? `${plural(report.bodyDays, 'day')} copied into the new body log` : 'no daily entries to copy'}. The original is still stored untouched.</li><li>Targets: ${report?.targets ? 'your calorie and protein targets were carried into Lean gain' : 'none carried over'}.</li><li>Whey label: ${report?.whey ? 'carried over' : 'using the assumed label'}.</li><li>Saved recipes and notes: readable in the <a href="#/eat/archive">recipe archive</a>.</li><li>Custom shopping lists: under Groceries, "Your earlier store lists".</li><li>Private log: under <a href="#/private">Private</a>, unchanged.</li></ul>
       ${report?.notes?.length ? html`<div class="note note--warn">${report.notes.map(note => html`<p>${note}</p>`)}</div>` : ''}
       <details class="fold"><summary>Original reference documents</summary><div class="fold__b"><p class="small muted">The PDFs from the first version. Their guidance is superseded; they are kept because they are yours.</p><ul class="dots"><li><a href="GTA_16_Week_Nutrition_Plan.pdf" target="_blank" rel="noopener">16-week nutrition plan (PDF)</a></li><li><a href="Mothers_Sunday_Cooking_Sheet.pdf" target="_blank" rel="noopener">Sunday cooking sheet (PDF)</a></li><li><a href="Quick_Start_Card.pdf" target="_blank" rel="noopener">Quick start card (PDF)</a></li></ul></div></details></div></section>
-    <section class="frame"><div class="frame__rebate"><span>App</span><span>Version ${VERSION}</span></div><div class="frame__body"><p class="small muted">Installed to your home screen, Forme works offline after the first visit. Demo videos and source links need a connection; nothing else does.</p><button class="btn btn--quiet btn--sm" type="button" data-act="update">Check for an update</button></div></section>
+    <section class="frame"><div class="frame__head"><span>App</span><span>Version ${VERSION}</span></div><div class="frame__body"><p class="small muted">Installed to your home screen, Forme works offline after the first visit. Demo videos and source links need a connection; nothing else does.</p><button class="btn btn--quiet btn--sm" type="button" data-act="update">Check for an update</button></div></section>
     <details class="fold"><summary>Reset one part</summary><div class="fold__b"><p class="small muted">Each button clears only that part of Forme on this device. Export first.</p><div class="stack--s">${[['kitchen', 'Kitchen: saves, ratings, weeks, batches'], ['move', 'Movement: plan, sessions, checks'], ['habits', 'Habits and their history'], ['body', 'Body log'], ['reset', 'Reset actions and check-ins'], ['fun', 'Stickers, quests, replays'], ['ui', 'Layout and app settings']].map(([section, label]) => html`<button class="btn btn--quiet btn--sm btn--block btn--left" type="button" data-act="wipe" data-s="${section}">${icon('trash', 'ic--sm')} ${label}</button>`)}</div><p class="tiny muted">The training journal and the private areas have their own delete controls where they live.</p></div></details>
   </div>`;
 }
@@ -178,7 +182,7 @@ function creditsPage() {
   const creators = RECIPES.filter(recipe => recipe.source.type === 'creator');
   const usedSources = [...new Set([...Object.values(CLAIMS).flat().map(claim => claim.src), ...GOAL_CLAIMS.map(claim => claim.src), ...FOOD_SAFETY.rules.map(rule => rule.src), 'lally2010', 'singh2024', 'gollwitzer2006', 'tapper2018', 'hlbcBack', 'hlbcAnkle', 'hlbcKnee', 'hlbcShoulder'])].filter(Boolean);
   return html`<div class="wrap cut">${back()}
-    <header><p class="eyebrow">Credits and sources</p><h1 class="display display--l">Who made what.</h1><p class="muted">Every photo, recipe idea, typeface and study Forme leans on, with its licence or link. Read or retrieved 16 to 17 Nov 2026.</p></header>
+    <header><h1 class="display display--l">Credits</h1><p class="muted" style="margin-top:10px">Every photo, recipe idea, typeface and study Forme uses, with its licence or link. Read or retrieved 16 to 17 Nov 2026.</p></header>
     ${sec('Recipe creators', plural(creators.length, 'recipe'))}
     <div class="list">${creators.map(recipe => html`<div class="list__i"><span class="list__m"><span class="title">${recipe.source.creator}, ${recipe.source.outlet}</span><span class="small" style="display:block">${extLink(recipe.source.url, recipe.source.title)}</span><span class="tiny muted" style="display:block">Adapted as <a href="#/eat/r/${recipe.id}">${recipe.short}</a>. Instructions rewritten; quantities and nutrition recalculated.</span></span></div>`)}</div>
     ${sec('Photographs', plural(Object.keys(PHOTOS).length, 'photo'))}
@@ -221,6 +225,7 @@ export function render(ctx) {
       heat: d => setProfile(profile => { profile.diet = { ...profile.diet, heat: Number(d.v) }; }),
       motion: d => store.update('ui', ui => { ui.motion = d.v; }),
       theme: d => store.update('ui', ui => { ui.theme = d.v; }),
+      paper: d => store.update('ui', ui => { ui.paper = d.v; }),
       haptics: () => store.update('ui', ui => { ui.haptics = ui.haptics === false; }),
       sound: () => store.update('ui', ui => { ui.sound = !ui.sound; }),
       fun: () => store.update('fun', fun => { fun.enabled = !fun.enabled; if (!fun.enabled) fun.night = false; }),

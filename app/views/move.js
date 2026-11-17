@@ -59,14 +59,16 @@ function home() {
   const setup = move.setup ?? defaultSetup();
   if (!move.plan) {
     return html`<div class="wrap studio cut">
-      <header class="mhead"><p class="eyebrow">Posture and movement</p><h1 class="display display--l stretch-in">Seven days. Ten minutes.</h1>
-        <p class="lead">A short guided practice for the things you notice: how your pelvis sits, an ankle that rolls, a knee that drifts, a shoulder blade that moves differently. Practice and comfort, not correction. No six-month commitment.</p></header>
-      <div class="frame frame--lift"><div class="frame__rebate"><span>Day 1</span><span>About 6 minutes</span></div><div class="frame__body">
-        <p class="title">Setup and first practice</p><p class="muted small">One tap starts it with ${LANES[setup.primary].name.toLowerCase()} as the focus. You can change the focus on the first screen.</p>
-        <button class="btn btn--block" type="button" data-act="begin">${icon('play')} Start day 1</button>
-        <button class="btn btn--quiet btn--block btn--sm" type="button" data-act="focus">Choose my focus first</button></div></div>
-      ${sec('Four lanes', 'Pick one, add a second if you want')}
-      <div class="stack">${Object.values(LANES).map(lane => html`<button class="frame frame--press" type="button" data-act="focus" data-l="${lane.id}"><div class="frame__rebate"><span>${lane.short}</span><span>${plural(lane.order.length, 'drill')}</span></div><div class="frame__body"><p class="title">${lane.name}</p><p class="small muted">${lane.line}</p></div></button>`)}</div>
+      <section class="slab slab--bleed" aria-label="Posture and movement">
+        <p class="slab__k"><span>Posture and movement</span><span>About 6 min</span></p>
+        <h1 class="display display--xl head-in">Day 1<span class="mhead__of"> of 7</span></h1>
+        <p class="slab__sub">Setup and first practice. It starts with ${LANES[setup.primary].name.toLowerCase()} as the focus, and you can change that on the first screen.</p>
+        <div class="slab__go stack"><button class="btn btn--go" type="button" data-act="begin"><span>Start day 1</span>${icon('arrow-right')}</button>
+          <button class="btn btn--ghost btn--block btn--sm" type="button" data-act="focus">Choose my focus first</button></div>
+      </section>
+      <p class="lead">A guided practice of six to twelve minutes a day for one week. You pick what to work on: how your pelvis sits, an ankle that rolls, a knee that drifts, or a shoulder blade that moves differently. On day 7 you decide whether to continue.</p>
+      ${sec('Four areas', 'Pick one. A second is optional.')}
+      <div class="stack">${Object.values(LANES).map(lane => html`<button class="frame frame--press" type="button" data-act="focus" data-l="${lane.id}"><div class="frame__head"><span>${lane.short}</span><span>${plural(lane.order.length, 'drill')}</span></div><div class="frame__body"><p class="title">${lane.name}</p><p class="small muted">${lane.line}</p></div></button>`)}</div>
       ${footLinks()}
     </div>`;
   }
@@ -78,15 +80,17 @@ function home() {
   const finished = plan.done >= info.sessions;
   const paused = Object.keys(move.paused ?? {});
   const hasBaseline = move.checks.some(check => check.planId === plan.id);
-  if (finished) return html`<div class="wrap studio cut"><header class="mhead"><p class="eyebrow">${info.name} complete</p><h1 class="display display--l">You finished it.</h1></header>
+  if (finished) return html`<div class="wrap studio cut"><header class="mhead"><p class="eyebrow">${info.name}</p><h1 class="display display--l">Finished</h1></header>
       <a class="btn btn--block" href="#/move/done">See the recap</a>${footLinks()}</div>`;
   return html`<div class="wrap studio cut">
-    <header class="mhead"><p class="eyebrow">${info.name} · ${LANES[plan.primary].short}${plan.secondary ? ` + ${LANES[plan.secondary].short}` : ''}</p>
-      <h1 class="display stretch-in">Day ${session.n}<span class="mhead__of"> of ${session.of}</span></h1>
-      <p class="lead">${session.title}. ${gap >= 2 ? `You last practised ${relDay(lastDate).toLowerCase()}. It is still day ${session.n}; nothing was lost.` : doneToday ? 'Today is done. Another session is optional.' : `About ${session.minutes} minutes.`}</p></header>
-    <div class="dots7" role="img" aria-label="${plan.done} of ${info.sessions} sessions done">${Array.from({ length: info.sessions }, (_, index) => html`<span class="dots7__d ${index < plan.done ? 'is-done' : index === plan.done ? 'is-next' : ''}">${index + 1}${index < plan.done ? loop(false, index) : ''}</span>`)}</div>
-    <div class="row row--wrap"><button class="btn grow" type="button" data-act="play">${icon('play')} ${doneToday ? 'Practise again' : 'Start'} · ${session.minutes} min</button>
-      <button class="btn btn--ghost" type="button" data-act="playshort">${icon('bolt')} 2-minute version</button></div>
+    <section class="slab slab--bleed" aria-label="Today's practice">
+      <p class="slab__k"><span>${info.name} · ${LANES[plan.primary].short}${plan.secondary ? ` + ${LANES[plan.secondary].short}` : ''}</span><span>${session.minutes} min</span></p>
+      <h1 class="display display--xl head-in">Day ${session.n}<span class="mhead__of"> of ${session.of}</span></h1>
+      <p class="slab__sub">${session.title}. ${gap >= 2 ? `You last practised ${relDay(lastDate).toLowerCase()}. It is still day ${session.n}.` : doneToday ? 'Today is done. You can run another session.' : `About ${session.minutes} minutes.`}</p>
+      <div class="dots7" role="img" aria-label="${plan.done} of ${info.sessions} sessions done">${Array.from({ length: info.sessions }, (_, index) => html`<span class="dots7__d ${index < plan.done ? 'is-done' : index === plan.done ? 'is-next' : ''}">${index + 1}</span>`)}</div>
+      <div class="slab__go stack"><button class="btn btn--go" type="button" data-act="play"><span>${doneToday ? 'Practise again' : 'Start'} · ${session.minutes} min</span>${icon('arrow-right')}</button>
+        <button class="btn btn--ghost btn--block btn--sm" type="button" data-act="playshort">${icon('bolt')} 2-minute version</button></div>
+    </section>
     ${session.why.length ? html`<div class="note"><p class="eyebrow">Why today looks like this</p><ul class="dots">${session.why.map(line => html`<li>${line}</li>`)}</ul></div>` : ''}
     ${legDay && !session.why.length ? html`<p class="tiny muted">Leg day in the gym. Today’s drills are already light on the legs.</p>` : ''}
 
@@ -97,8 +101,8 @@ function home() {
     ${paused.length ? html`<div class="note note--warn"><p class="eyebrow">Paused</p>${paused.map(id => html`<p class="spread"><span>${EX[id].name}: easiest version only since ${fmtDay(move.paused[id].on, { month: 'short', day: 'numeric' })}.</span><button class="btn btn--xs btn--quiet" type="button" data-act="resume" data-id="${id}">Resume</button></p>`)}<p class="tiny"><a href="#/move/check">When to get checked</a></p></div>` : ''}
 
     <div class="cols">
-      <button class="frame frame--press" type="button" data-act="checkin"><div class="frame__rebate"><span>Optional check</span><span>1 minute</span></div><div class="frame__body"><p class="title">${hasBaseline ? 'Check in again' : 'Baseline check'}</p><p class="small muted">Four ratings of how things feel, and two optional measures. Low stakes, repeatable, never a score of you.</p></div></button>
-      <button class="frame frame--press" type="button" data-act="focus"><div class="frame__rebate"><span>Focus</span><span>Change any time</span></div><div class="frame__body"><p class="title">${LANES[plan.primary].name}${plan.secondary ? html` <span class="muted">+ ${LANES[plan.secondary].short.toLowerCase()}</span>` : ''}</p><p class="small muted">Equipment: ${Object.entries(setup.equipment).filter(([, on]) => on).map(([key]) => EQUIPMENT[key].split(' ')[0].toLowerCase()).join(', ')}.</p></div></button>
+      <button class="frame frame--press" type="button" data-act="checkin"><div class="frame__head"><span>Optional check</span><span>1 minute</span></div><div class="frame__body"><p class="title">${hasBaseline ? 'Check in again' : 'Baseline check'}</p><p class="small muted">Four ratings of how things feel, and two optional measures. Repeat it whenever you like. It is not a score.</p></div></button>
+      <button class="frame frame--press" type="button" data-act="focus"><div class="frame__head"><span>Focus</span><span>Change any time</span></div><div class="frame__body"><p class="title">${LANES[plan.primary].name}${plan.secondary ? html` <span class="muted">+ ${LANES[plan.secondary].short.toLowerCase()}</span>` : ''}</p><p class="small muted">Equipment: ${Object.entries(setup.equipment).filter(([, on]) => on).map(([key]) => EQUIPMENT[key].split(' ')[0].toLowerCase()).join(', ')}.</p></div></button>
     </div>
     <button class="linkish linkish--quiet" type="button" data-act="restday">Not today: make it a rest day</button>
     ${footLinks()}
@@ -117,7 +121,7 @@ function cardPage(exercise) {
     <div class="row row--wrap"><button class="btn grow" type="button" data-act="single" data-id="${exercise.id}">${icon('play')} Practise this now</button>${exercise.video ? html`<a class="btn btn--quiet" href="${exercise.video.url}" target="_blank" rel="noopener noreferrer">${icon('ext', 'ic--sm')} Watch a demo</a>` : ''}</div>
     ${exercise.video ? html`<p class="tiny muted">Demo: “${exercise.video.title}” by ${exercise.video.channel} on YouTube (${exercise.video.len}). Opens YouTube in a new tab; nothing loads from it until you tap. If the link ever dies, the drawing and cues here are the full instruction.</p>` : ''}
 
-    <section class="frame" aria-label="Dose"><div class="frame__rebate"><span>Your dose now</span><span>About ${clock(doseSeconds(dose))}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Dose"><div class="frame__head"><span>Your dose now</span><span>About ${clock(doseSeconds(dose))}</span></div><div class="frame__body">
       <p class="title">${doseText(dose)} · ${exercise.levels[level].name}</p><p class="small">${exercise.levels[level].change}</p><p class="tiny muted">${exercise.dosage}</p></div></section>
 
     <section aria-label="How to do it">${sec('Setup')}<p style="margin-top:8px">${exercise.setup}</p></section>
@@ -125,13 +129,13 @@ function cardPage(exercise) {
     <section aria-label="What you might feel">${sec('What you might feel')}<p style="margin-top:8px">${exercise.feel}</p></section>
     <section aria-label="Common compensations">${sec('Watch for')}<ul class="dots" style="margin-top:8px">${exercise.watch.map(item => html`<li>${item}</li>`)}</ul></section>
 
-    <section class="frame" aria-label="Levels"><div class="frame__rebate"><span>Easier and harder</span><span>Criteria, not calendar</span></div><div class="frame__body">
+    <section class="frame" aria-label="Levels"><div class="frame__head"><span>Easier and harder</span><span>By feel, not by date</span></div><div class="frame__body">
       <p class="small"><strong>Easier.</strong> ${exercise.easier}</p>
       <ol class="lvl">${exercise.levels.map((item, index) => html`<li class="${index === level ? 'is-now' : ''}"><span class="tag ${index === level ? 'tag--amber' : 'tag--line'}">${index === level ? 'You are here' : `Level ${index + 1}`}</span><p class="title">${item.name}</p><p class="small">${item.change}</p>${item.nextWhen ? html`<p class="tiny muted">Move on when: ${item.nextWhen}</p>` : html`<p class="tiny muted">Top version. Hold it here.</p>`}</li>`)}</ol>
       <p class="tiny muted">Forme moves you up after two sessions in a row that you mark as easier. Harder steps you back. Felt off pauses it.</p></div></section>
 
-    <section class="frame" aria-label="If it aggravates symptoms"><div class="frame__rebate"><span>If it bothers something</span><span><a href="#/move/check">When to get checked</a></span></div><div class="frame__body"><p>${exercise.ifSore}</p></div></section>
-    <section class="frame" aria-label="Benefits and uncertainty"><div class="frame__rebate"><span>What it might do</span><span>And what is uncertain</span></div><div class="frame__body"><p>${exercise.benefit}</p>
+    <section class="frame" aria-label="If it aggravates symptoms"><div class="frame__head"><span>If it bothers something</span><span><a href="#/move/check">When to get checked</a></span></div><div class="frame__body"><p>${exercise.ifSore}</p></div></section>
+    <section class="frame" aria-label="Benefits and uncertainty"><div class="frame__head"><span>What it might do</span><span>And what is uncertain</span></div><div class="frame__body"><p>${exercise.benefit}</p>
       <p class="tiny muted">Sources: ${exercise.refs.map((ref, index) => html`${index ? '; ' : ''}${extLink(SOURCES[ref].url, `${SOURCES[ref].cite.split('.')[0]} (${SOURCES[ref].date})`)}`)}. <a href="#/move/why">All evidence</a>.</p></div></section>
     <p class="small"><strong>Around lifting.</strong> ${exercise.around}</p>
     <p class="tiny muted">Needs: ${exercise.equip.length ? exercise.equip.map(item => EQUIPMENT[item].toLowerCase()).join(', ') : 'a bit of floor'}.</p>
@@ -170,8 +174,8 @@ function whyPage() {
 function checkPage() {
   return html`<div class="wrap studio"><a class="linkish linkish--quiet" href="#/move">${icon('arrow-left', 'ic--sm')} Move</a>
     <header><p class="eyebrow">Short and source-backed</p><h1 class="display display--l">When to get checked</h1><p class="lead">${GET_CHECKED.intro}</p></header>
-    <section class="frame" style="border-color:var(--mark)"><div class="frame__rebate" style="color:var(--mark)"><span>${GET_CHECKED.urgent.label}</span><span></span></div><div class="frame__body"><ul class="dots">${GET_CHECKED.urgent.items.map(item => html`<li>${item}</li>`)}</ul></div></section>
-    ${Object.entries(GET_CHECKED.lanes).map(([id, lane]) => html`<section class="frame"><div class="frame__rebate"><span>${lane.label}</span><span>${LANES[id].short}</span></div><div class="frame__body"><ul class="dots">${lane.items.map(item => html`<li>${item}</li>`)}</ul>
+    <section class="frame" style="border-color:var(--mark)"><div class="frame__head" style="color:var(--mark)"><span>${GET_CHECKED.urgent.label}</span><span></span></div><div class="frame__body"><ul class="dots">${GET_CHECKED.urgent.items.map(item => html`<li>${item}</li>`)}</ul></div></section>
+    ${Object.entries(GET_CHECKED.lanes).map(([id, lane]) => html`<section class="frame"><div class="frame__head"><span>${lane.label}</span><span>${LANES[id].short}</span></div><div class="frame__body"><ul class="dots">${lane.items.map(item => html`<li>${item}</li>`)}</ul>
       <p class="eyebrow">Book an appointment if</p><ul class="dots">${lane.soon.map(item => html`<li>${item}</li>`)}</ul>
       <p class="tiny muted">Wording follows ${extLink(SOURCES[lane.src].url, SOURCES[lane.src].cite)} ${SOURCES[lane.src].date}.</p></div></section>`)}
     <div class="note"><p>${GET_CHECKED.ontario}</p><p>${GET_CHECKED.pause}</p></div>
@@ -188,20 +192,20 @@ function donePage() {
   return html`<div class="wrap studio cut"><a class="linkish linkish--quiet" href="#/move">${icon('arrow-left', 'ic--sm')} Move</a>
     <header class="mhead"><p class="eyebrow">${PLANS[plan.kind].name} · started ${fmtDay(plan.startedOn, { month: 'short', day: 'numeric' })}</p><h1 class="display display--l">${complete ? 'The recap.' : 'So far.'}</h1></header>
     <div class="statrow"><div class="stat"><div class="stat__v num">${summary.sessions}<small>/${summary.of}</small></div><div class="stat__l">Sessions</div></div><div class="stat"><div class="stat__v num">${summary.minutes}</div><div class="stat__l">Minutes</div></div><div class="stat"><div class="stat__v num">${summary.days}</div><div class="stat__l">Days</div></div><div class="stat"><div class="stat__v num">${summary.short}</div><div class="stat__l">2-minute</div></div></div>
-    <section class="frame"><div class="frame__rebate"><span>What you told Forme</span><span>After each session</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>What you told Forme</span><span>After each session</span></div><div class="frame__body">
       ${Object.keys(summary.feels).length ? html`<p>${Object.entries(summary.feels).map(([feel, count]) => `${count} × ${feelWord[feel]}`).join(' · ')}</p>` : html`<p class="muted">No post-session answers recorded.</p>`}
       ${summary.levelUps.length ? html`<p class="small">Moved up: ${summary.levelUps.map(item => `${item.name} to "${item.level}"`).join('; ')}.</p>` : html`<p class="small muted">No drill has moved up a level yet. That takes two easier sessions in a row.</p>`}
       ${summary.paused.length ? html`<p class="small">Paused: ${summary.paused.join(', ')}.</p>` : ''}</div></section>
-    <section class="frame"><div class="frame__rebate"><span>Your checks</span><span>${summary.hasRetest ? 'First and latest' : summary.hasBaseline ? 'Baseline only' : 'None recorded'}</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>Your checks</span><span>${summary.hasRetest ? 'First and latest' : summary.hasBaseline ? 'Baseline only' : 'None recorded'}</span></div><div class="frame__body">
       ${summary.changes.length ? html`<dl class="kv">${summary.changes.map(change => html`<dt>${change.label}</dt><dd class="num">${fmt(change.from, 1)}${change.unit} → ${fmt(change.to, 1)}${change.unit}</dd>`)}</dl><p class="tiny muted">These are your own ratings and measures on two days. A week of practice mostly changes how a task feels and how steady you are at it; it does not change structure.</p>`
     : html`<p class="muted small">${summary.hasBaseline ? 'You have a baseline. A retest now gives you two points to compare.' : 'Checks are optional. One now still gives you a starting point for whatever is next.'}</p>`}
       <button class="btn btn--quiet btn--sm btn--block" type="button" data-act="checkin">${summary.hasBaseline ? 'Retest now' : 'Do a check now'} · 1 minute</button></div></section>
-    ${sec('What next', 'Your call. Nothing is assumed.')}
+    ${sec('What next', 'Choose one')}
     <div class="stack">
       <button class="frame frame--press" type="button" data-act="again"><div class="frame__body"><p class="title">Repeat these 7 days</p><p class="small muted">Same focus, levels kept where they are now.</p></div></button>
       <button class="frame frame--press" type="button" data-act="focus"><div class="frame__body"><p class="title">Change my focus</p><p class="small muted">Pick a different primary lane, add or drop a second one, start a fresh 7 days.</p></div></button>
       <button class="frame frame--press" type="button" data-act="month"><div class="frame__body"><p class="title">Opt into the 30-day plan</p><p class="small muted">Twenty sessions over about thirty days: five a week, two off, a check-in every fifth session. You can stop any time and it asks again at the end before continuing.</p></div></button>
-      <button class="frame frame--press" type="button" data-act="stop"><div class="frame__body"><p class="title">Stop here for now</p><p class="small muted">Your history stays. Move goes quiet on Today until you start again.</p></div></button>
+      <button class="frame frame--press" type="button" data-act="stop"><div class="frame__body"><p class="title">Stop here for now</p><p class="small muted">Your history is kept. Movement leaves Today until you start again.</p></div></button>
     </div>
   </div>`;
 }
@@ -248,7 +252,7 @@ function playerPage() {
   }
   const done = play.i >= play.steps.length;
   if (done) return html`<div class="player"><main class="player__main player__main--pad"><p class="eyebrow">Session done · ${clock(play.elapsed)}</p><h1 class="display display--l">How did that feel?</h1>
-      <p class="muted">Your answer changes the next session. It is not a grade.</p>
+      <p class="muted">Your answer sets up the next session.</p>
       <div class="stack">${[['easier', 'Easier than expected', 'Two of these in a row and the drills move up a level.'], ['same', 'About right', 'Same again next time.'], ['harder', 'Harder than expected', 'One set fewer, or a step back, next time.'], ['off', 'Something felt off', 'Pauses that drill and shows what to do next.']].map(([id, title, note]) => html`<button class="frame frame--press" type="button" data-act="feel" data-f="${id}"><div class="frame__body"><p class="title">${title}</p><p class="small muted">${note}</p></div></button>`)}</div>
       ${play.single ? html`<button class="linkish linkish--quiet" type="button" data-act="quit">Skip and close</button>` : ''}</main></div>`;
   if (play.i < 0) play.i = 0, play.left = play.steps[0].seconds;
@@ -264,7 +268,7 @@ function playerPage() {
       <div class="player__info"><p class="eyebrow">${step.levelName}${step.sets > 1 ? ` · set ${step.set} of ${step.sets}` : ''}</p>
         <h1 class="display display--m">${exercise.name}</h1>
         ${step.side ? html`<p class="player__side stamp-in"><span class="tag tag--amber">${step.side} side</span></p>` : ''}
-        <div class="player__clock"><span class="seg" id="pClock" data-rep="${repNow ?? ''}" role="timer" aria-label="${step.hold ? 'Hold time left' : 'Rep count'}">${step.hold ? clock(play.left) : `${repNow}/${step.reps}`}</span><span class="eyebrow" id="pUnit">${step.hold ? 'Hold' : `Reps · ${step.pace} s each`}</span></div>
+        <div class="player__clock"><span class="clock" id="pClock" data-rep="${repNow ?? ''}" role="timer" aria-label="${step.hold ? 'Hold time left' : 'Rep count'}">${step.hold ? clock(play.left) : `${repNow}/${step.reps}`}</span><span class="eyebrow" id="pUnit">${step.hold ? 'Hold' : `Reps · ${step.pace} s each`}</span></div>
         <p class="player__cue" id="pCue">${exercise.cues[play.cue % exercise.cues.length]}</p></div>
     </main>
     <footer class="player__nav">
@@ -349,7 +353,7 @@ function focusSheet(preselect) {
 function checkSheet() {
   const move = store.get('move'); const values = {}; let flag = false; let area = move.plan?.primary ?? 'pelvis'; let showMeasures = false;
   sheet({ title: 'Quick check', eyebrow: 'Optional · about a minute',
-    body: () => html`<p class="muted small">Rate how each feels today, 1 to 5. Skip any that do not apply. This is a note to yourself, not a test.</p>
+    body: () => html`<p class="muted small">Rate how each feels today, 1 to 5. Skip any that do not apply.</p>
       ${CHECKS.map(item => html`<div><p class="title" style="font-size:.98rem">${item.label}</p><div class="segc" role="group" aria-label="${item.label}" style="margin-top:6px">${[1, 2, 3, 4, 5].map(n => html`<button type="button" aria-pressed="${values[item.id] === n ? 'true' : 'false'}" data-act="rate" data-id="${item.id}" data-v="${n}">${n}</button>`)}</div><div class="spread tiny muted"><span>${item.lo}</span><span>${item.hi}</span></div></div>`)}
       <button class="switch" type="button" role="switch" aria-checked="${showMeasures ? 'true' : 'false'}" data-act="measures"><span class="switch__t"><span class="title" style="font-size:.98rem">Add two measures</span><span class="tiny muted" style="display:block">One-leg hold time and knee-to-wall distance, per side.</span></span><span class="switch__k"></span></button>
       ${showMeasures ? html`<div class="grid2">${MEASURES.map(item => html`<label class="field"><span class="field__l">${item.label} (${item.unit})</span><input class="input input--num" inputmode="decimal" data-change="measure" data-id="${item.id}" value="${values[item.id] ?? ''}" aria-describedby="h-${item.id}"><span class="hint" id="h-${item.id}">${item.hint}</span></label>`)}</div><p class="tiny muted">Left and right are recorded side by side. Forme does not turn the difference into a score or a prescription.</p>` : ''}
@@ -413,7 +417,7 @@ export function render(ctx) {
       figto: d => { if (!exercise) return; cancelAnimationFrame(scrub.raf); setScrub(exercise, Number(d.t), Number(d.t) === 1); document.querySelectorAll('.fig__thumb').forEach(el => el.setAttribute('aria-pressed', el.dataset.t === d.t ? 'true' : 'false')); },
       again: () => { const plan = store.get('move').plan; startPlan('week', plan.primary, plan.secondary); toast('A fresh 7 days, same focus.'); location.hash = '#/move'; },
       month: async () => { if (!await ask({ title: 'Start the 30-day plan?', text: 'Twenty sessions over about thirty days. You can stop whenever you like, and it will ask before continuing past the end.', yes: 'Start 30 days', eyebrow: 'Opt in' })) return; const plan = store.get('move').plan; startPlan('month', plan.primary, plan.secondary); location.hash = '#/move'; },
-      stop: async () => { if (!await ask({ title: 'Stop for now?', text: 'Your sessions and checks are kept. Move goes quiet on Today until you start again.', yes: 'Stop for now' })) return; store.update('move', move => { move.pastPlans = [...(move.pastPlans ?? []), { ...move.plan, endedOn: today() }].slice(-12); move.plan = null; }); location.hash = '#/move'; },
+      stop: async () => { if (!await ask({ title: 'Stop for now?', text: 'Your sessions and checks are kept. Movement leaves Today until you start again.', yes: 'Stop for now' })) return; store.update('move', move => { move.pastPlans = [...(move.pastPlans ?? []), { ...move.plan, endedOn: today() }].slice(-12); move.plan = null; }); location.hash = '#/move'; },
       // player
       quit: async () => { if (play && !play.intro && play.i > 0 && play.i < play.steps.length && !await ask({ title: 'Leave the session?', text: 'This session will not be logged. Your plan stays on the same day.', yes: 'Leave', no: 'Keep going' })) return; play = null; clearInterval(ticker); location.hash = '#/move'; },
       iprimary: d => { setupEdit(setup => ({ ...setup, primary: d.l, secondary: setup.secondary === d.l ? null : setup.secondary })); },

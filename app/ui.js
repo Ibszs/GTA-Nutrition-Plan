@@ -58,8 +58,8 @@ export function relDay(day) {
   if (delta < 0 && delta > -7) return `${-delta} days ago`;
   return fmtDay(day, { month: 'short', day: 'numeric' });
 }
-/** Compact-camera date stamp, e.g. '26 11 17. */
-export const stamp = (day = today()) => html`<span class="stamp" aria-hidden="true">'${day.slice(2, 4)} ${day.slice(5, 7)} ${day.slice(8, 10)}</span>`;
+/** The date as the top bar prints it, e.g. "Tue 17 Nov". */
+export const dateline = (day = today()) => `${DOW[dow(day)]} ${Number(day.slice(8))} ${asDate(day).toLocaleDateString('en-CA', { month: 'short' }).replace('.', '')}`;
 export const clock = seconds => { const s = Math.max(0, Math.round(seconds)); return `${Math.floor(s / 60)}:${pad(s % 60)}`; };
 export function partOfDay(date = new Date()) {
   const hour = date.getHours();

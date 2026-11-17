@@ -1,8 +1,8 @@
-// Forme shell: hash router, room lighting, the dock and the quick-add button.
+// Forme shell: hash router, appearance, the dock and the quick-add button.
 // Each screen is a module with render(ctx) -> { room, where, body, actions, changes, inputs, after, leave, live }.
 
 import * as store from './store.js';
-import { html, icon, prefs, delegate, closeAllSheets, today, toast, stamp } from './ui.js';
+import { html, icon, prefs, delegate, closeAllSheets, today, toast, dateline } from './ui.js';
 import { trainingInfo } from './actions.js';
 import { startReminders } from './reminders.js';
 
@@ -20,6 +20,7 @@ const ROUTES = [
   { test: () => true, load: () => import('./views/today.js'), nav: 'today' },
 ];
 
+const PAPERS = ['rosa', 'sky', 'butter', 'news'];
 const root = document.documentElement;
 const view = document.getElementById('view');
 let current = null; // { route, module, screen, dispose, key }
@@ -41,16 +42,36 @@ function applySettings() {
   const fun = store.get('fun');
   const night = fun.enabled && fun.night;
   if (night) root.dataset.night = '1'; else delete root.dataset.night;
-  // One appearance for every room. Night Drive is a night scene, so it is always dark.
+  // One appearance for every screen. Night Drive is a night scene, so it is always dark.
   const light = !night && (ui.theme === 'light' || (ui.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches));
   root.dataset.theme = light ? 'light' : 'dark';
+  // The paper stock. Pink is the default and needs no attribute.
+  if (PAPERS.includes(ui.paper) && ui.paper !== 'rosa') root.dataset.paper = ui.paper; else delete root.dataset.paper;
+}
+
+/**
+ * The page colour as a hex value, for the browser bar. The token is a colour mix, and the page itself
+ * fades between appearances, so this paints the token onto a 1px canvas instead of reading the page.
+ */
+function pageColour() {
+  try {
+    const probe = document.createElement('i');
+    probe.style.cssText = 'position:absolute;width:0;height:0;background:var(--bg);transition:none';
+    document.getElementById('app').append(probe);
+    const colour = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    const context = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d');
+    context.fillStyle = colour; context.fillRect(0, 0, 1, 1);
+    const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+    return `#${[r, g, b].map(value => value.toString(16).padStart(2, '0')).join('')}`;
+  } catch { return root.dataset.theme === 'light' ? '#f9bfcb' : '#131012'; }
 }
 
 function paintShell(screen, route, path) {
   root.dataset.room = screen.room ?? 'street';
   document.getElementById('where').textContent = screen.where ?? '';
   document.title = screen.where ? `${screen.where} · Forme` : 'Forme';
-  document.getElementById('stampLink').innerHTML = String(stamp(today())).replace(/<\/?span[^>]*>/g, '');
+  document.getElementById('stampLink').textContent = dateline(today());
   document.querySelectorAll('.dock__item').forEach(link => { if (link.dataset.nav === route.nav) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
   const profile = store.get('profile');
   document.getElementById('avatar').textContent = (profile.name || 'F').trim().charAt(0).toUpperCase();
@@ -63,15 +84,15 @@ function paintShell(screen, route, path) {
   const chrome = screen.bare ? 'none' : '';
   document.getElementById('topbar').style.display = chrome; document.querySelector('.dock').style.display = chrome;
   view.style.paddingBottom = screen.bare ? '0' : '';
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', getComputedStyle(root).getPropertyValue('--bg').trim() || '#100f0d');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', pageColour());
 }
 
 function errorScreen(error) {
   return { room: 'street', where: 'Problem', body: html`<div class="wrap">
-    <div class="frame"><div class="frame__rebate"><span>This screen stopped</span><span>Your data is untouched</span></div><div class="frame__body">
-      <h1 class="display display--m">Something broke on this screen.</h1>
+    <div class="frame"><div class="frame__head"><span>Error</span><span>Your data is untouched</span></div><div class="frame__body">
+      <h1 class="display display--m">This screen could not be shown</h1>
       <p class="muted">${error?.message ?? 'Unknown error'}</p>
-      <p>Nothing was deleted. You can go back to Today, or export a backup first.</p>
+      <p>Nothing was deleted. Go back to Today, or export a backup first.</p>
       <div class="row row--wrap"><a class="btn" href="#/today">Back to Today</a><a class="btn btn--ghost" href="#/you/data">Backup and data</a></div>
     </div></div></div>`, actions: {} };
 }

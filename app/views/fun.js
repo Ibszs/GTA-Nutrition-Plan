@@ -1,4 +1,4 @@
-// The playful layer: a sticker sheet, a side quest, Night Drive, the month as a contact sheet and
+// Stickers, a side quest, Night Drive, the month at a glance and
 // the week as a two-second replay with a cover. All optional, all private, all replayable.
 
 import * as store from '../store.js';
@@ -52,7 +52,7 @@ export function coverBlock(start, small = false) {
   if (planned) ids = [...new Set(effectiveWeek(profile.mode, kitchen.weeks[profile.mode] ?? {}, kitchen.dayKinds[profile.mode] ?? {}).flatMap(day => day.slots.filter(slot => slot.slot === 'dinner' && slot.entry).map(slot => slot.entry.r)))];
   const withPhoto = ids.filter(id => RECIPE_BY_ID[id]?.photo).slice(0, 4);
   return html`<div class="cover ${small ? 'cover--s' : ''}" role="img" aria-label="Cover for week ${weekNumber(start)}: ${ids.slice(0, 6).map(id => RECIPE_BY_ID[id].short).join(', ')}">
-    <div class="cover__art cover__art--${Math.max(1, withPhoto.length)}">${withPhoto.length ? withPhoto.map(id => html`<img src="${PHOTOS[RECIPE_BY_ID[id].photo].file}" alt="" loading="lazy">`) : html`<span class="cover__blank serif">Forme</span>`}</div>
+    <div class="cover__art cover__art--${Math.max(1, withPhoto.length)}">${withPhoto.length ? withPhoto.map(id => html`<img src="${PHOTOS[RECIPE_BY_ID[id].photo].file}" alt="" loading="lazy">`) : html`<span class="cover__blank dish">Forme</span>`}</div>
     <div class="cover__txt"><p class="cover__k">FORME · WK ${String(weekNumber(start)).padStart(2, '0')} · ${MODES[profile.mode].short.toUpperCase()}</p><p class="cover__t">${planned ? 'The plan' : 'What got cooked'}</p>
       <ol class="cover__list">${ids.slice(0, 6).map((id, index) => html`<li><span>${index < 3 ? 'A' : 'B'}${(index % 3) + 1}</span>${RECIPE_BY_ID[id].short}</li>`)}</ol></div></div>`;
 }
@@ -63,31 +63,31 @@ function hub() {
   const quest = fun.quests[today()] ?? { offset: 0, done: false };
   const questText = QUESTS[questFor(today(), quest.offset)];
   const start = weekStart(today());
-  if (!fun.enabled) return html`<div class="wrap"><a class="linkish linkish--quiet" href="#/you">${icon('arrow-left', 'ic--sm')} You</a><div class="empty"><p class="empty__t">The playful layer is off</p><p class="muted small">Stickers, quests, Night Drive and replays are hidden. Nothing you earned was deleted.</p><button class="btn" type="button" data-act="enable">Turn it back on</button></div></div>`;
+  if (!fun.enabled) return html`<div class="wrap"><a class="linkish linkish--quiet" href="#/you">${icon('arrow-left', 'ic--sm')} You</a><div class="empty"><p class="empty__t">Stickers and quests are off</p><p class="muted small">Stickers, quests, Night Drive and replays are hidden. Nothing you earned was deleted.</p><button class="btn" type="button" data-act="enable">Turn it back on</button></div></div>`;
   return html`<div class="wrap cut">
     <a class="linkish linkish--quiet" href="#/you">${icon('arrow-left', 'ic--sm')} You</a>
-    <header><p class="eyebrow">Just for fun</p><h1 class="display display--l">The sheet.</h1><p class="muted">${earned.length} of ${STICKERS.length} stickers. They come from things you actually did, and nobody else sees them.</p></header>
+    <header><h1 class="display display--l">Stickers</h1><p class="muted" style="margin-top:10px">${earned.length} of ${STICKERS.length} earned. You get them for things you do in Forme. Only you see them.</p></header>
     <div class="stksheet">${STICKERS.map((sticker, index) => { const record = fun.stickers[sticker.id]; return html`<button class="stksheet__c" type="button" data-act="sticker" data-id="${sticker.id}" aria-label="${sticker.name}: ${record ? `earned ${plural(record.n, 'time')}` : 'not earned yet'}">${stickerSvg(sticker, Boolean(record), ((index * 37) % 13) - 6)}${record && record.n > 1 ? html`<span class="stksheet__n">×${record.n}</span>` : ''}</button>`; })}</div>
 
-    <section class="frame" aria-label="Side quest"><div class="frame__rebate"><span>${icon('dice', 'ic--sm')} Today’s side quest</span><span>${quest.done ? 'Done' : 'Harmless, optional'}</span></div><div class="frame__body">
+    <section class="frame" aria-label="Side quest"><div class="frame__head"><span>${icon('dice', 'ic--sm')} Today’s side quest</span><span>${quest.done ? 'Done' : 'Optional'}</span></div><div class="frame__body">
       <p class="title" style="font-size:1.15rem">${questText}</p>
       <div class="row row--wrap">${quest.done ? html`<span class="tag tag--amber">Done today</span>` : html`<button class="btn btn--sm grow" type="button" data-act="questdone">${icon('check', 'ic--sm')} Did it</button>`}<button class="btn btn--quiet btn--sm" type="button" data-act="questdraw">${icon('dice', 'ic--sm')} Draw another</button></div></div></section>
 
-    <section class="frame" aria-label="Night Drive"><div class="frame__body"><button class="switch" type="button" role="switch" aria-checked="${fun.night ? 'true' : 'false'}" data-act="night"><span class="switch__t"><span class="title">Night Drive</span><span class="tiny muted" style="display:block">Slow streetlight passes drift across the top of every screen, like the city going by a car window. Always dark while it is on.</span></span><span class="switch__k"></span></button></div></section>
+    <section class="frame" aria-label="Night Drive"><div class="frame__body"><button class="switch" type="button" role="switch" aria-checked="${fun.night ? 'true' : 'false'}" data-act="night"><span class="switch__t"><span class="title">Night Drive</span><span class="tiny muted" style="display:block">Slow streetlight sweeps cross the top of every screen. The app stays dark while it is on.</span></span><span class="switch__k"></span></button></div></section>
 
-    <section aria-label="This week">${sec('This week on tape', html`<a href="#/fun/sheet">Contact sheet</a>`)}
-      <div class="cols" style="margin-top:10px"><a class="frame frame--press" href="#/fun/replay"><div class="frame__rebate"><span>${icon('film', 'ic--sm')} Weekly replay</span><span>2 seconds</span></div><div class="frame__body"><p class="title">Play week ${weekNumber(start)}</p><p class="small muted">Two seconds of your week, then a cover made from what you cooked.</p></div></a>
+    <section aria-label="This week">${sec('This week', html`<a href="#/fun/sheet">Month</a>`)}
+      <div class="cols" style="margin-top:10px"><a class="frame frame--press" href="#/fun/replay"><div class="frame__head"><span>${icon('film', 'ic--sm')} Weekly replay</span><span>2 seconds</span></div><div class="frame__body"><p class="title">Play week ${weekNumber(start)}</p><p class="small muted">A two-second replay of your week, then a cover made from what you cooked.</p></div></a>
         <a class="frame frame--press" href="#/fun/replay">${coverBlock(start, true)}</a></div></section>
 
     ${fun.replays.length ? html`<section aria-label="Kept replays">${sec('Kept', plural(fun.replays.length, 'replay'))}<div class="list">${[...fun.replays].reverse().map(item => html`<a class="list__i list__i--tap" href="#/fun/replay?w=${item.start}"><span class="list__m"><span class="title">Week ${weekNumber(item.start)} · ${fmtDay(item.start, { day: 'numeric', month: 'short' })}</span><span class="tiny muted" style="display:block">${item.line}</span></span><span class="list__e">▶</span></a>`)}</div></section>` : ''}
 
     <section aria-label="Controls">${sec('Controls')}
-      <button class="switch" type="button" role="switch" aria-checked="${fun.hidden?.toasts ? 'true' : 'false'}" data-act="quiet"><span class="switch__t"><span class="title" style="font-size:.98rem">No sticker pop-ups</span><span class="tiny muted" style="display:block">Stickers still collect here, silently.</span></span><span class="switch__k"></span></button>
-      <button class="linkish linkish--quiet" type="button" data-act="disable">Turn the whole playful layer off</button></section>
+      <button class="switch" type="button" role="switch" aria-checked="${fun.hidden?.toasts ? 'true' : 'false'}" data-act="quiet"><span class="switch__t"><span class="title" style="font-size:.98rem">No sticker pop-ups</span><span class="tiny muted" style="display:block">Stickers are still collected here.</span></span><span class="switch__k"></span></button>
+      <button class="linkish linkish--quiet" type="button" data-act="disable">Turn stickers, quests and replays off</button></section>
   </div>`;
 }
 
-// ---------- contact sheet ----------
+// ---------- month ----------
 function sheetPage() {
   const first = `${month}-01`; const start = weekStart(first);
   const cells = Array.from({ length: 42 }, (_, index) => addDays(start, index)).filter((day, index, list) => index < 35 || list[35].slice(0, 7) === month);
@@ -96,8 +96,8 @@ function sheetPage() {
   const shift = delta => { const d = new Date(`${first}T12:00:00`); d.setMonth(d.getMonth() + delta); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
   return html`<div class="wrap cut">
     <a class="linkish linkish--quiet" href="#/today">${icon('arrow-left', 'ic--sm')} Today</a>
-    <header><p class="eyebrow">Contact sheet</p><h1 class="display display--l">${fmtDay(first, { month: 'long', year: 'numeric' })}</h1><p class="muted">Every day is a frame. Circled frames are the days two or more things happened: a lift, a cooked meal, a movement session, a habit.${keepers ? ` ${plural(keepers, 'circled day')} so far.` : ''}</p></header>
-    <div class="row"><button class="btn btn--quiet btn--sm" type="button" data-act="month" data-m="${shift(-1)}" aria-label="Previous month">${icon('chevron-left')}</button><span class="grow center mono">${month}</span><button class="btn btn--quiet btn--sm" type="button" data-act="month" data-m="${shift(1)}" ${shift(1) > today().slice(0, 7) ? 'disabled' : ''} aria-label="Next month">${icon('chevron-right')}</button></div>
+    <header><h1 class="display display--l">${fmtDay(first, { month: 'long', year: 'numeric' })}</h1><p class="muted" style="margin-top:10px">A circled day is one where two or more things happened: a lift, a cooked meal, a movement session or a habit.${keepers ? ` ${plural(keepers, 'circled day')} so far.` : ''}</p></header>
+    <div class="row"><button class="btn btn--quiet btn--sm" type="button" data-act="month" data-m="${shift(-1)}" aria-label="Previous month">${icon('chevron-left')}</button><span class="grow center data">${fmtDay(first, { month: 'long', year: 'numeric' })}</span><button class="btn btn--quiet btn--sm" type="button" data-act="month" data-m="${shift(1)}" ${shift(1) > today().slice(0, 7) ? 'disabled' : ''} aria-label="Next month">${icon('chevron-right')}</button></div>
     <div class="csheet" role="grid" aria-label="${fmtDay(first, { month: 'long', year: 'numeric' })}">
       ${DOW.map(name => html`<span class="csheet__h" role="columnheader">${name}</span>`)}
       ${cells.map((day, index) => { const act = acts[index]; const inMonth = day.slice(0, 7) === month;
@@ -112,7 +112,7 @@ function sheetPage() {
 
 function daySheet(day) {
   const act = dayActivity(day);
-  sheet({ title: fmtDay(day, { weekday: 'long', day: 'numeric', month: 'long' }), eyebrow: 'Frame',
+  sheet({ title: fmtDay(day, { weekday: 'long', day: 'numeric', month: 'long' }), eyebrow: 'Day',
     body: html`${act.kinds || act.body ? html`<div class="list">
       ${act.train.map(session => html`<a class="list__i list__i--tap" href="#/train/s/${session.id}" data-act="__close"><span class="list__m"><span class="title">${getSessionTemplate(session.sessionId).name}</span><span class="tiny muted" style="display:block">${plural(sessionStats(session).sets, 'set')}${session.partial ? ' · partial' : ''}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}
       ${act.cooked.map(id => html`<a class="list__i list__i--tap" href="#/eat/r/${id}" data-act="__close"><span class="list__m"><span class="title">Cooked: ${RECIPE_BY_ID[id].short}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}
@@ -125,19 +125,19 @@ function daySheet(day) {
 // ---------- replay ----------
 function replayPage(start) {
   const stats = weekStats(start); const kept = store.get('fun').replays.some(item => item.start === start);
-  const line = [stats.sessions ? plural(stats.sessions, 'lift') : '', stats.cooked.length ? plural(stats.cooked.length, 'meal') + ' cooked' : '', stats.moves ? plural(stats.moves, 'movement session') : '', stats.habits ? plural(stats.habits, 'habit tick') : ''].filter(Boolean).join(' · ') || 'A quiet week';
+  const line = [stats.sessions ? plural(stats.sessions, 'lift') : '', stats.cooked.length ? plural(stats.cooked.length, 'meal') + ' cooked' : '', stats.moves ? plural(stats.moves, 'movement session') : '', stats.habits ? plural(stats.habits, 'habit tick') : ''].filter(Boolean).join(' · ') || 'Nothing logged';
   const best = stats.records.at(-1);
   return html`<div class="wrap cut">
-    <a class="linkish linkish--quiet" href="#/fun">${icon('arrow-left', 'ic--sm')} The sheet</a>
+    <a class="linkish linkish--quiet" href="#/fun">${icon('arrow-left', 'ic--sm')} Stickers</a>
     <div class="replay ${motionOK() ? 'replay--play' : 'replay--still'}" id="replay" aria-label="Replay of the week of ${fmtDay(start)}">
-      <div class="replay__bar"><span>▶ REPLAY</span><span class="seg" id="replayTc">00:00:00</span><span>WK ${String(weekNumber(start)).padStart(2, '0')}</span></div>
+      <div class="replay__bar"><span>Replay</span><span class="clock" id="replayTc">00:00:00</span><span>Week ${weekNumber(start)}</span></div>
       <div class="replay__reel">${stats.days.map((day, index) => html`<div class="replay__f" style="--i:${index}"><span class="replay__d">${DOW[index]}</span><span class="replay__n">${Number(day.day.slice(8))}</span>
-        <span class="replay__w">${day.train.length ? getSessionTemplate(day.train[0].sessionId).name : day.cooked.length ? RECIPE_BY_ID[day.cooked[0]].short : day.move.length ? 'Movement' : day.habits.done ? 'Habits' : day.day > today() ? 'Not yet' : 'Blank frame'}</span>
+        <span class="replay__w">${day.train.length ? getSessionTemplate(day.train[0].sessionId).name : day.cooked.length ? RECIPE_BY_ID[day.cooked[0]].short : day.move.length ? 'Movement' : day.habits.done ? 'Habits' : day.day > today() ? 'Not yet' : 'Nothing'}</span>
         <span class="fr__s">${day.train.length ? raw('<i class="t"></i>') : ''}${day.cooked.length ? raw('<i class="e"></i>') : ''}${day.move.length ? raw('<i class="m"></i>') : ''}${day.habits.done ? raw('<i class="h"></i>') : ''}</span>${day.kinds >= 2 ? loop(false, index) : ''}</div>`)}</div>
-      <div class="replay__end"><p class="eyebrow" style="color:var(--bone-dim)">Week of ${fmtDay(start, { day: 'numeric', month: 'long' })}</p><p class="display display--l">${stats.active} of 7 days on tape.</p>
+      <div class="replay__end"><p class="eyebrow">Week of ${fmtDay(start, { day: 'numeric', month: 'long' })}</p><p class="display display--l">${stats.active} of 7 days logged</p>
         <div class="statrow"><div class="stat"><div class="stat__v num">${stats.sessions}</div><div class="stat__l">Lifts</div></div><div class="stat"><div class="stat__v num">${stats.sets}</div><div class="stat__l">Sets</div></div><div class="stat"><div class="stat__v num">${stats.cooked.length}</div><div class="stat__l">Cooked</div></div><div class="stat"><div class="stat__v num">${stats.moveMinutes}</div><div class="stat__l">Move min</div></div></div>
-        ${best ? html`<p class="small" style="color:var(--bone)"><span class="tag tag--amber">New best</span> ${best.load > 0 ? `${fmt(best.load, 1)} ${best.unit} × ${best.reps}` : `${best.reps} reps`}</p>` : ''}
-        ${stats.weight ? html`<p class="tiny" style="color:var(--bone-dim)">Average weigh-in ${fmt(stats.weight, 1)} lb.</p>` : ''}</div>
+        ${best ? html`<p class="small"><span class="tag tag--mark">New best</span> ${best.load > 0 ? `${fmt(best.load, 1)} ${best.unit} × ${best.reps}` : `${best.reps} reps`}</p>` : ''}
+        ${stats.weight ? html`<p class="tiny muted">Average weigh-in ${fmt(stats.weight, 1)} lb.</p>` : ''}</div>
     </div>
     <div class="row row--wrap"><button class="btn grow" type="button" data-act="again">${icon('rotate-ccw')} Play again</button>${kept ? html`<button class="btn btn--quiet" type="button" data-act="unkeep">Stop keeping it</button>` : html`<button class="btn btn--quiet" type="button" data-act="keep" data-line="${line}">Keep this one</button>`}</div>
     ${coverBlock(start)}
@@ -155,7 +155,7 @@ export function render(ctx) {
   const sub = ctx.path[1];
   const start = weekStart(/^\d{4}-\d{2}-\d{2}$/.test(ctx.query.get('w') ?? '') ? ctx.query.get('w') : today());
   const body = sub === 'sheet' ? sheetPage() : sub === 'replay' ? replayPage(start) : hub();
-  return { room: 'street', where: sub === 'sheet' ? 'Contact sheet' : sub === 'replay' ? 'Replay' : 'The sheet', body,
+  return { room: 'street', where: sub === 'sheet' ? 'Month' : sub === 'replay' ? 'Replay' : 'Stickers', body,
     after: () => { if (sub === 'replay') runTimecode(); },
     leave: () => clearInterval(replayTimer),
     actions: {
@@ -169,7 +169,7 @@ export function render(ctx) {
       month: d => { month = d.m; ctx.refresh(); },
       day: d => daySheet(d.d),
       again: () => { const el = document.getElementById('replay'); if (el) { el.classList.remove('replay--play'); void el.offsetWidth; if (motionOK()) el.classList.add('replay--play'); } runTimecode(); },
-      keep: d => { store.update('fun', fun => { fun.replays = [...fun.replays.filter(item => item.start !== start), { start, keptOn: today(), line: d.line }].sort((a, b) => a.start.localeCompare(b.start)).slice(-52); }); award('replay'); toast('Kept. It is on the sheet.'); },
+      keep: d => { store.update('fun', fun => { fun.replays = [...fun.replays.filter(item => item.start !== start), { start, keptOn: today(), line: d.line }].sort((a, b) => a.start.localeCompare(b.start)).slice(-52); }); award('replay'); toast('Kept.'); },
       unkeep: () => store.update('fun', fun => { fun.replays = fun.replays.filter(item => item.start !== start); }),
     } };
 }

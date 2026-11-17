@@ -165,7 +165,7 @@ export function applyFeedback(move, session, feel, offIds = [], date = '') {
       else { ease[item.id] = 'down'; notes.push(`${exercise.name}: one set fewer next time.`); }
     } else streaks[item.id] = 0;
   }
-  if (feel === 'same') notes.push('Same again next time. Holding a level is progress when the reps are cleaner.');
+  if (feel === 'same') notes.push('Same again next time.');
   if (feel === 'easier' && !notes.length) notes.push('Noted. These drills are already at their top version.');
   return { levels, streaks, ease, paused, notes };
 }

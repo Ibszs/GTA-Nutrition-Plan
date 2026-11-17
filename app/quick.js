@@ -72,9 +72,9 @@ export function openQuick() {
     : html`<a class="qbtn" href="#/train">${icon('dumbbell')}<span><b>Log a workout</b><small>Any session, any date</small></span></a>`}
         ${moveDone ? html`<a class="qbtn" href="#/move/done">${icon('figure')}<span><b>Movement recap</b><small>Choose what is next</small></span></a>`
     : html`<button class="qbtn" type="button" data-act="move">${icon('figure')}<span><b>${move.plan ? `Movement, day ${session.n}` : 'Movement, day 1'}</b><small>${move.plan ? `About ${session.minutes} minutes` : 'About 6 minutes'}</small></span></button>`}
-        ${moveDone ? '' : html`<button class="qbtn" type="button" data-act="moveshort">${icon('bolt')}<span><b>2-minute movement</b><small>The short version counts</small></span></button>`}
+        ${moveDone ? '' : html`<button class="qbtn" type="button" data-act="moveshort">${icon('bolt')}<span><b>2-minute movement</b><small>The short version</small></span></button>`}
         ${recipe ? html`<button class="qbtn" type="button" data-act="cooked" data-id="${recipe.id}" data-v="${dinner.ver}" ${cookedToday ? 'disabled' : ''}>${icon('flame')}<span><b>${cookedToday ? 'Cooked today' : 'I cooked it'}</b><small>${recipe.short}</small></span></button>` : html`<a class="qbtn" href="#/eat">${icon('flame')}<span><b>Find dinner</b><small>Nothing planned tonight</small></span></a>`}
-        <a class="qbtn" href="#/reset">${icon('rotate-ccw')}<span><b>Reset</b><small>One small thing</small></span></a>
+        <a class="qbtn" href="#/reset">${icon('rotate-ccw')}<span><b>Reset</b><small>Four short actions</small></span></a>
         ${moveDone ? html`<a class="qbtn" href="#/eat/list">${icon('receipt')}<span><b>Grocery list</b><small>Tick as you shop</small></span></a>` : ''}
         ${priv.enabled ? html`<button class="qbtn qbtn--wide" type="button" data-act="minute">${icon('timer')}<span><b>I need a minute</b><small>${priv.pauseMin} minute pause</small></span></button>` : ''}
       </div>
@@ -91,7 +91,7 @@ export function openQuick() {
     : html`<li class="qres__none">Nothing matches “${text}”. <a href="#/search?q=${encodeURIComponent(text)}">Search everything</a></li>`}</ul>`;
 
   const api = sheet({
-    title: 'Log it.', eyebrow: 'Quick add', cls: 'sheet--quick',
+    title: 'Quick add', cls: 'sheet--quick',
     body: () => html`
       <div class="qcmd"><label class="vh" for="qInput">Type a number, a habit, a dish or a place</label>
         <input class="input qcmd__in" id="qInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="A number, a habit or a dish" value="${text}" data-input="type">

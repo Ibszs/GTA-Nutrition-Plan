@@ -30,11 +30,11 @@ function pauseScreen(priv) {
   return html`<div class="minute"><header class="minute__top"><button class="icon-btn" type="button" data-act="pclose" aria-label="Close without saving">${icon('x')}</button><p class="eyebrow grow" style="color:inherit;opacity:.7">A minute</p></header>
     <main class="minute__main">
       <div class="minute__ring ${motionOK() && !over ? 'minute__ring--breathe' : ''}" aria-hidden="true"></div>
-      <p class="seg minute__clock" id="minuteClock" role="timer" aria-label="Time left">${clock(left)}</p>
-      <p class="minute__line">${over ? 'Timer done. Take as long as you need.' : 'Nothing to decide right now. Just get to the end of the timer.'}</p>
+      <p class="clock minute__clock" id="minuteClock" role="timer" aria-label="Time left">${clock(left)}</p>
+      <p class="minute__line">${over ? 'Timer done. Take as long as you need.' : 'Nothing to decide right now. Wait for the timer to finish.'}</p>
       ${priv.instead ? html`<div class="minute__card"><p class="eyebrow" style="color:inherit;opacity:.7">What you said you would do instead</p><p class="title">${priv.instead}</p></div>` : ''}
       <div class="minute__card"><p class="eyebrow" style="color:inherit;opacity:.7">Or try one of these</p>
-        <div class="chips" style="margin-top:8px">${GROUNDING.map((item, index) => html`<button class="chip" type="button" aria-pressed="${pause.helped.has(item) ? 'true' : 'false'}" data-act="ptry" data-i="${index}">${item}</button>`)}</div><p class="tiny" style="opacity:.7;margin-top:8px">Tap the ones you actually use, so you can see later what helps.</p></div>
+        <div class="chips" style="margin-top:8px">${GROUNDING.map((item, index) => html`<button class="chip" type="button" aria-pressed="${pause.helped.has(item) ? 'true' : 'false'}" data-act="ptry" data-i="${index}">${item}</button>`)}</div><p class="tiny" style="opacity:.7;margin-top:8px">Tap the ones you use. Later you can see which ones help.</p></div>
       <details class="fold minute__fold"><summary>Add a note about right now (optional)</summary><div class="fold__b"><div class="chips">${SITUATIONS.map(item => html`<button class="chip" type="button" aria-pressed="${pause.situations.has(item) ? 'true' : 'false'}" data-act="psit" data-s="${item}">${item}</button>`)}</div>
         <label class="field"><span class="field__l">In your words</span><textarea class="textarea" id="pnote" maxlength="300" data-input="pnote">${pause.note}</textarea></label></div></details>
     </main>
@@ -85,7 +85,7 @@ export function render(ctx) {
         plater: () => { store.update('priv', next => { next.checkDue = new Date(Date.now() + 30 * 60000).toISOString(); }); toast('Forme will show a quiet check-in on Today in 30 minutes.'); },
         pdone: d => { const helped = [...pause.helped]; if (d.o === 'instead' && priv.instead && !helped.includes(priv.instead)) helped.push(priv.instead);
           store.update('priv', next => { next.events = [...next.events, { id: uid(), kind: 'pause', at: new Date(pause.started).toISOString(), seconds: Math.round((Date.now() - pause.started) / 1000), situations: [...pause.situations], note: pause.note.trim(), helped, outcome: d.o }].slice(-2000); next.checkDue = null; });
-          pause = null; clearInterval(pauseTimer); toast(d.o === 'acted' ? 'Saved. That is information, not a failure.' : 'Saved.'); location.hash = '#/private'; },
+          pause = null; clearInterval(pauseTimer); toast(d.o === 'acted' ? 'Saved.' : 'Saved.'); location.hash = '#/private'; },
         pclose: async () => { if (!await ask({ title: 'Close without saving?', text: 'This check-in will be discarded.', yes: 'Discard', no: 'Keep going' })) return; pause = null; clearInterval(pauseTimer); location.hash = '#/private'; },
       } };
   }
@@ -95,7 +95,7 @@ export function render(ctx) {
     <a class="linkish linkish--quiet" href="#/you">${icon('arrow-left', 'ic--sm')} You</a>
     <header><p class="eyebrow">${icon('lock', 'ic--sm')} Stays on this device</p><h1 class="display display--l">Private</h1><p class="muted">Not encrypted, not password-protected, but kept off every main screen and out of sight unless you open it.</p></header>
 
-    ${!priv.enabled ? html`<section class="frame"><div class="frame__rebate"><span>A minute</span><span>Off</span></div><div class="frame__body">
+    ${!priv.enabled ? html`<section class="frame"><div class="frame__head"><span>A minute</span><span>Off</span></div><div class="frame__body">
       <p class="title">Support for a behaviour you want to change.</p>
       <p class="small">Anything: scrolling, vaping, late-night snacking, something you would rather not name. You get one neutral button, "I need a minute", that starts a pause timer and shows what you decided to do instead. Optional notes build a picture of your own patterns. No streak counters, no badges, no judgement.</p>
       <p class="tiny muted">${SUPPORT_NOTE}</p>
@@ -103,23 +103,23 @@ export function render(ctx) {
     : html`<button class="btn btn--block minute__go" type="button" data-act="start">I need a minute<span class="btn__sub">${priv.pauseMin}-minute pause · nothing is saved until you say so</span></button>
       ${priv.checkDue && new Date(priv.checkDue) <= new Date() ? html`<div class="note"><p><strong>You asked for a check-in.</strong> How are things now?</p><div class="row row--wrap">${OUTCOMES.slice(0, 3).map(([id, label]) => html`<button class="btn btn--quiet btn--xs" type="button" data-act="later" data-o="${id}">${label}</button>`)}<button class="btn btn--quiet btn--xs" type="button" data-act="later" data-o="">Dismiss</button></div></div>` : ''}
 
-      <section class="frame"><div class="frame__rebate"><span>Your setup</span><span>Only you see this</span></div><div class="frame__body">
+      <section class="frame"><div class="frame__head"><span>Your setup</span><span>Only you see this</span></div><div class="frame__body">
         <label class="field"><span class="field__l">What this is for (private, optional)</span><input class="input" id="pvLabel" maxlength="60" value="${priv.label}" placeholder="Leave blank if you prefer" data-change="label"></label>
         <label class="field"><span class="field__l">What I will do instead</span><input class="input" id="pvInstead" maxlength="120" value="${priv.instead}" placeholder="Walk to the end of the street. Ten push-ups. Text my brother." data-change="instead"><span class="hint">Decide it now, while it is easy. "If the urge shows up, I will do this."</span></label>
         <div class="spread"><div><p class="eyebrow">Pause length</p><p class="tiny muted">Pick a length you can get through. You can add five minutes at a time.</p></div><span class="stepper"><button type="button" data-act="pmin" data-d="-1" aria-label="Shorter pause">−</button><output>${priv.pauseMin} min</output><button type="button" data-act="pmin" data-d="1" aria-label="Longer pause">+</button></span></div>
       </div></section>
 
-      <section class="frame"><div class="frame__rebate"><span>Your patterns</span><span>${plural(stats.n, 'check-in')}</span></div><div class="frame__body">
+      <section class="frame"><div class="frame__head"><span>Your patterns</span><span>${plural(stats.n, 'check-in')}</span></div><div class="frame__body">
         ${stats.n < 5 ? html`<p class="muted small">After five check-ins, Forme shows the times of day and situations that come up most, and what tends to help. ${stats.n ? `${5 - stats.n} to go.` : ''}</p>`
     : html`<dl class="kv kv--stack"><dt>When</dt><dd>${stats.times.slice(0, 3).map(([key, n]) => `${key} (${n})`).join(', ')}</dd>
             ${stats.situations.length ? html`<dt>Situations</dt><dd>${stats.situations.slice(0, 4).map(([key, n]) => `${key} (${n})`).join(', ')}</dd>` : ''}
             ${stats.helped.length ? html`<dt>What helped</dt><dd>${stats.helped.slice(0, 3).map(([key, n]) => `${key} (${n})`).join('; ')}</dd>` : ''}
             <dt>How they ended</dt><dd>${OUTCOMES.filter(([id]) => stats.outcomes[id]).map(([id, label]) => `${label}: ${stats.outcomes[id]}`).join(' · ')}</dd></dl>
-          <p class="tiny muted">Counts only. There is no score and nothing to keep clean.</p>`}
-        <div class="spread"><div><p class="eyebrow">Fresh starts</p><p class="tiny muted">${fresh.length ? `${fresh.length} so far, last ${fmtDay(fresh.at(-1).at.slice(0, 10), { day: 'numeric', month: 'short' })}. Each one counts.` : 'A way to mark "starting again from here", as many times as you need.'}</p></div><button class="btn btn--quiet btn--sm" type="button" data-act="fresh">Start fresh</button></div>
+          <p class="tiny muted">Counts only. There is no score.</p>`}
+        <div class="spread"><div><p class="eyebrow">Fresh starts</p><p class="tiny muted">${fresh.length ? `${fresh.length} so far, last ${fmtDay(fresh.at(-1).at.slice(0, 10), { day: 'numeric', month: 'short' })}.` : 'A way to mark "starting again from here", as many times as you need.'}</p></div><button class="btn btn--quiet btn--sm" type="button" data-act="fresh">Start fresh</button></div>
       </div></section>`}
 
-    <section class="frame"><div class="frame__rebate"><span>If you want a person</span><span>Canada</span></div><div class="frame__body">
+    <section class="frame"><div class="frame__head"><span>If you want a person</span><span>Canada</span></div><div class="frame__body">
       <div class="list">${SUPPORT.map(item => html`<div class="list__i"><span class="list__m"><span class="title">${extLink(item.url, item.name)}</span><span class="small" style="display:block">${item.how} · ${item.when}</span><span class="tiny muted" style="display:block">${item.what}</span></span></div>`)}</div>
       <p class="tiny muted">${SUPPORT_NOTE} Details checked 16 to 17 Nov 2026.</p></div></section>
 

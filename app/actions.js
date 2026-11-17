@@ -20,7 +20,7 @@ export function award(id, quiet = false) {
   if (!fun.enabled || !STICKER_BY_ID[id]) return false;
   const first = !fun.stickers[id];
   store.update('fun', next => { const record = next.stickers[id] ?? { n: 0, first: today() }; record.n += 1; record.last = today(); next.stickers[id] = record; });
-  if (first && !quiet && !fun.hidden?.toasts) toast(`New sticker: ${STICKER_BY_ID[id].name}`, { action: 'Open sheet', onAction: () => go('fun') });
+  if (first && !quiet && !fun.hidden?.toasts) toast(`New sticker: ${STICKER_BY_ID[id].name}`, { action: 'See it', onAction: () => go('fun') });
   return first;
 }
 

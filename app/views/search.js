@@ -38,7 +38,7 @@ const PLACES = [
   ['Backup and data', 'you/data', 'export import restore delete reset'],
   ['Credits and sources', 'you/credits', 'photos licences creators fonts'],
   ['Stickers and side quests', 'fun', 'night drive play quest'],
-  ['Contact sheet', 'fun/sheet', 'month calendar days'],
+  ['Month', 'fun/sheet', 'month calendar days contact sheet'],
   ['Weekly replay', 'fun/replay', 'recap week summary'],
 ];
 const KINDS = [['all', 'Everything'], ['recipe', 'Recipes'], ['drill', 'Movement'], ['lift', 'Lifts'], ['place', 'Screens'], ['note', 'Evidence']];
@@ -98,7 +98,7 @@ function find(query, kind) {
 function row(item) {
   if (item.kind === 'recipe') {
     const per = recipeTotals(item.recipe, {}, whey()).per;
-    return html`<a class="sres" href="#/${item.route}">${photoBlock(item.recipe, { size: 'thumb' })}<span class="grow"><span class="eyebrow">Recipe · ${item.recipe.time.total} min</span><span class="sres__t serif">${item.recipe.name}</span><span class="mono num tiny">${round(per.kcal)} kcal · ${round(per.protein)} g protein</span></span>${icon('chevron-right', 'ic--sm')}</a>`;
+    return html`<a class="sres" href="#/${item.route}">${photoBlock(item.recipe, { size: 'thumb' })}<span class="grow"><span class="eyebrow">Recipe · ${item.recipe.time.total} min</span><span class="sres__t dish">${item.recipe.name}</span><span class="data num tiny">${round(per.kcal)} kcal · ${round(per.protein)} g protein</span></span>${icon('chevron-right', 'ic--sm')}</a>`;
   }
   if (item.kind === 'drill') return html`<a class="sres" href="#/${item.route}"><span class="mthumb">${raw(frame(item.drill, { t: 1, targets: false }))}</span><span class="grow"><span class="eyebrow">Movement · ${LANES[item.drill.lane].short}</span><span class="sres__t">${item.title}</span><span class="tiny muted">${item.drill.what}</span></span>${icon('chevron-right', 'ic--sm')}</a>`;
   const label = { lift: 'Lift', place: 'Screen', habit: 'Habit', note: 'Evidence' }[item.kind];
@@ -132,7 +132,7 @@ export function render(ctx) {
     document.querySelectorAll('[data-act="kind"]').forEach(el => el.setAttribute('aria-pressed', el.dataset.k === kind ? 'true' : 'false'));
   };
   const body = html`<div class="wrap search">
-    <header><p class="eyebrow">Search</p><h1 class="display display--l">Find it.</h1></header>
+    <header><p class="eyebrow">Search</p><h1 class="display display--l">Search</h1></header>
     <div class="search__bar"><label class="vh" for="sInput">Search Forme</label>${icon('search')}
       <input class="input" id="sInput" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" placeholder="A dish, an ingredient, a drill, a screen" value="${query}" data-input="q"></div>
     <div class="chips" role="group" aria-label="Narrow the results">${KINDS.map(([id, label]) => html`<button class="chip" type="button" aria-pressed="${kind === id ? 'true' : 'false'}" data-act="kind" data-k="${id}">${label}</button>`)}</div>
