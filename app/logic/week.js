@@ -14,22 +14,27 @@ export const SLOTS = Object.freeze([
 ]);
 export const DAYS = Object.freeze(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
 
-/** The shared sample week. `cook` says what actually gets cooked that day. */
+/**
+ * The shared sample week. `cook` says what actually gets cooked that day.
+ * Every recipe in it reaches 1 g of fat to 2 g of protein in a version it already has. The five
+ * that cannot (burritos, keema, smash burger bowl, hot honey beef bowl, masala popcorn) are still
+ * in the Kitchen, flagged, but are not planned here. Leftovers follow each recipe's own storage notes.
+ */
 export const TEMPLATE = Object.freeze([
-  { cook: 'Sunday prep covers today: oats, burritos and spiced chicken are ready. Wraps tonight, 25 minutes.',
+  { cook: 'Sunday prep covers today: oats and spiced chicken are ready. Wraps tonight, 25 minutes. Freeze the spare strips.',
     slots: { breakfast: 'overnight-oats', lunch: 'pita-box', snack: 'house-shake', dinner: 'crispy-chicken-wrap', extra: 'yogurt-bark' } },
   { cook: 'Fifteen-minute night: prepped chicken becomes noodles.',
-    slots: { breakfast: 'breakfast-burritos', lunch: 'shawarma-plate', snack: 'house-shake', dinner: 'chili-noodles', extra: 'masala-popcorn' } },
-  { cook: 'Rest day, so there is time for a pot of keema. It covers tomorrow’s lunch.',
-    slots: { breakfast: 'overnight-oats', lunch: 'pita-box', snack: 'yogurt-bark', dinner: 'keema-matar', extra: 'house-shake' } },
-  { cook: 'Burger bowls, 20 minutes. Lunch is last night’s keema.',
-    slots: { breakfast: 'breakfast-burritos', lunch: 'keema-matar', snack: 'house-shake', dinner: 'smash-burger-bowl', extra: 'masala-popcorn' } },
-  { cook: 'Lunch is the store-run plate: no cooking. Air-fryer bowls after legs.',
-    slots: { breakfast: 'overnight-oats', lunch: 'store-run', snack: 'house-shake', dinner: 'beef-sweet-potato-bowl', extra: 'yogurt-bark' } },
-  { cook: 'Butter chicken batch: 40 minutes. Freeze two portions before the cream goes in.',
-    slots: { breakfast: 'breakfast-burritos', lunch: 'beef-sweet-potato-bowl', snack: 'house-shake', dinner: 'butter-chicken', extra: 'masala-popcorn' } },
-  { cook: 'One-pot pasta tonight covers Monday and Tuesday lunches. Prep oats, burritos and chicken for the week.',
-    slots: { breakfast: 'breakfast-burritos', lunch: 'butter-chicken', snack: 'house-shake', dinner: 'cheeseburger-pasta', extra: 'yogurt-bark' } },
+    slots: { breakfast: 'house-shake', lunch: 'shawarma-plate', snack: 'overnight-oats', dinner: 'chili-noodles', extra: 'yogurt-bark' } },
+  { cook: 'Rest day, so there is time for the butter chicken batch: 40 minutes. It covers tomorrow’s lunch. Freeze two portions before the cream goes in.',
+    slots: { breakfast: 'overnight-oats', lunch: 'pita-box', snack: 'yogurt-bark', dinner: 'butter-chicken', extra: 'house-shake' } },
+  { cook: 'Wraps again, about 10 minutes: Monday’s strips go from the freezer into the air fryer. Lunch is last night’s butter chicken.',
+    slots: { breakfast: 'house-shake', lunch: 'butter-chicken', snack: 'overnight-oats', dinner: 'crispy-chicken-wrap', extra: 'yogurt-bark' } },
+  { cook: 'Lunch is the store-run plate: no cooking. One-pot pasta after legs, and it covers tomorrow’s lunch.',
+    slots: { breakfast: 'overnight-oats', lunch: 'store-run', snack: 'house-shake', dinner: 'cheeseburger-pasta', extra: 'yogurt-bark' } },
+  { cook: 'Shawarma plates tonight from fresh thighs, 30 minutes. The second plate is tomorrow’s lunch. Lunch today is last night’s pasta.',
+    slots: { breakfast: 'house-shake', lunch: 'cheeseburger-pasta', snack: 'overnight-oats', dinner: 'shawarma-plate', extra: 'yogurt-bark' } },
+  { cook: 'Dinner is the butter chicken you froze on Wednesday, finished with the cream, butter and fresh rice. Prep oats and spiced chicken for the week.',
+    slots: { breakfast: 'overnight-oats', lunch: 'shawarma-plate', snack: 'house-shake', dinner: 'butter-chicken', extra: 'yogurt-bark' } },
 ]);
 
 const STARCH_LEVERS = { 'shawarma-plate': { rice: 0.75 }, 'butter-chicken': { rice: 0.75 }, 'keema-matar': { roti: 0.5 }, 'cheeseburger-pasta': { pasta: 0.75 }, 'chili-noodles': { noodles: 1 } };

@@ -139,11 +139,23 @@ You asked for recipes at 1 g of fat to 2 g of protein, ideally 1 to 3, with noth
 | Breakfast burritos | 1:1.2 | **not reachable** (closest 1:1.3, cheese: none) | not reachable |
 | Masala popcorn | 1:0.6 | **not reachable** (4 g protein, 6 g fat a serving) | not reachable |
 
-- **The sample week.** Cooked as written it averaged 1:1.6 (112 g fat, 185 g protein, 2,890 kcal). On the new defaults it averages 1:2.0 (92 g fat, 192 g protein, 2,750 kcal). Five days reach 1 to 2. Thursday (1:1.5) and Saturday (1:1.7) do not, because they are built from the five recipes above that have no version that gets there. The week plan says this on those days. The meals were not swapped out for you.
-- **Two things to know.** The lean-gain week now sits about 360 kcal under your calorie target instead of 220, because the fat that came out carried calories; the week plan offers the starch portions to make it up. And your daily targets were not changed: lean gain is already set at 2 g protein and 1 g fat per kg, which is 1 to 2. Moving the whole day to 1 to 3 would put fat near 55 g, about 16% of your calories, which is below the 20% that sports nutrition guidance usually treats as a floor. That is a choice for you and your clinician, so the app does not make it.
-- **What it would take to finish the job.** The five recipes that cannot reach 1 to 2 need either removing from the sample week or replacing with real, sourced recipes. Neither was done without asking.
+- **The sample week.** At first the five recipes above were left in it and flagged. You then chose to drop them from the week, so the sample week was rebuilt from the eleven recipes that reach 1 to 2. The five are still in the Kitchen, flagged, and you can still plan them by hand.
+
+| Day | Breakfast | Shift lunch | Snack | Dinner | Evening extra | Fat to protein |
+|---|---|---|---|---|---|---|
+| Mon | Overnight oats | Pita box | House shake | Crispy chicken wrap | Yogurt bark | 1:2.7 |
+| Tue | House shake | Shawarma rice plate | Overnight oats | Chili garlic noodles | Yogurt bark | 1:2.6 |
+| Wed | Overnight oats | Pita box | Yogurt bark | Butter chicken | House shake | 1:2.7 |
+| Thu | House shake | Butter chicken | Overnight oats | Crispy chicken wrap | Yogurt bark | 1:2.6 |
+| Fri | Overnight oats | Store-run plate | House shake | Cheeseburger pasta | Yogurt bark | 1:2.7 |
+| Sat | House shake | Cheeseburger pasta | Overnight oats | Shawarma rice plate | Yogurt bark | 1:2.4 |
+| Sun | Overnight oats | Shawarma rice plate | House shake | Butter chicken | Yogurt bark | 1:2.5 |
+
+  The old week, as written, averaged 1:1.6 (112 g fat, 185 g protein, 2,890 kcal). The new one averages 1:2.6 (75 g fat, 199 g protein, 2,680 kcal), and every day reaches 1 to 2 in both goal modes. Leftovers follow each recipe's own storage notes: Thursday's wraps use Monday's strips from the freezer, Sunday's butter chicken is the portion frozen on Wednesday.
+- **The cost of dropping them.** Less variety. Breakfast and snack are now overnight oats and the house shake every day, the evening extra is yogurt bark six days of seven, and there is no beef dinner except the pasta. That is what the existing recipes allow. More variety needs real, sourced recipes that reach 1 to 2, which have not been added.
+- **Two things to know.** The lean-gain week now sits about 430 kcal under your calorie target instead of 220, because the fat that came out carried calories; the week plan offers the starch portions to make it up. And your daily targets were not changed: lean gain is already set at 2 g protein and 1 g fat per kg, which is 1 to 2. Moving the whole day to 1 to 3 would put fat near 55 g, about 16% of your calories, which is below the 20% that sports nutrition guidance usually treats as a floor. That is a choice for you and your clinician, so the app does not make it.
 - **Where the recipe numbers come from.** Recipe quantities were set in the 4.0 rebuild from the creators' published recipes, and the nutrition is worked out from the USDA rows in `app/data/foods.js`. None of that was touched in this pass.
-- **Checked:** `npm test`, 635 passing, seven of them new: the ratio grading, that a lean version only ever uses a recipe's own options, that the five recipes above are reported as unreachable and left unaltered, and that the week plan never suggests a fattier option. Looked at as pictures: the Kitchen, a recipe that reaches the aim, one that cannot, and Thursday in the week plan.
+- **Checked:** `npm test`, 636 passing, eight of them new: the ratio grading, that a lean version only ever uses a recipe's own options, that the five recipes above are reported as unreachable and left unaltered, that the week plan never suggests a fattier option, and that the sample week plans only recipes that reach 1 to 2 and reaches it on every day. Looked at as pictures: the Kitchen, a recipe that reaches the aim, one that cannot, and Thursday in the week plan before and after the rebuild.
 - **Not checked:** the swap sheet and the recomp week as pictures, and PC width for the new lines.
 
 ## Updating your phone

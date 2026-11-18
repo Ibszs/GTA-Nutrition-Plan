@@ -44,7 +44,7 @@ test('effectiveWeek in recomp: lighter version wherever one exists, smaller star
     assert.equal(slot.entry.ver, recipe.lighter ? 'light' : 'std', `${day.name} ${slot.slot} ${recipe.id}`);
     assert.deepEqual(slot.entry.levers, { ...leanDefault(recipe).levers, ...(MODE_RULES.recomp.levers[recipe.id] ?? {}) });
   }
-  const butter = week[5].slots.find(slot => slot.slot === 'dinner');
+  const butter = week[2].slots.find(slot => slot.slot === 'dinner');
   assert.equal(butter.entry.r, 'butter-chicken');
   assert.deepEqual(butter.entry.levers, { rice: 0.75 });
   assert.throws(() => effectiveWeek('bulk'), RangeError);
@@ -147,9 +147,23 @@ test('the week leans on existing options only: the average reaches 1:2 and as wr
   }
 });
 
+test('the sample week plans only recipes that reach 1:2, and every day of it reaches 1:2', () => {
+  const planned = new Set([...TEMPLATE, ...Object.values(DAY_KINDS)].flatMap(day => Object.values(day.slots)));
+  for (const id of planned) assert.ok(leanDefault(RECIPE_BY_ID[id]).reaches, `${id} cannot reach 1:2 and should not be in the sample week`);
+  for (const id of ['beef-sweet-potato-bowl', 'breakfast-burritos', 'keema-matar', 'masala-popcorn', 'smash-burger-bowl']) {
+    assert.ok(!planned.has(id), `${id} is planned`);
+    assert.ok(RECIPE_BY_ID[id], `${id} is still in the Kitchen`);
+  }
+  for (const mode of ['lean-gain', 'recomp']) for (const kinds of [{}, Object.fromEntries(DAYS.map((_, index) => [index, 'low-appetite'])), Object.fromEntries(DAYS.map((_, index) => [index, 'cant-cook']))]) {
+    const week = effectiveWeek(mode, {}, kinds);
+    week.forEach(day => assert.notEqual(fatProtein(dayTotals(day)).grade, 'over', `${mode} ${day.name} ${day.kind ?? 'normal'}`));
+  }
+});
+
 test('an explicit version on a slot still beats the lean default', () => {
-  const week = effectiveWeek('lean-gain', { '5:dinner': { r: 'butter-chicken', ver: 'std' } });
-  assert.equal(week[5].slots.find(slot => slot.slot === 'dinner').entry.ver, 'std');
+  assert.equal(effectiveWeek('lean-gain')[2].slots.find(slot => slot.slot === 'dinner').entry.ver, 'light');
+  const week = effectiveWeek('lean-gain', { '2:dinner': { r: 'butter-chicken', ver: 'std' } });
+  assert.equal(week[2].slots.find(slot => slot.slot === 'dinner').entry.ver, 'std');
 });
 
 test('leverMoves never offers a version that goes over 1:2 to close a calorie gap', () => {
@@ -157,8 +171,8 @@ test('leverMoves never offers a version that goes over 1:2 to close a calorie ga
     if (!move.change || !/standard version/.test(move.label)) continue;
     assert.notEqual(fatProtein(slotTotals(move.change)).grade, 'over', move.label);
   }
-  // Thursday is the fattiest day of the sample week. Closing its calorie gap must not make any meal fattier.
-  const thursday = effectiveWeek('lean-gain')[3];
+  // A day built from the recipes that cannot reach 1:2: closing its calorie gap must not make any meal fattier.
+  const thursday = effectiveWeek('lean-gain', { '3:breakfast': { r: 'breakfast-burritos' }, '3:lunch': { r: 'keema-matar' }, '3:dinner': { r: 'smash-burger-bowl' }, '3:extra': { r: 'masala-popcorn' } })[3];
   for (const move of leverMoves(thursday, { kcal: 9999 }).moves) {
     const slot = thursday.slots.find(item => item.key === move.key);
     if (!move.change || !slot.entry || !move.change.levers) continue;
@@ -274,8 +288,9 @@ test('servingsNeeded sums portions and rounds batches up', () => {
   const template = TEMPLATE.flatMap(day => Object.values(day.slots)).filter(id => id === 'house-shake').length;
   assert.equal(shake.servings, template);
   assert.equal(shake.batches, template, 'a one-serving recipe needs one batch per serving');
-  const burritos = needs.find(item => item.recipe.id === 'breakfast-burritos');
-  assert.equal(burritos.batches, Math.ceil(burritos.servings / RECIPE_BY_ID['breakfast-burritos'].yield.n));
+  const butter = needs.find(item => item.recipe.id === 'butter-chicken');
+  assert.equal(butter.servings, 3);
+  assert.equal(butter.batches, Math.ceil(butter.servings / RECIPE_BY_ID['butter-chicken'].yield.n));
   const counts = needs.map(item => item.servings);
   assert.deepEqual(counts, [...counts].sort((a, b) => b - a));
   assert.deepEqual(servingsNeeded(oneDay([entry('house-shake', { p: 0.5 })])).map(item => item.batches), [1]);
