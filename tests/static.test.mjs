@@ -345,7 +345,7 @@ function precache() {
 
 test('sw.js names the Forme v4 cache on its first line', () => {
   const first = read('sw.js').split('\n')[0].replace(/\r$/, '');
-  assert.equal(first, "const CACHE_NAME = 'forme-v4.0.0';");
+  assert.equal(first, "const CACHE_NAME = 'forme-v4.0.1';");
 });
 
 test('sw.js PRECACHE holds only ./ paths that exist on disk, without duplicates', () => {

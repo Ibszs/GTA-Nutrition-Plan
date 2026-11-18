@@ -7,7 +7,7 @@ import { RECIPES, RECIPE_BY_ID, COLLECTIONS, FILTERS, CRAVINGS } from '../data/r
 import { FOODS, foodSource, OIL_TBSP_G } from '../data/foods.js';
 import { PHOTOS } from '../data/credits.js';
 import { FOOD_SAFETY, SOURCES } from '../data/evidence.js';
-import { recipeTotals, compareVersions, household, metric, scaleLines, oilText, activeTargets, MODES } from '../logic/nutrition.js';
+import { recipeTotals, compareVersions, household, metric, scaleLines, oilText, activeTargets, MODES, FAT_AIM, fatProtein, leanBuild, leanDefault, leanest } from '../logic/nutrition.js';
 import { DAYS, SLOTS, effectiveWeek } from '../logic/week.js';
 import { legacy } from '../store.js';
 
@@ -18,11 +18,16 @@ let cook = { id: null, step: 0, timerEnd: null, timerTotal: 0 };
 let cookInterval = null; let wakeLock = null;
 
 const viewState = id => {
-  if (!session[id]) { const record = recipeRecord(id); const recipe = RECIPE_BY_ID[id]; session[id] = { servings: record.servings ?? recipe.yield.n, version: record.lastVersion === 'light' && recipe.lighter ? 'light' : 'std', levers: { ...(record.levers ?? {}) }, oilTsp: null }; }
+  if (!session[id]) { const record = recipeRecord(id); const recipe = RECIPE_BY_ID[id]; const lean = leanDefault(recipe, whey());
+    // A recipe opens the leanest way it needs to reach 1 g fat to 2 g protein, unless you kept your own portions.
+    session[id] = { servings: record.servings ?? recipe.yield.n, version: record.lastVersion === 'light' && recipe.lighter ? 'light' : lean.version, levers: { ...(record.levers ?? lean.levers) }, oilTsp: null }; }
   return session[id];
 };
 const foodName = id => { const food = FOODS[id]; const diet = store.get('profile').diet; return food.meat && diet.halal ? `Halal ${food.name.charAt(0).toLowerCase()}${food.name.slice(1)}` : food.name; };
 const score = recipe => { const record = recipeRecord(recipe.id); return (record.saved ? 3 : 0) + (record.rating ? (record.rating - 3) * 1.5 : 0) + Math.min(3, record.cooked?.length ?? 0) * 0.8 - (record.skips ?? 0) * 2.5; };
+const sameBuild = (build, state) => build.version === state.version && Object.keys({ ...build.levers, ...state.levers }).every(id => (build.levers[id] ?? 1) === (state.levers[id] ?? 1));
+const stepsText = build => (build.steps.length ? build.steps.join(', ') : 'as written');
+const fpTag = fp => html`<span class="tag ${fp.grade === 'over' ? 'tag--mark' : fp.grade === 'ideal' ? 'tag--amber' : 'tag--line'}">${fp.text} fat to protein</span>`;
 const reason = recipe => { const record = recipeRecord(recipe.id); if ((record.cooked?.length ?? 0) >= 2) return 'You cook this'; if (record.rating >= 4) return 'You rated it'; if (record.saved) return 'Saved'; return ''; };
 
 export function photoBlock(recipe, { size = 'card', eager = false } = {}) {
@@ -35,12 +40,12 @@ export function photoBlock(recipe, { size = 'card', eager = false } = {}) {
 }
 
 function card(recipe, wide = false) {
-  const per = recipeTotals(recipe, {}, whey()).per; const record = recipeRecord(recipe.id); const why = reason(recipe);
-  return html`<a class="rcard ${wide ? 'rcard--wide' : ''}" href="#/eat/r/${recipe.id}" aria-label="${recipe.name}, ${recipe.time.total} minutes, ${round(per.kcal)} calories, ${round(per.protein)} grams protein">
+  const lean = leanDefault(recipe, whey()); const per = lean.per; const record = recipeRecord(recipe.id); const why = reason(recipe);
+  return html`<a class="rcard ${wide ? 'rcard--wide' : ''}" href="#/eat/r/${recipe.id}" aria-label="${recipe.name}, ${recipe.time.total} minutes, ${round(per.kcal)} calories, ${round(per.protein)} grams protein, ${round(per.fat)} grams fat">
     ${photoBlock(recipe)}
     <span class="rcard__b"><span class="rcard__t dish">${recipe.short}</span>
       <span class="meta"><span>${recipe.time.total} min</span><span>${round(per.kcal / 10) * 10} kcal</span><span>${round(per.protein)} g protein</span></span>
-      <span class="rcard__tags">${record.saved ? html`<span class="tag tag--amber">Saved</span>` : ''}${why && !record.saved ? html`<span class="tag tag--ghost">${why}</span>` : ''}${recipe.storage.freezes === 'well' ? html`<span class="tag tag--line">Freezes</span>` : ''}${recipe.fallback ? html`<span class="tag tag--line">Fallback</span>` : ''}</span></span></a>`;
+      <span class="rcard__tags">${fpTag(lean.fp)}${record.saved ? html`<span class="tag tag--amber">Saved</span>` : ''}${why && !record.saved ? html`<span class="tag tag--ghost">${why}</span>` : ''}${recipe.storage.freezes === 'well' ? html`<span class="tag tag--line">Freezes</span>` : ''}${recipe.fallback ? html`<span class="tag tag--line">Fallback</span>` : ''}</span></span></a>`;
 }
 
 // ---------- index ----------
@@ -54,6 +59,7 @@ function index() {
   const searching = query.trim() || filters.size;
   const q = query.trim().toLowerCase();
   let list = RECIPES.filter(recipe => recipe.course !== 'base' || searching).filter(recipe => !q || `${recipe.name} ${recipe.kicker} ${recipe.cuisine} ${recipe.tags.join(' ')} ${recipe.ingredients.map(line => FOODS[line.f].name).join(' ')} ${recipe.source.creator ?? ''}`.toLowerCase().includes(q));
+  if (filters.has('lean')) list = list.filter(recipe => leanDefault(recipe, whey()).reaches);
   for (const id of filters) { const filter = FILTERS.find(item => item.id === id); if (filter) list = list.filter(filter.test); if (id === 'saved') list = list.filter(recipe => recipeRecord(recipe.id).saved); if (id === 'cooked') list = list.filter(recipe => recipeRecord(recipe.id).cooked?.length); }
   list = [...list].sort((a, b) => score(b) - score(a));
   const inFridge = kitchen.batches.filter(batch => batch.left > 0).length;
@@ -74,7 +80,7 @@ function index() {
     </nav>
 
     <label class="field"><span class="field__l">Search recipes, ingredients, creators</span><input class="input" id="eatq" type="search" value="${query}" placeholder="chicken, 15 minutes, freezer…" data-input="q" autocomplete="off"></label>
-    <div class="chips" role="group" aria-label="Filters">${[...FILTERS, { id: 'saved', label: 'Saved' }, { id: 'cooked', label: 'Cooked' }].map(filter => html`<button class="chip" type="button" aria-pressed="${filters.has(filter.id) ? 'true' : 'false'}" data-act="filter" data-f="${filter.id}">${filter.label}</button>`)}</div>
+    <div class="chips" role="group" aria-label="Filters">${[{ id: 'lean', label: '1:2 fat or leaner' }, ...FILTERS, { id: 'saved', label: 'Saved' }, { id: 'cooked', label: 'Cooked' }].map(filter => html`<button class="chip" type="button" aria-pressed="${filters.has(filter.id) ? 'true' : 'false'}" data-act="filter" data-f="${filter.id}">${filter.label}</button>`)}</div>
 
     ${searching ? html`${sec(`${plural(list.length, 'recipe')}`, html`<button type="button" data-act="clear">Clear</button>`)}
       ${list.length ? html`<div class="rgrid">${list.map(recipe => card(recipe))}</div>` : html`<div class="empty"><p class="empty__t">Nothing matches that</p><p class="muted small">Try an ingredient you have, a time, or clear the filters.</p><button class="btn btn--sm" type="button" data-act="clear">Clear search</button></div>`}`
@@ -99,6 +105,8 @@ function recipePage(recipe) {
   const usedG = state.oilTsp === null ? null : state.oilTsp * (OIL_TBSP_G / 3);
   const tex = textureScore(recipe.id);
   const src = recipe.source;
+  // Fat to protein for the way it is set now, and what the recipe's own options can reach. Nothing is invented.
+  const fp = fatProtein(totals.per); const toOk = leanBuild(recipe, FAT_AIM.ok, w); const toIdeal = leanBuild(recipe, FAT_AIM.ideal, w); const closest = toOk ? null : leanest(recipe, w);
   return html`<article class="wrap kitchen rp">
     <a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>
     <header class="rp__hero ${photo ? '' : 'rp__hero--text'}">${photo ? photoBlock(recipe, { size: 'hero', eager: true }) : ''}
@@ -115,7 +123,12 @@ function recipePage(recipe) {
 
     <section class="frame" aria-label="Nutrition per serving"><div class="frame__head"><span>Per ${recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '')}</span><span>${state.version === 'light' ? 'Lighter version' : 'As written'}</span></div><div class="frame__body">
       <div class="statrow"><div class="stat"><div class="stat__v num">${round(totals.per.kcal)}</div><div class="stat__l">kcal</div></div><div class="stat"><div class="stat__v num">${round(totals.per.protein)}<small>g</small></div><div class="stat__l">Protein</div></div><div class="stat"><div class="stat__v num">${round(totals.per.carbs)}<small>g</small></div><div class="stat__l">Carbs</div></div><div class="stat"><div class="stat__v num">${round(totals.per.fat)}<small>g</small></div><div class="stat__l">Fat</div></div></div>
-      <p class="tiny muted">Fat is part of the meal. ${round(totals.addedFatPerServing)} g of it comes from added oil, butter, cream, mayo or nut butter, the rest from the food itself.${targets ? ` One serving is ${round((totals.per.kcal / targets.kcal) * 100)}% of your ${MODES[store.get('profile').mode].name.toLowerCase()} calories and ${round((totals.per.protein / targets.protein) * 100)}% of your protein.` : ''}</p>
+      <div class="spread"><div><p class="eyebrow">Fat to protein</p><p class="tiny muted">The aim is 1 g of fat to 2 g of protein. 1 to 3 is ideal.</p></div>${fpTag(fp)}</div>
+      ${fp.grade === 'over' && toOk ? html`<div class="note"><p><strong>Over the aim as set.</strong> This recipe reaches ${toOk.fp.text} cooked this way: ${stepsText(toOk)}.</p><button class="btn btn--sm" type="button" data-act="lean" data-g="${FAT_AIM.ok}">Cook it that way</button></div>`
+    : fp.grade === 'over' ? html`<div class="note note--bad"><p><strong>No version of this recipe reaches 1 g of fat to 2 g of protein.</strong> The closest it gets is ${closest.fp.text} (${stepsText(closest)}). Forme has not changed the recipe to force the number.</p>${sameBuild(closest, state) ? '' : html`<button class="btn btn--quiet btn--sm" type="button" data-act="closest">Cook the closest version</button>`}</div>`
+    : fp.grade === 'ok' && toIdeal ? html`<p class="small">1 to 3 is within reach (${toIdeal.fp.text}): ${stepsText(toIdeal)}. <button class="linkish" style="min-height:0" type="button" data-act="lean" data-g="${FAT_AIM.ideal}">Cook it that way</button></p>`
+    : fp.grade === 'ok' ? html`<p class="tiny muted">No existing version of this recipe reaches 1 to 3.</p>` : ''}
+      <p class="tiny muted">${round(totals.addedFatPerServing)} g of the fat comes from added oil, butter, cream, mayo or nut butter, the rest from the food itself.${targets ? ` One serving is ${round((totals.per.kcal / targets.kcal) * 100)}% of your ${MODES[store.get('profile').mode].name.toLowerCase()} calories and ${round((totals.per.protein / targets.protein) * 100)}% of your protein.` : ''}</p>
     </div></section>
 
     ${compare ? html`<section class="frame" aria-label="Standard and lighter versions"><div class="frame__head"><span>Two ways to cook it</span><span>Saves ${round(compare.saved.kcal)} kcal a serving</span></div><div class="frame__body">
@@ -311,6 +324,8 @@ export function render(ctx) {
       clear: () => { query = ''; filters = new Set(); ctx.refresh(); },
       save: () => { updateRecipe(recipe.id, record => { record.saved = !record.saved; }); haptic('tap'); },
       ver: d => { viewState(recipe.id).version = d.v; updateRecipe(recipe.id, record => { record.lastVersion = d.v; }); },
+      lean: d => { const build = leanBuild(recipe, Number(d.g), whey()); if (!build) return; const state = viewState(recipe.id); state.version = build.version; state.levers = { ...build.levers }; updateRecipe(recipe.id, record => { record.lastVersion = build.version; }); },
+      closest: () => { const build = leanest(recipe, whey()); const state = viewState(recipe.id); state.version = build.version; state.levers = { ...build.levers }; updateRecipe(recipe.id, record => { record.lastVersion = build.version; }); },
       serv: d => { const state = viewState(recipe.id); const stepSize = recipe.yield.n >= 4 ? 1 : 1; state.servings = Math.min(24, Math.max(1, state.servings + Number(d.d) * stepSize)); updateRecipe(recipe.id, record => { record.servings = state.servings; }); },
       lever: d => { const state = viewState(recipe.id); state.levers = { ...state.levers, [d.l]: Number(d.v) }; ctx.refresh(); },
       keeplevers: () => { updateRecipe(recipe.id, record => { record.levers = { ...viewState(recipe.id).levers }; }); toast('Saved as your portions.'); },

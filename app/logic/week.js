@@ -1,11 +1,13 @@
 // Sample weeks, swaps, portion levers, day kinds and the grocery list. Pure: no DOM, no storage.
 // One template feeds both goal modes, so the grocery list barely changes when the mode does.
-// Lean gain cooks the standard versions with an evening extra; recomp cooks the lighter versions
-// with smaller starch portions. Anything the user changes is stored as a small override on top.
+// Both modes aim for 1 g of fat to 2 g of protein. Lean gain cooks each recipe the leanest way it
+// needs to get there, with an evening extra; recomp cooks the lighter versions with smaller starch
+// portions. Only versions and portion options a recipe already has are used. Anything the user
+// changes is stored as a small override on top.
 
 import { FOODS, AISLES } from '../data/foods.js';
 import { RECIPE_BY_ID, RECIPES } from '../data/recipes.js';
-import { ZERO, add, scale, recipeTotals, resolveLines, DEFAULT_WHEY } from './nutrition.js';
+import { ZERO, add, scale, recipeTotals, resolveLines, DEFAULT_WHEY, leanDefault, fatProtein } from './nutrition.js';
 
 export const SLOTS = Object.freeze([
   { id: 'breakfast', label: 'Breakfast' }, { id: 'lunch', label: 'Shift lunch' }, { id: 'snack', label: 'Snack' }, { id: 'dinner', label: 'Dinner' }, { id: 'extra', label: 'Evening extra' },
@@ -32,9 +34,11 @@ export const TEMPLATE = Object.freeze([
 
 const STARCH_LEVERS = { 'shawarma-plate': { rice: 0.75 }, 'butter-chicken': { rice: 0.75 }, 'keema-matar': { roti: 0.5 }, 'cheeseburger-pasta': { pasta: 0.75 }, 'chili-noodles': { noodles: 1 } };
 export const MODE_RULES = Object.freeze({
-  'lean-gain': { version: 'std', levers: {}, note: 'Standard versions, full starch portions, an evening extra every day.' },
+  'lean-gain': { version: 'lean', levers: {}, note: 'Each recipe is cooked the leanest way it needs to reach 1 g of fat for every 2 g of protein. Full starch portions, an evening extra every day.' },
   recomp: { version: 'light', levers: STARCH_LEVERS, note: 'Lighter versions where one exists, smaller rice, roti and pasta portions, same groceries.' },
 });
+/** Every recipe exactly as written, for comparison. */
+export const AS_WRITTEN = Object.freeze({ version: 'std', levers: {}, lean: false });
 
 /** Day kinds swap a whole day for something easier. They are still editable slot by slot. */
 export const DAY_KINDS = Object.freeze({
@@ -51,9 +55,9 @@ const slotKey = (dayIndex, slotId) => `${dayIndex}:${slotId}`;
  * overrides: { 'day:slot': null | { r, ver?, p?, levers?, v? } }, kinds: { [dayIndex]: kindId }
  * Returns 7 days of { index, kind, cook, slots: [{ slot, key, entry | null, custom }] }.
  */
-export function effectiveWeek(modeId, overrides = {}, kinds = {}) {
-  const rules = MODE_RULES[modeId];
-  if (!rules) throw new RangeError(`Unknown goal mode: ${modeId}`);
+export function effectiveWeek(modeId, overrides = {}, kinds = {}, custom = null) {
+  if (!MODE_RULES[modeId]) throw new RangeError(`Unknown goal mode: ${modeId}`);
+  const rules = custom ?? MODE_RULES[modeId];
   return TEMPLATE.map((day, index) => {
     const kind = DAY_KINDS[kinds[index]] ? kinds[index] : null;
     const base = kind ? DAY_KINDS[kind].slots : day.slots;
@@ -74,8 +78,11 @@ export function effectiveWeek(modeId, overrides = {}, kinds = {}) {
 
 function normalise(entry, rules) {
   const recipe = RECIPE_BY_ID[entry.r];
-  const version = entry.ver ?? (recipe.lighter ? rules.version : 'std');
-  return { r: entry.r, v: entry.v ?? null, ver: recipe.lighter ? version : 'std', p: entry.p ?? 1, levers: { ...(rules.levers[entry.r] ?? {}), ...(entry.levers ?? {}) } };
+  // The lean default is the smallest existing change that reaches 1 to 2. An explicit choice on the slot wins.
+  const lean = rules.lean === false ? { version: 'std', levers: {} } : leanDefault(recipe);
+  const ruled = rules.version === 'lean' ? lean.version : rules.version;
+  const version = entry.ver ?? (recipe.lighter ? ruled : 'std');
+  return { r: entry.r, v: entry.v ?? null, ver: recipe.lighter ? version : 'std', p: entry.p ?? 1, levers: { ...lean.levers, ...(rules.levers[entry.r] ?? {}), ...(entry.levers ?? {}) } };
 }
 
 /** Nutrition for one planned slot: one serving of the recipe times the portion multiplier. */
@@ -115,27 +122,33 @@ export function leverMoves(day, target, whey = DEFAULT_WHEY) {
     if (!entry) {
       if (wantMore && (slot.slot === 'extra' || slot.slot === 'snack')) {
         for (const id of ['house-shake', 'yogurt-bark']) {
-          const kcal = slotTotals({ r: id, ver: 'std', p: 1, levers: {} }, whey).kcal;
+          const lean = leanDefault(RECIPE_BY_ID[id], whey);
+          const kcal = slotTotals({ r: id, ver: lean.version, p: 1, levers: lean.levers }, whey).kcal;
           moves.push({ key: slot.key, label: `Add ${RECIPE_BY_ID[id].short.toLowerCase()} as ${slot.slot === 'extra' ? 'an evening extra' : 'a snack'}`, delta: kcal, change: { r: id } });
         }
       }
       continue;
     }
     const recipe = RECIPE_BY_ID[entry.r];
-    const now = slotTotals(entry, whey).kcal;
+    const nowAll = slotTotals(entry, whey); const now = nowAll.kcal; const nowFp = fatProtein(nowAll);
     for (const lever of recipe.levers ?? []) {
       const current = entry.levers[lever.id] ?? 1;
       const sorted = [...lever.options].sort((a, b) => a[1] - b[1]);
       const next = wantMore ? sorted.find(option => option[1] > current + 1e-6) : [...sorted].reverse().find(option => option[1] < current - 1e-6);
       if (!next) continue;
-      const after = slotTotals({ ...entry, levers: { ...entry.levers, [lever.id]: next[1] } }, whey).kcal;
+      const afterAll = slotTotals({ ...entry, levers: { ...entry.levers, [lever.id]: next[1] } }, whey); const after = afterAll.kcal;
       if (Math.abs(after - now) < 15) continue;
+      // A bigger portion that pushes the meal further over 1 g fat to 2 g protein is not offered.
+      const afterFp = fatProtein(afterAll);
+      if (wantMore && afterFp.grade === 'over' && afterFp.ratio < nowFp.ratio) continue;
       moves.push({ key: slot.key, label: `${recipe.short}: ${lever.label.toLowerCase()} to ${next[0].toLowerCase()}`, delta: after - now, change: { ...entry, levers: { ...entry.levers, [lever.id]: next[1] } } });
     }
     if (recipe.lighter) {
       const otherVersion = entry.ver === 'light' ? 'std' : 'light';
-      if ((wantMore && otherVersion === 'std') || (!wantMore && otherVersion === 'light')) {
-        const after = slotTotals({ ...entry, ver: otherVersion }, whey).kcal;
+      // Never suggest closing a calorie gap with a version that goes over 1 g fat to 2 g protein.
+      const other = slotTotals({ ...entry, ver: otherVersion }, whey);
+      if ((wantMore && otherVersion === 'std' && fatProtein(other).grade !== 'over') || (!wantMore && otherVersion === 'light')) {
+        const after = other.kcal;
         moves.push({ key: slot.key, label: `${recipe.short}: cook the ${otherVersion === 'light' ? 'lighter' : 'standard'} version`, delta: after - now, change: { ...entry, ver: otherVersion } });
       }
     }
@@ -166,7 +179,7 @@ export function swapOptions(slotId, currentId, memory = {}, whey = DEFAULT_WHEY,
     score -= (record.skips ?? 0) * 2;
     if (current) score -= Math.abs(per.kcal - current) / 200;
     if (reheatsPoorly && slotId === 'lunch') score -= 5;
-    return { recipe, per, score, delta: current === null ? null : per.kcal - current, reheatsPoorly };
+    return { recipe, per, score, delta: current === null ? null : per.kcal - current, reheatsPoorly, lean: leanDefault(recipe, whey) };
   }).sort((a, b) => b.score - a.score);
 }
 

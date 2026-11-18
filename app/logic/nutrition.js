@@ -70,6 +70,69 @@ export function compareVersions(recipe, levers = {}, whey = DEFAULT_WHEY) {
   return { std, light, saved: { kcal: std.per.kcal - light.per.kcal, fat: std.per.fat - light.per.fat, oilTsp: std.oil.perServingTsp - light.oil.perServingTsp } };
 }
 
+// ---------- fat to protein ----------
+/** The aim: 1 g of fat for every 2 g of protein, or leaner. 1 to 3 is the ideal. */
+export const FAT_AIM = Object.freeze({ ok: 2, ideal: 3 });
+
+/** Grams of protein for each gram of fat, and how that sits against the aim. */
+export function fatProtein(per) {
+  const ratio = per.fat > 0 ? per.protein / per.fat : Infinity;
+  const grade = ratio >= FAT_AIM.ideal ? 'ideal' : ratio >= FAT_AIM.ok ? 'ok' : 'over';
+  // Rounded down, so a recipe that misses the aim is never shown as meeting it.
+  return { ratio, grade, text: Number.isFinite(ratio) ? `1:${(Math.floor(ratio * 10 + 1e-9) / 10).toFixed(1)}` : 'no fat' };
+}
+
+/** Every way a recipe can already be cooked: each version with each portion option it offers. */
+function builds(recipe, whey) {
+  let combos = [{}];
+  for (const lever of recipe.levers ?? []) combos = combos.flatMap(base => lever.options.map(([label, factor]) => ({ ...base, [lever.id]: { label, factor, name: lever.label } })));
+  const out = [];
+  for (const version of recipe.lighter ? ['std', 'light'] : ['std']) for (const combo of combos) {
+    const changed = Object.entries(combo).filter(([, option]) => option.factor !== 1);
+    const levers = Object.fromEntries(changed.map(([id, option]) => [id, option.factor]));
+    const per = recipeTotals(recipe, { version, levers }, whey).per;
+    out.push({ version, levers, per, fp: fatProtein(per), steps: [...(version === 'light' ? ['the lighter version'] : []), ...changed.map(([, option]) => `${option.name.toLowerCase()}: ${option.label.toLowerCase()}`)] });
+  }
+  return out;
+}
+
+const leanCache = new Map();
+/**
+ * The smallest change that brings a recipe to a fat-to-protein aim, using only the versions and
+ * portion options the recipe already has. Returns null when none of them reaches it: nothing is
+ * invented to close the gap.
+ */
+export function leanBuild(recipe, goal = FAT_AIM.ok, whey = DEFAULT_WHEY) {
+  const key = `${recipe.id}|${goal}|${whey.kcal}|${whey.protein}|${whey.fat}`;
+  if (!leanCache.has(key)) {
+    const written = recipeTotals(recipe, {}, whey).per.kcal;
+    const reach = builds(recipe, whey).filter(build => build.fp.ratio >= goal)
+      .sort((a, b) => a.steps.length - b.steps.length || Math.abs(a.per.kcal - written) - Math.abs(b.per.kcal - written));
+    leanCache.set(key, reach[0] ?? null);
+  }
+  return leanCache.get(key);
+}
+
+/** The closest any existing version gets, for a recipe that cannot reach the aim. */
+export function leanest(recipe, whey = DEFAULT_WHEY) {
+  const all = builds(recipe, whey);
+  const best = Math.max(...all.map(build => build.fp.ratio));
+  // Within a tenth of the best, the build with the fewest changes is the one worth naming.
+  return all.filter(build => build.fp.ratio >= best - 0.1).sort((a, b) => a.steps.length - b.steps.length || b.fp.ratio - a.fp.ratio)[0];
+}
+
+/**
+ * How Forme cooks a recipe unless told otherwise: the smallest change that reaches 1 to 2. A recipe
+ * that cannot reach it is cooked in its lighter version if it has one, and is flagged, not altered.
+ */
+export function leanDefault(recipe, whey = DEFAULT_WHEY) {
+  const build = leanBuild(recipe, FAT_AIM.ok, whey);
+  if (build) return { ...build, reaches: true };
+  const version = recipe.lighter ? 'light' : 'std';
+  const per = recipeTotals(recipe, { version }, whey).per;
+  return { version, levers: {}, per, fp: fatProtein(per), steps: version === 'light' ? ['the lighter version'] : [], reaches: false };
+}
+
 // ---------- measures ----------
 const FRACTIONS = [[0, ''], [0.125, '⅛'], [0.25, '¼'], [1 / 3, '⅓'], [0.5, '½'], [2 / 3, '⅔'], [0.75, '¾'], [1, '']];
 /** 1.5 -> "1½", 0.33 -> "⅓". Values under ⅛ show as "a pinch". */

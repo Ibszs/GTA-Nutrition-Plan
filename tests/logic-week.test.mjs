@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RECIPES, RECIPE_BY_ID } from '../app/data/recipes.js';
 import { FOODS } from '../app/data/foods.js';
-import { recipeTotals, add, ZERO } from '../app/logic/nutrition.js';
+import { recipeTotals, add, ZERO, FAT_AIM, fatProtein, leanBuild, leanDefault, leanest } from '../app/logic/nutrition.js';
 import {
   SLOTS, DAYS, TEMPLATE, MODE_RULES, DAY_KINDS, effectiveWeek, slotTotals, dayTotals, weekSummary, leverMoves, swapOptions,
-  shopAmount, groceryList, servingsNeeded, fridgeMatches, FRIDGE_FOODS, pickDinner,
+  shopAmount, groceryList, servingsNeeded, fridgeMatches, FRIDGE_FOODS, pickDinner, AS_WRITTEN,
 } from '../app/logic/week.js';
 
 const close = (actual, expected, tolerance = 1e-6, label = '') => assert.ok(Math.abs(actual - expected) <= tolerance, `${label} expected ${expected}, got ${actual}`);
@@ -19,7 +19,7 @@ test('the template is 7 days of 5 slots and every recipe in it exists', () => {
   for (const kind of Object.values(DAY_KINDS)) for (const id of Object.values(kind.slots)) assert.ok(RECIPE_BY_ID[id], id);
 });
 
-test('effectiveWeek in lean gain: 7 x 5, standard versions, no starch levers', () => {
+test('effectiveWeek in lean gain: 7 x 5, every recipe on its lean default, no starch levers', () => {
   const week = effectiveWeek('lean-gain');
   assert.equal(week.length, 7);
   week.forEach((day, index) => {
@@ -29,8 +29,9 @@ test('effectiveWeek in lean gain: 7 x 5, standard versions, no starch levers', (
     for (const slot of day.slots) {
       assert.equal(slot.custom, false);
       assert.equal(slot.entry.r, TEMPLATE[index].slots[slot.slot]);
-      assert.equal(slot.entry.ver, 'std'); assert.equal(slot.entry.p, 1);
-      assert.deepEqual(slot.entry.levers, {});
+      const lean = leanDefault(RECIPE_BY_ID[slot.entry.r]);
+      assert.equal(slot.entry.ver, lean.version); assert.equal(slot.entry.p, 1);
+      assert.deepEqual(slot.entry.levers, lean.levers);
       assert.equal(slot.key, `${index}:${slot.slot}`);
     }
   });
@@ -41,7 +42,7 @@ test('effectiveWeek in recomp: lighter version wherever one exists, smaller star
   for (const day of week) for (const slot of day.slots) {
     const recipe = RECIPE_BY_ID[slot.entry.r];
     assert.equal(slot.entry.ver, recipe.lighter ? 'light' : 'std', `${day.name} ${slot.slot} ${recipe.id}`);
-    assert.deepEqual(slot.entry.levers, MODE_RULES.recomp.levers[recipe.id] ?? {});
+    assert.deepEqual(slot.entry.levers, { ...leanDefault(recipe).levers, ...(MODE_RULES.recomp.levers[recipe.id] ?? {}) });
   }
   const butter = week[5].slots.find(slot => slot.slot === 'dinner');
   assert.equal(butter.entry.r, 'butter-chicken');
@@ -89,7 +90,81 @@ test('slotTotals, dayTotals and weekSummary agree with each other', () => {
 test('recomp averages fewer calories than lean gain from the same template', () => {
   const gain = weekSummary(effectiveWeek('lean-gain')).average.kcal;
   const recomp = weekSummary(effectiveWeek('recomp')).average.kcal;
-  assert.ok(recomp < gain - 100, `recomp ${recomp} vs gain ${gain}`);
+  assert.ok(recomp < gain, `recomp ${recomp} vs gain ${gain}`);
+});
+
+test('fatProtein grades against 1:2 and 1:3 and never rounds a miss up to a pass', () => {
+  assert.equal(fatProtein({ protein: 30, fat: 10 }).grade, 'ideal');
+  assert.equal(fatProtein({ protein: 20, fat: 10 }).grade, 'ok');
+  assert.equal(fatProtein({ protein: 19.99, fat: 10 }).grade, 'over');
+  assert.equal(fatProtein({ protein: 19.99, fat: 10 }).text, '1:1.9');
+  assert.equal(fatProtein({ protein: 27.5, fat: 10 }).text, '1:2.7');
+  assert.equal(fatProtein({ protein: 10, fat: 0 }).grade, 'ideal');
+  assert.equal(fatProtein({ protein: 10, fat: 0 }).text, 'no fat');
+});
+
+test('leanBuild only ever returns a version and portion options the recipe already has', () => {
+  for (const recipe of RECIPES) for (const goal of [FAT_AIM.ok, FAT_AIM.ideal]) {
+    const build = leanBuild(recipe, goal);
+    if (!build) continue;
+    assert.ok(build.version === 'std' || (build.version === 'light' && recipe.lighter), `${recipe.id} version`);
+    for (const [id, factor] of Object.entries(build.levers)) {
+      const lever = (recipe.levers ?? []).find(item => item.id === id);
+      assert.ok(lever, `${recipe.id} has no lever ${id}`);
+      assert.ok(lever.options.some(option => option[1] === factor), `${recipe.id} ${id} ${factor} is not one of its options`);
+    }
+    const per = recipeTotals(recipe, { version: build.version, levers: build.levers }).per;
+    assert.ok(per.protein / per.fat >= goal, `${recipe.id} claims ${goal} but is ${per.protein / per.fat}`);
+    close(per.kcal, build.per.kcal, 1e-9, recipe.id);
+  }
+});
+
+test('leanBuild returns null, and leanDefault flags, a recipe no existing version brings to 1:2', () => {
+  const stuck = RECIPES.filter(recipe => !leanBuild(recipe)).map(recipe => recipe.id).sort();
+  assert.deepEqual(stuck, ['beef-sweet-potato-bowl', 'breakfast-burritos', 'keema-matar', 'masala-popcorn', 'smash-burger-bowl']);
+  for (const id of stuck) {
+    const recipe = RECIPE_BY_ID[id]; const lean = leanDefault(recipe);
+    assert.equal(lean.reaches, false);
+    assert.equal(lean.version, recipe.lighter ? 'light' : 'std');
+    assert.deepEqual(lean.levers, {}, 'a recipe that cannot reach the aim is not altered to chase it');
+    assert.equal(fatProtein(leanest(recipe).per).grade, 'over');
+  }
+  for (const recipe of RECIPES.filter(item => leanBuild(item))) assert.notEqual(leanDefault(recipe).fp.grade, 'over', recipe.id);
+});
+
+test('leanBuild picks the smallest change: nothing when as written already reaches the aim', () => {
+  assert.deepEqual(leanBuild(RECIPE_BY_ID['store-run']).steps, []);
+  assert.deepEqual(leanBuild(RECIPE_BY_ID['house-shake']).steps, []);
+  assert.deepEqual(leanBuild(RECIPE_BY_ID['butter-chicken']).steps, ['the lighter version']);
+  assert.equal(leanBuild(RECIPE_BY_ID['butter-chicken'], FAT_AIM.ideal), null);
+});
+
+test('the week leans on existing options only: the average reaches 1:2 and as written it does not', () => {
+  for (const mode of ['lean-gain', 'recomp']) {
+    assert.notEqual(fatProtein(weekSummary(effectiveWeek(mode)).average).grade, 'over', mode);
+    assert.equal(fatProtein(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN)).average).grade, 'over', mode);
+    for (const day of effectiveWeek(mode, {}, {}, AS_WRITTEN)) for (const slot of day.slots) { assert.equal(slot.entry.ver, 'std'); assert.deepEqual(slot.entry.levers, {}); }
+  }
+});
+
+test('an explicit version on a slot still beats the lean default', () => {
+  const week = effectiveWeek('lean-gain', { '5:dinner': { r: 'butter-chicken', ver: 'std' } });
+  assert.equal(week[5].slots.find(slot => slot.slot === 'dinner').entry.ver, 'std');
+});
+
+test('leverMoves never offers a version that goes over 1:2 to close a calorie gap', () => {
+  for (const day of effectiveWeek('lean-gain')) for (const move of leverMoves(day, { kcal: 9999 }).moves) {
+    if (!move.change || !/standard version/.test(move.label)) continue;
+    assert.notEqual(fatProtein(slotTotals(move.change)).grade, 'over', move.label);
+  }
+  // Thursday is the fattiest day of the sample week. Closing its calorie gap must not make any meal fattier.
+  const thursday = effectiveWeek('lean-gain')[3];
+  for (const move of leverMoves(thursday, { kcal: 9999 }).moves) {
+    const slot = thursday.slots.find(item => item.key === move.key);
+    if (!move.change || !slot.entry || !move.change.levers) continue;
+    const before = fatProtein(slotTotals(slot.entry)); const after = fatProtein(slotTotals({ ...slot.entry, ...move.change }));
+    assert.ok(after.grade !== 'over' || after.ratio >= before.ratio, move.label);
+  }
 });
 
 test('the two modes shop for mostly the same groceries (90%+ overlap)', () => {

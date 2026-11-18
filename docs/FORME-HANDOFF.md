@@ -113,6 +113,39 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **Checked:** `npm test`, 628 passing. All 39 seeded routes measured at 390 and 1280 wide for clipped text, wrapped controls, headings touching paragraphs, over-long lines and anything off the side: none left, apart from two evidence lists that are citations. Looked at as pictures in light mode: Today, Train, Kitchen, a recipe, Week plan, Groceries, Move, the evidence page, Progress, Stickers, You, Settings and Private at phone width, and Today, Train, Kitchen, a recipe, the evidence page and Settings at PC width, plus Today at 1920. The switch and the T log (add an entry, see it listed, open it from the eye icon) were driven in a browser.
 - **Not checked:** the Sky, Butter and Grey papers after this pass, tablet widths between 600 and 900 as pictures, and everything in the earlier "not checked" list.
 
+## Fat to protein (17 Nov 2026, version 4.0.1)
+
+You asked for recipes at 1 g of fat to 2 g of protein, ideally 1 to 3, with nothing made up to get there. So no ingredient, quantity or recipe was added or changed. The app now measures the ratio and uses only the lighter versions and portion options that were already written into each recipe.
+
+- **What the app does now.** Every recipe card and recipe page shows its fat-to-protein figure. A recipe opens, and goes into the week plan, cooked the smallest existing way that reaches 1 to 2. Where 1 to 3 is reachable the recipe page says how and offers it; it is not applied for you. Where no existing version reaches 1 to 2 the page says so in plain words and the recipe is left alone. The Kitchen has a "1:2 fat or leaner" filter. The week plan shows the ratio for the week and for each day, names the meals that hold a day over, and no longer suggests a fattier portion or version to close a calorie gap.
+- **The 16 recipes, measured from the app's own food data.** Figures are rounded down, so a miss never reads as a pass:
+
+| Recipe | As written | Reaches 1:2 by | Reaches 1:3 by |
+|---|---|---|---|
+| Store-run plate | 1:4.3 | as written | as written |
+| Chicken hummus pita box | 1:3.1 | as written | as written |
+| House shake | 1:2.3 | as written | peanut butter: none |
+| Big-batch spiced chicken | 1:2.6 | as written | the lighter version |
+| Yogurt bark | 1:1.5 | the lighter version (1:5.6) | the lighter version |
+| Crispy chicken wrap | 1:1.4 | the lighter version (1:2.7) | lighter, cheese: half |
+| Chili garlic noodles | 1:1.4 | the lighter version (1:2.8) | lighter, chicken: extra |
+| PB and berry overnight oats | 1:1.8 | whey: full scoop (1:2.5) | peanut butter: none |
+| Butter chicken | 1:1.3 | the lighter version (1:2.5) | not reachable |
+| Shawarma rice plate | 1:1.3 | the lighter version (1:2.4) | not reachable |
+| Cheeseburger pasta | 1:1.6 | the lighter version (1:2.0) | not reachable |
+| Hot honey beef bowl | 1:1.5 | **not reachable** (closest 1:1.9, avocado: none) | not reachable |
+| Keema matar | 1:0.9 | **not reachable** (closest 1:1.6, lighter) | not reachable |
+| Smash burger bowl | 1:1.1 | **not reachable** (closest 1:1.4, lighter, fries: half) | not reachable |
+| Breakfast burritos | 1:1.2 | **not reachable** (closest 1:1.3, cheese: none) | not reachable |
+| Masala popcorn | 1:0.6 | **not reachable** (4 g protein, 6 g fat a serving) | not reachable |
+
+- **The sample week.** Cooked as written it averaged 1:1.6 (112 g fat, 185 g protein, 2,890 kcal). On the new defaults it averages 1:2.0 (92 g fat, 192 g protein, 2,750 kcal). Five days reach 1 to 2. Thursday (1:1.5) and Saturday (1:1.7) do not, because they are built from the five recipes above that have no version that gets there. The week plan says this on those days. The meals were not swapped out for you.
+- **Two things to know.** The lean-gain week now sits about 360 kcal under your calorie target instead of 220, because the fat that came out carried calories; the week plan offers the starch portions to make it up. And your daily targets were not changed: lean gain is already set at 2 g protein and 1 g fat per kg, which is 1 to 2. Moving the whole day to 1 to 3 would put fat near 55 g, about 16% of your calories, which is below the 20% that sports nutrition guidance usually treats as a floor. That is a choice for you and your clinician, so the app does not make it.
+- **What it would take to finish the job.** The five recipes that cannot reach 1 to 2 need either removing from the sample week or replacing with real, sourced recipes. Neither was done without asking.
+- **Where the recipe numbers come from.** Recipe quantities were set in the 4.0 rebuild from the creators' published recipes, and the nutrition is worked out from the USDA rows in `app/data/foods.js`. None of that was touched in this pass.
+- **Checked:** `npm test`, 635 passing, seven of them new: the ratio grading, that a lean version only ever uses a recipe's own options, that the five recipes above are reported as unreachable and left unaltered, and that the week plan never suggests a fattier option. Looked at as pictures: the Kitchen, a recipe that reaches the aim, one that cannot, and Thursday in the week plan.
+- **Not checked:** the swap sheet and the recomp week as pictures, and PC width for the new lines.
+
 ## Updating your phone
 
 Your phone runs the published copy at https://ibszs.github.io/GTA-Nutrition-Plan/, which GitHub Pages serves from `main`. Nothing changes on the phone until this branch is merged into `main` and pushed.

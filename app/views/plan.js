@@ -7,8 +7,8 @@ import { whey, award, addBatch, batchClock, useBy, textureScore, touch } from '.
 import { RECIPES, RECIPE_BY_ID, PREP_FLOWS } from '../data/recipes.js';
 import { FOODS, AISLES } from '../data/foods.js';
 import { FOOD_SAFETY, SOURCES } from '../data/evidence.js';
-import { recipeTotals, activeTargets, MODES, oilText } from '../logic/nutrition.js';
-import { SLOTS, DAYS, DAY_KINDS, MODE_RULES, effectiveWeek, slotTotals, dayTotals, weekSummary, leverMoves, swapOptions, groceryList, servingsNeeded, fridgeMatches, FRIDGE_FOODS, POOR_LEFTOVER } from '../logic/week.js';
+import { recipeTotals, activeTargets, MODES, oilText, fatProtein, leanDefault } from '../logic/nutrition.js';
+import { SLOTS, DAYS, DAY_KINDS, MODE_RULES, effectiveWeek, slotTotals, dayTotals, weekSummary, leverMoves, swapOptions, groceryList, servingsNeeded, fridgeMatches, FRIDGE_FOODS, POOR_LEFTOVER, AS_WRITTEN } from '../logic/week.js';
 import { toggleItem, addItem, removeItem, validateShoppingState } from '../../assets/shopping-state.js';
 import { photoBlock } from './eat.js';
 
@@ -32,6 +32,9 @@ function weekPage() {
   const day = week[daySel]; const totals = summary.days[daySel];
   const moves = targets ? leverMoves(day, targets, w) : { gap: 0, moves: [] };
   const needs = servingsNeeded(week).filter(item => item.recipe.yield.n > 1);
+  // Fat to protein, for the week and for the day on screen. A day that is over names the recipes that have no leaner version.
+  const weekFp = fatProtein(summary.average); const dayFp = fatProtein(totals);
+  const stuck = [...new Set(day.slots.filter(slot => slot.entry && !leanDefault(RECIPE_BY_ID[slot.entry.r], w).reaches).map(slot => RECIPE_BY_ID[slot.entry.r].short))];
   return html`<div class="wrap kitchen">
     <a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>${tabs('week')}
     <header><h1 class="display display--l">Week plan</h1><p class="muted" style="margin-top:10px">A sample week for each goal, built on mostly the same groceries. Swap a meal or change a portion and the totals and the grocery list follow.</p></header>
@@ -42,7 +45,8 @@ function weekPage() {
       <div class="statrow"><div class="stat"><div class="stat__v num">${fmt(round(summary.average.kcal / 10) * 10)}</div><div class="stat__l">kcal</div></div><div class="stat"><div class="stat__v num">${round(summary.average.protein)}<small>g</small></div><div class="stat__l">Protein</div></div><div class="stat"><div class="stat__v num">${round(summary.average.carbs)}<small>g</small></div><div class="stat__l">Carbs</div></div><div class="stat"><div class="stat__v num">${round(summary.average.fat)}<small>g</small></div><div class="stat__l">Fat</div></div></div>
       ${targets ? html`<div class="stack--s"><div class="spread tiny"><span>Calories vs target</span><span class="num">${round((summary.average.kcal / targets.kcal) * 100)}%</span></div>${meter(summary.average.kcal / targets.kcal, 'meter--amber')}<div class="spread tiny"><span>Protein vs target</span><span class="num">${round((summary.average.protein / targets.protein) * 100)}%</span></div>${meter(summary.average.protein / targets.protein)}</div>`
     : html`<div class="note"><p>Enter your weight to get targets for this mode. <a href="#/you/goal">Set goal and targets</a></p></div>`}
-      <p class="small">${icon('oil', 'ic--sm')} <strong>Cooking oil this week: ${fmt(summary.oilG / 13.6, 1)} tbsp</strong>, about ${fmt(round(summary.oilG * 8.84 / 10) * 10)} kcal, or ${oilText(summary.oilG / 7)} a day. The same week cooked as written uses ${fmt(weekSummary(effectiveWeek('lean-gain', {}, {}), w).oilG / 13.6, 1)} tbsp.</p>
+      <div class="spread"><div><p class="eyebrow">Fat to protein, daily average</p><p class="tiny muted">The aim is 1 g of fat to 2 g of protein. 1 to 3 is ideal. Cooked as written, this week is ${fatProtein(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).average).text}.</p></div><span class="tag ${weekFp.grade === 'over' ? 'tag--mark' : weekFp.grade === 'ideal' ? 'tag--amber' : 'tag--line'}">${weekFp.text}</span></div>
+      <p class="small">${icon('oil', 'ic--sm')} <strong>Cooking oil this week: ${fmt(summary.oilG / 13.6, 1)} tbsp</strong>, about ${fmt(round(summary.oilG * 8.84 / 10) * 10)} kcal, or ${oilText(summary.oilG / 7)} a day. The same week cooked as written uses ${fmt(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).oilG / 13.6, 1)} tbsp.</p>
       ${targets?.source === 'carried' ? html`<p class="tiny muted">Your target was carried over from your earlier plan. <a href="#/you/goal">Review it for this goal</a>.</p>` : ''}
     </div></section>
 
@@ -54,7 +58,7 @@ function weekPage() {
       <div class="slots">${day.slots.map(slot => { const entry = slot.entry; const meta = SLOTS.find(item => item.id === slot.slot);
     if (!entry) return html`<div class="slot slot--empty"><span class="eyebrow">${meta.label}</span><button class="btn btn--quiet btn--xs" type="button" data-act="swap" data-k="${slot.key}" data-s="${slot.slot}">${icon('plus', 'ic--sm')} Add</button></div>`;
     const recipe = RECIPE_BY_ID[entry.r]; const n = slotTotals(entry, w);
-    return html`<div class="slot"><div class="slot__h"><span class="eyebrow">${meta.label}${slot.custom ? ', changed' : ''}</span><span class="data num">${round(n.kcal)} kcal, ${round(n.protein)} g protein</span>
+    return html`<div class="slot"><div class="slot__h"><span class="eyebrow">${meta.label}${slot.custom ? ', changed' : ''}</span><span class="data num">${round(n.kcal)} kcal, ${round(n.protein)} g protein, ${round(n.fat)} g fat</span>
           <button class="icon-btn slot__x" type="button" data-act="drop" data-k="${slot.key}" aria-label="Remove ${recipe.short} from ${meta.label}">${icon('x', 'ic--sm')}</button></div>
         <a class="slot__t dish" href="#/eat/r/${recipe.id}?v=${entry.ver}">${recipe.short}</a>
         <div class="slot__c"><span class="stepper" aria-label="Portion"><button type="button" data-act="portion" data-k="${slot.key}" data-d="-0.25" aria-label="Smaller portion">−</button><output>×${entry.p}</output><button type="button" data-act="portion" data-k="${slot.key}" data-d="0.25" aria-label="Larger portion">+</button></span>
@@ -62,7 +66,8 @@ function weekPage() {
           ${recipe.levers?.length ? html`<button class="chip" type="button" data-act="adjust" data-k="${slot.key}">Adjust</button>` : ''}
           <button class="chip" type="button" data-act="swap" data-k="${slot.key}" data-s="${slot.slot}">Swap</button></div></div>`; })}</div>
       <div class="frame" style="margin-top:12px"><div class="frame__head"><span>${day.name} total</span><span>${targets ? (Math.abs(moves.gap) < 120 ? 'On target' : moves.gap > 0 ? `${fmt(round(moves.gap / 10) * 10)} kcal under` : `${fmt(round(-moves.gap / 10) * 10)} kcal over`) : ''}</span></div><div class="frame__body">
-        <p class="data num">${fmt(round(totals.kcal))} kcal · ${round(totals.protein)} g protein · ${round(totals.carbs)} g carbs · ${round(totals.fat)} g fat</p>
+        <p class="data num">${fmt(round(totals.kcal))} kcal · ${round(totals.protein)} g protein · ${round(totals.carbs)} g carbs · ${round(totals.fat)} g fat · ${dayFp.text} fat to protein</p>
+        ${dayFp.grade === 'over' ? html`<div class="note note--bad"><p><strong>${day.name} is over 1 g of fat to 2 g of protein.</strong> ${stuck.length ? `${stuck.join(', ')} ${stuck.length === 1 ? 'has' : 'have'} no version that reaches it. Swap one for a meal that does.` : 'Use the lighter versions or the portion options on the meals above to bring it down.'}</p></div>` : ''}
         ${moves.moves.length ? html`<p class="eyebrow">Ways to close the gap</p><div class="stack--s">${moves.moves.map((move, index) => html`<button class="btn btn--quiet btn--sm btn--block btn--left" type="button" data-act="move" data-i="${index}"><span class="grow">${move.label}</span><span class="data num">${move.delta > 0 ? '+' : ''}${round(move.delta)}</span></button>`)}</div>` : ''}
         ${day.slots.some(slot => slot.custom) || day.kind ? html`<button class="linkish linkish--quiet tiny" type="button" data-act="resetday">Put ${day.name} back to the sample</button>` : ''}
       </div></div>
@@ -173,7 +178,7 @@ function swapSheet(key, slotId) {
   const texture = Object.fromEntries(RECIPES.map(recipe => [recipe.id, textureScore(recipe.id)]).filter(([, value]) => value !== null));
   const options = swapOptions(slotId, current?.r, kitchen.recipes, whey(), texture);
   sheet({ title: current ? 'Swap this meal' : 'Add a meal', eyebrow: SLOTS.find(slot => slot.id === slotId).label,
-    body: html`<p class="muted small">Ordered by what you save, rate and cook, then by how close the calories are.${slotId === 'lunch' ? ' Leftovers you rated poorly go to the bottom.' : ''}</p><div class="list">${options.map(option => html`<button class="list__i list__i--tap" type="button" data-act="take" data-r="${option.recipe.id}"><span class="list__m"><span class="title">${option.recipe.short}</span><span class="tiny muted" style="display:block">${option.recipe.time.total} min · ${round(option.per.kcal)} kcal · ${round(option.per.protein)} g protein${kitchen.recipes[option.recipe.id]?.saved ? ' · saved' : ''}${option.reheatsPoorly ? ` · you rated its leftovers ${fmt(texture[option.recipe.id], 1)}/5` : ''}</span></span><span class="list__e data num">${option.delta === null ? '' : `${option.delta > 0 ? '+' : ''}${round(option.delta)}`}</span></button>`)}</div>`,
+    body: html`<p class="muted small">Ordered by what you save, rate and cook, then by how close the calories are.${slotId === 'lunch' ? ' Leftovers you rated poorly go to the bottom.' : ''}</p><div class="list">${options.map(option => html`<button class="list__i list__i--tap" type="button" data-act="take" data-r="${option.recipe.id}"><span class="list__m"><span class="title">${option.recipe.short}</span><span class="tiny muted" style="display:block">${option.recipe.time.total} min · ${round(option.lean.per.kcal)} kcal · ${round(option.lean.per.protein)} g protein · ${option.lean.fp.text} fat to protein${option.lean.reaches ? '' : ', over the aim'}${kitchen.recipes[option.recipe.id]?.saved ? ' · saved' : ''}${option.reheatsPoorly ? ` · you rated its leftovers ${fmt(texture[option.recipe.id], 1)}/5` : ''}</span></span><span class="list__e data num">${option.delta === null ? '' : `${option.delta > 0 ? '+' : ''}${round(option.delta)}`}</span></button>`)}</div>`,
     actions: { take: (d, _e, _ev, self) => { setSlot(key, { r: d.r }); toast(`${RECIPE_BY_ID[d.r].short} is in. Totals and groceries updated.`); haptic('tap'); self.close(); } } });
 }
 

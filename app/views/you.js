@@ -11,7 +11,7 @@ import { EXERCISES } from '../data/exercises.js';
 import { liftHistory } from '../logic/lifts.js';
 import { EXERCISES as LIFTS } from '../../assets/training-data.js';
 
-export const VERSION = '4.0.0';
+export const VERSION = '4.0.1';
 let logDay = today();
 
 const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['sky', 'Sky', '#a9d3f2'], ['butter', 'Butter', '#f5dc7d'], ['news', 'Grey', '#d9d7d2']];
