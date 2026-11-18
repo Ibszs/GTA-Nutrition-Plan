@@ -101,7 +101,7 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **Flows driven in a real browser with throwaway data:** start a workout, enter and edit a set, leave, resume, finish as partial, find it in History; open tonight's recipe, switch to the lighter version, scale servings, add to groceries, cook mode to the end, log as cooked, rate a leftover; week plan mode switch, swap, portion change; tick, hide and add grocery items; start movement, pause, skip through, rate it, 2-minute version; add and tick a habit and see it on Today; private pause on and discarded; quick add a weight; search; Reset timer and the one thing; side quest, Night Drive, replay, month; every Settings control; Just got home, Pick for me, Edit layout. No errors.
 - **Fixed during the review:** the browser bar colour lagged one screen behind a theme or paper change; "1 sets" and "1 weeks"; two fridge chips both reading "Plain Greek yogurt"; the top bar was cramped when the private shortcut showed; a squeezed stepper on the oil meter; an unsized header photo on Habits and Reset; three leftover slogan headings.
 - **Looked at as pictures with data in them:** Today, Habits, Reset, Use it first, Progress, Private, the month, the replay and a teaching card, on top of the screens listed above.
-- **Still not checked:** the handover from the 3.0 service worker to this one on a real phone, your real data going through the first-run copy, backup export and import by hand in this pass (the automated tests cover them), animations by eye, Safari, and a screen reader.
+- **Still not checked:** the handover from the 3.0 service worker to this one on a real phone (rehearsed since in a desktop browser, see "Update rehearsal" below), your real data going through the first-run copy, backup export and import by hand in this pass (the automated tests cover them), animations by eye, Safari, and a screen reader.
 
 ## Follow-up pass (17 Nov 2026): light mode, text, the T log
 
@@ -157,6 +157,15 @@ You asked for recipes at 1 g of fat to 2 g of protein, ideally 1 to 3, with noth
 - **Where the recipe numbers come from.** Recipe quantities were set in the 4.0 rebuild from the creators' published recipes, and the nutrition is worked out from the USDA rows in `app/data/foods.js`. None of that was touched in this pass.
 - **Checked:** `npm test`, 636 passing, eight of them new: the ratio grading, that a lean version only ever uses a recipe's own options, that the five recipes above are reported as unreachable and left unaltered, that the week plan never suggests a fattier option, and that the sample week plans only recipes that reach 1 to 2 and reaches it on every day. Looked at as pictures: the Kitchen, a recipe that reaches the aim, one that cannot, and Thursday in the week plan before and after the rebuild.
 - **Not checked:** the swap sheet and the recomp week as pictures, and PC width for the new lines.
+
+## Update rehearsal, old app to new (17 Nov 2026)
+
+The handover from Form & Fuel 3.0 to Forme had never been run. It has now been rehearsed in a real Chromium browser (headless Edge) with service workers: the old app was installed with a workout and a T log entry in it, the served files were swapped for 4.0.1, and the app was opened again.
+
+- **First open after the update still shows the old app.** That is expected: the old app serves itself from its offline copy first. The new version downloads in the background (3 seconds on this PC; longer on a phone connection) and the old app then shows a "Reload app" banner.
+- **After the reload:** Forme 4.0.1, the T log entry present and open at the top of Private, the workout in Train history, the eye icon showing on Today, no error screen.
+- **An old bookmark** to `training.html` lands on Train in the new app.
+- **Not covered:** Safari on an iPhone, which was not available to test, and a real phone connection.
 
 ## Updating your phone
 
