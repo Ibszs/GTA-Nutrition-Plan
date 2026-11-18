@@ -174,7 +174,7 @@ function whyPage() {
 function checkPage() {
   return html`<div class="wrap studio"><a class="linkish linkish--quiet" href="#/move">${icon('arrow-left', 'ic--sm')} Move</a>
     <header><p class="eyebrow">Short and source-backed</p><h1 class="display display--l">When to get checked</h1><p class="lead">${GET_CHECKED.intro}</p></header>
-    <section class="frame" style="border-color:var(--mark)"><div class="frame__head" style="color:var(--mark)"><span>${GET_CHECKED.urgent.label}</span><span></span></div><div class="frame__body"><ul class="dots">${GET_CHECKED.urgent.items.map(item => html`<li>${item}</li>`)}</ul></div></section>
+    <section class="frame" style="border-color:var(--mark)"><div class="frame__head" style="color:var(--mark-text)"><span>${GET_CHECKED.urgent.label}</span><span></span></div><div class="frame__body"><ul class="dots">${GET_CHECKED.urgent.items.map(item => html`<li>${item}</li>`)}</ul></div></section>
     ${Object.entries(GET_CHECKED.lanes).map(([id, lane]) => html`<section class="frame"><div class="frame__head"><span>${lane.label}</span><span>${LANES[id].short}</span></div><div class="frame__body"><ul class="dots">${lane.items.map(item => html`<li>${item}</li>`)}</ul>
       <p class="eyebrow">Book an appointment if</p><ul class="dots">${lane.soon.map(item => html`<li>${item}</li>`)}</ul>
       <p class="tiny muted">Wording follows ${extLink(SOURCES[lane.src].url, SOURCES[lane.src].cite)} ${SOURCES[lane.src].date}.</p></div></section>`)}

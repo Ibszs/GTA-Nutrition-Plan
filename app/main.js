@@ -70,7 +70,7 @@ function pageColour() {
     context.fillStyle = colour; context.fillRect(0, 0, 1, 1);
     const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
     return `#${[r, g, b].map(value => value.toString(16).padStart(2, '0')).join('')}`;
-  } catch { return root.dataset.theme === 'light' ? '#f9bfcb' : '#131012'; }
+  } catch { return root.dataset.theme === 'light' ? '#ffffff' : '#131012'; }
 }
 
 function paintShell(screen, route, path) {
@@ -82,9 +82,9 @@ function paintShell(screen, route, path) {
   document.querySelectorAll('.dock__item').forEach(link => { if (link.dataset.nav === route.nav) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
   const profile = store.get('profile');
   document.getElementById('avatar').textContent = (profile.name || 'F').trim().charAt(0).toUpperCase();
-  const priv = store.get('priv');
-  const hasLog = (store.legacy.personal().value?.entries?.length ?? 0) > 0;
-  document.getElementById('privateLink').hidden = !(path[0] === 'today' && (priv.enabled || hasLog) && !priv.hideEntry);
+  // The eye is always on Today, as it was in the earlier app: no label, no count, nothing that says what is
+  // behind it. It opens the private log. "Hide the eye icon" on Private takes it away.
+  document.getElementById('privateLink').hidden = !(path[0] === 'today' && !store.get('priv').hideEntry);
   const info = trainingInfo();
   const rec = document.getElementById('recButton');
   if (info.draft) { rec.dataset.live = '1'; rec.setAttribute('aria-label', 'Quick add. A workout is in progress.'); } else { delete rec.dataset.live; rec.setAttribute('aria-label', 'Quick add: log something now'); }

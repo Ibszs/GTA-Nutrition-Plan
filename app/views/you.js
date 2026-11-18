@@ -11,7 +11,7 @@ import { EXERCISES } from '../data/exercises.js';
 import { liftHistory } from '../logic/lifts.js';
 import { EXERCISES as LIFTS } from '../../assets/training-data.js';
 
-export const VERSION = '4.0.1';
+export const VERSION = '4.0.2';
 let logDay = today();
 
 const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['sky', 'Sky', '#a9d3f2'], ['butter', 'Butter', '#f5dc7d'], ['news', 'Grey', '#d9d7d2']];
@@ -142,7 +142,7 @@ function settingsPage() {
       <p class="tiny muted">Cook mode and the pause timer are always dark.${fun.enabled && fun.night ? ' Night Drive is on, which keeps everything dark until you turn it off.' : ''}</p>
       <p class="field__l" style="margin-top:16px">Paper</p>
       <div class="stocks" role="group" aria-label="Paper colour">${PAPERS.map(([id, label, swatch]) => html`<button class="stock" type="button" aria-pressed="${(ui.paper ?? 'rosa') === id ? 'true' : 'false'}" data-act="paper" data-v="${id}"><i style="--sw:${swatch}"></i>${label}</button>`)}</div>
-      <p class="tiny muted">The colour Forme is printed on. Pink is the house colour.</p>
+      <p class="tiny muted">The colour of the blocks you act on, in both appearances. Pink is the house colour.</p>
     </div></section>
     <section class="frame"><div class="frame__head"><span>Motion, sound, touch</span><span>All optional</span></div><div class="frame__body">
       <div><p class="eyebrow">Motion</p><div class="segc" style="margin-top:6px">${[['system', 'Follow device'], ['reduced', 'Reduced'], ['full', 'Full']].map(([id, label]) => html`<button type="button" aria-pressed="${ui.motion === id ? 'true' : 'false'}" data-act="motion" data-v="${id}">${label}</button>`)}</div><p class="tiny muted" style="margin-top:6px">Reduced swaps every animation for a plain state change. Timers and counts still update.</p></div>

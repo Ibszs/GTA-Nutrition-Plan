@@ -1,6 +1,6 @@
 /* Forme design system: a sports daily printed on coloured stock.
-   Colour. One paper colour (pink by default), black ink and one spot red. Day prints ink on the paper;
-   Night prints on black and keeps the paper for the blocks you act on. Red is only ever a record,
+   Colour. One paper colour (pink by default), black ink and one spot red. Night prints on black and
+   Day prints on white; both keep the paper for the blocks you act on. Red is only ever a record,
    a recording in progress, or a warning. Diagram colours (working muscle, lengthening) stay separate.
    Type. One family in three widths. Sofia Sans Extra Condensed sets headlines, buttons and big
    numerals; Sofia Sans Condensed sets figures, tables and labels; Sofia Sans sets everything you read.
@@ -46,10 +46,13 @@
 :root[data-paper="butter"] { --paper: #f5dc7d; --paper-hi: #f9e9ab; --paper-lo: #ecca52; }
 :root[data-paper="news"] { --paper: #d9d7d2; --paper-hi: #e9e7e3; --paper-lo: #c6c4be; }
 
-/* Semantic tokens. Components read only these. Night is the default; .night pins a screen to it.
-   A slab (and the few blocks that behave like one) takes the opposite set, so everything inside it
-   inverts without any per-component overrides. */
-:root, .night, .cookm, .minute, [data-theme="light"] :is(.slab, .tonight, .pr, .replay__end, .cover, .rp__hero, .reset__head, .fr--today, .daytabs button[aria-selected="true"]) {
+/* Semantic tokens. Components read only these. There are three grounds.
+   Night is the default page: black. .night pins a screen to it, and cook mode and the pause timer always use it.
+   Day is the light page: white, black ink, faint tints of the paper for panels.
+   Paper is the block you act on (a slab, and the few blocks that behave like one). It is the same in both
+   appearances, so the stock colour is the accent on a black page and on a white one, and everything inside
+   a block takes the paper set without any per-component overrides. */
+:root, .night, .cookm, .minute {
   --bg: var(--night); --bg-2: var(--night-2); --bg-3: var(--night-3); --bg-lift: var(--night-lift); --field: var(--night-3);
   --ink: var(--night-ink); --ink-2: color-mix(in srgb, var(--night-ink) 68%, var(--night)); --ink-3: color-mix(in srgb, var(--night-ink) 56%, var(--night));
   --line: color-mix(in srgb, var(--night-ink) 15%, var(--night)); --line-2: color-mix(in srgb, var(--night-ink) 32%, var(--night));
@@ -59,7 +62,18 @@
   --focus: #fff; --shade: rgba(6, 4, 6, .78);
   --fig: #f4eef0; --fig-far: #7d7479; --fig-ghost: rgba(244, 238, 240, .2); --fig-bg: var(--night-3); --grid-line: #1f1b1e; --prop-fill: #2a2528; --prop-mat: #383236;
 }
-[data-theme="light"]:not(.night), :root:not([data-theme="light"]) :is(.slab, .tonight, .pr, .replay__end, .cover, .rp__hero, .reset__head, .fr--today, .daytabs button[aria-selected="true"]), .night :is(.slab, .tonight, .pr, .replay__end, .cover, .rp__hero, .reset__head, .fr--today, .daytabs button[aria-selected="true"]) {
+[data-theme="light"]:not(.night) {
+  --bg: #fff; --bg-2: color-mix(in srgb, var(--paper) 22%, #fff); --bg-3: color-mix(in srgb, var(--paper) 40%, #fff); --bg-lift: color-mix(in srgb, var(--paper) 36%, #fff); --field: #fff;
+  --ink: var(--press); --ink-2: color-mix(in srgb, var(--press) 76%, #fff); --ink-3: color-mix(in srgb, var(--press) 68%, #fff);
+  --line: color-mix(in srgb, var(--press) 13%, #fff); --line-2: color-mix(in srgb, var(--press) 42%, #fff);
+  --accent: var(--press); --accent-ink: #fff; --accent-2: #33292e; --accent-text: var(--red-deep);
+  --mark: var(--red); --mark-ink: #fff; --mark-text: var(--red-deep); --blue-text: var(--stretch);
+  --good: #0b5a30; --warn: #734400; --bad: var(--red-deep);
+  --focus: var(--press); --shade: rgba(20, 17, 20, .55);
+  --fig: #1c181b; --fig-far: #9b9196; --fig-ghost: rgba(28, 24, 27, .17); --fig-bg: color-mix(in srgb, var(--paper) 12%, #fff); --grid-line: color-mix(in srgb, var(--paper) 50%, #fff); --prop-fill: color-mix(in srgb, var(--press) 16%, #fff); --prop-mat: color-mix(in srgb, var(--press) 26%, #fff);
+  color-scheme: light;
+}
+:is(.slab, .tonight, .pr, .replay__end, .cover, .rp__hero, .reset__head, .fr--today, .daytabs button[aria-selected="true"]) {
   --bg: var(--paper); --bg-2: var(--paper-hi); --bg-3: var(--paper-lo); --bg-lift: color-mix(in srgb, var(--paper) 34%, #fff); --field: color-mix(in srgb, var(--paper) 22%, #fff);
   --ink: var(--press); --ink-2: color-mix(in srgb, var(--press) 76%, var(--paper)); --ink-3: color-mix(in srgb, var(--press) 68%, var(--paper));
   --line: color-mix(in srgb, var(--press) 17%, var(--paper)); --line-2: color-mix(in srgb, var(--press) 38%, var(--paper));
@@ -128,7 +142,7 @@ p > .ic, .title > .ic { display: inline-block; vertical-align: -.18em; margin-ri
 .wrap { padding: 18px var(--pad) 0; max-width: 640px; margin-inline: auto; }
 .wrap > * + * { margin-top: 26px; }
 
-/* Dock. Black in both editions so the page colour never fights the controls. */
+/* Dock. Black at night. By day it is white with an ink rule (see the day rules below). */
 .dock { position: fixed; z-index: 50; left: 0; right: 0; bottom: 0; height: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px);
   background: #0b090b; color: #fff; display: grid; grid-template-columns: repeat(5, 1fr); align-items: stretch; border-top: 1px solid color-mix(in srgb, var(--paper) 22%, #0b090b); }
 .dock__item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: color-mix(in srgb, var(--paper) 30%, #8d8589); text-decoration: none;
@@ -140,6 +154,11 @@ p > .ic, .title > .ic { display: inline-block; vertical-align: -.18em; margin-ri
 .dock__rec:active { transform: scale(.94); }
 .dock__rec[data-live="1"]::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; border: 2px solid var(--red-lite); animation: rec-pulse 1.6s ease-out infinite; }
 .dock__rec .ic { width: 26px; height: 26px; stroke-width: 2.6; }
+/* Day edition: a white dock with an ink rule. The place you are in is a paper block, like today in the week strip. */
+[data-theme="light"] .dock { background: var(--bg); border-top: var(--rule) solid var(--ink); }
+[data-theme="light"] .dock__item { color: var(--ink-2); }
+[data-theme="light"] .dock__item[aria-current="page"] { background: var(--paper); color: var(--press); }
+[data-theme="light"] .dock__item[aria-current="page"]::before { display: none; }
 
 /* ---------- Type ---------- */
 /* Headlines. The two big sizes lean; the small ones stand upright so they can label things. */
@@ -464,11 +483,8 @@ dialog.sheet--center[open] { animation: pop-in var(--t-2) var(--ease-out) both; 
   .display--l { font-size: clamp(3rem, 5vw, 4.6rem); }
   /* The bar lines up with the widest page column instead of the window edge. */
   .topbar { padding-left: max(var(--pad), calc((100% - 1120px) / 2 + var(--pad))); padding-right: max(6px, calc((100% - 1120px) / 2 + var(--pad) - 6px)); }
-  /* Day edition: the rail is paper with an ink rule, so the page is not boxed in by black. */
-  [data-theme="light"] .dock { background: var(--bg); border-right: var(--rule) solid var(--ink); }
-  [data-theme="light"] .dock__item { color: var(--ink-2); }
-  [data-theme="light"] .dock__item[aria-current="page"] { color: var(--ink); }
-  [data-theme="light"] .dock__item[aria-current="page"]::before { background: var(--ink); }
+  /* Day edition: the rail's ink rule runs down its right edge instead of along the top. */
+  [data-theme="light"] .dock { border-top: 0; border-right: var(--rule) solid var(--ink); }
 }
 @media (max-width: 359px) {
   :root { --pad: 12px; }

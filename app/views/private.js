@@ -2,7 +2,7 @@
 //   1. "A minute": opt-in urge support for any behaviour you want to change. Neutral wording,
 //      a pause timer, something to do instead, optional notes, your own patterns. No scores.
 //   2. Your private log from the earlier app (the T log), with the same data and the same key.
-//      It is the first thing on the screen, as it was one tap from the eye icon before.
+//      It is the first thing on the screen, one tap from the eye icon on Today, as it was before.
 // Everything stays in this browser. Nothing here is treatment.
 
 import * as store from '../store.js';
@@ -126,11 +126,11 @@ export function render(ctx) {
       <div class="list">${SUPPORT.map(item => html`<div class="list__i"><span class="list__m"><span class="title">${extLink(item.url, item.name)}</span><span class="small" style="display:block">${item.how} · ${item.when}</span><span class="tiny muted" style="display:block">${item.what}</span></span></div>`)}</div>
       <p class="tiny muted">${SUPPORT_NOTE} Details checked 16 to 17 Nov 2026.</p></div></section>
 
-    ${priv.enabled ? html`<section class="stack" aria-label="Controls">${sec('Controls')}
-      <button class="switch" type="button" role="switch" aria-checked="${priv.hideOnToday ? 'true' : 'false'}" data-act="hide"><span class="switch__t"><span class="title" style="font-size:.98rem">Keep it off Today</span><span class="tiny muted" style="display:block">No button on the home screen. Reach it from the + button ("A minute") or from You.</span></span><span class="switch__k"></span></button>
-      <button class="switch" type="button" role="switch" aria-checked="${priv.hideEntry ? 'true' : 'false'}" data-act="hideentry"><span class="switch__t"><span class="title" style="font-size:.98rem">Hide the eye icon</span><span class="tiny muted" style="display:block">Removes the small shortcut at the top of Today.</span></span><span class="switch__k"></span></button>
+    <section class="stack" aria-label="Controls">${sec('Controls')}
+      <button class="switch" type="button" role="switch" aria-checked="${priv.hideEntry ? 'true' : 'false'}" data-act="hideentry"><span class="switch__t"><span class="title" style="font-size:.98rem">Hide the eye icon</span><span class="tiny muted" style="display:block">Takes the eye off the top of Today. This screen stays under You, Private.</span></span><span class="switch__k"></span></button>
+      ${priv.enabled ? html`<button class="switch" type="button" role="switch" aria-checked="${priv.hideOnToday ? 'true' : 'false'}" data-act="hide"><span class="switch__t"><span class="title" style="font-size:.98rem">Keep "A minute" off Today</span><span class="tiny muted" style="display:block">No button on the home screen. Reach it from the + button ("A minute") or from You.</span></span><span class="switch__k"></span></button>
       <div class="row row--wrap"><button class="btn btn--quiet btn--sm grow" type="button" data-act="export">Export my check-ins</button><button class="btn btn--quiet btn--sm grow" type="button" data-act="wipe">${icon('trash', 'ic--sm')} Delete all</button></div>
-      <button class="linkish linkish--quiet tiny" type="button" data-act="disable">Turn "A minute" off (keeps your check-ins)</button></section>` : ''}
+      <button class="linkish linkish--quiet tiny" type="button" data-act="disable">Turn "A minute" off (keeps your check-ins)</button>` : ''}</section>
 
     <details class="fold"><summary>Why a pause and a plan</summary><div class="fold__b">${URGE_CLAIMS.map(claim => html`<p class="small">${claim.text} <span class="muted">${claim.level}. ${extLink(SOURCES[claim.src].url, SOURCES[claim.src].cite.split('.')[0])}, ${SOURCES[claim.src].date}.</span></p>`)}<p class="tiny muted">This is self-management support. It is not addiction treatment and not a substitute for it.</p></div></details>
   </div>`;
