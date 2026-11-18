@@ -45,6 +45,12 @@ function applySettings() {
   // One appearance for every screen. Night Drive is a night scene, so it is always dark.
   const light = !night && (ui.theme === 'light' || (ui.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches));
   root.dataset.theme = light ? 'light' : 'dark';
+  // The switch in the top bar shows the appearance it will change to. Night Drive is always dark, so it hides.
+  const toggle = document.getElementById('themeToggle');
+  toggle.hidden = Boolean(night);
+  toggle.setAttribute('aria-label', light ? 'Switch to dark appearance' : 'Switch to light appearance');
+  toggle.title = light ? 'Dark appearance' : 'Light appearance';
+  toggle.querySelector('use').setAttribute('href', `assets/icons.svg#${light ? 'moon' : 'sun'}`);
   // The paper stock. Pink is the default and needs no attribute.
   if (PAPERS.includes(ui.paper) && ui.paper !== 'rosa') root.dataset.paper = ui.paper; else delete root.dataset.paper;
 }
@@ -69,7 +75,8 @@ function pageColour() {
 
 function paintShell(screen, route, path) {
   root.dataset.room = screen.room ?? 'street';
-  document.getElementById('where').textContent = screen.where ?? '';
+  // Today is the home screen and the dock already says so; its bar carries the date instead of a name.
+  document.getElementById('where').textContent = path[0] === 'today' ? '' : screen.where ?? '';
   document.title = screen.where ? `${screen.where} · Forme` : 'Forme';
   document.getElementById('stampLink').textContent = dateline(today());
   document.querySelectorAll('.dock__item').forEach(link => { if (link.dataset.nav === route.nav) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current'); });
@@ -179,6 +186,7 @@ window.addEventListener('forme:change', event => {
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', () => { applySettings(); queueRender(); });
 matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', () => { applySettings(); queueRender(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) queueRender(); });
+document.getElementById('themeToggle').addEventListener('click', () => store.update('ui', ui => { ui.theme = root.dataset.theme === 'light' ? 'dark' : 'light'; }));
 document.getElementById('recButton').addEventListener('click', async () => { const quick = await import('./quick.js'); quick.openQuick(); });
 document.addEventListener('keydown', event => {
   if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;

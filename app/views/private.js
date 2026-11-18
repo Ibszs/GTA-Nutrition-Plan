@@ -1,7 +1,8 @@
 // Private space. Two things live here, both off the main screens:
 //   1. "A minute": opt-in urge support for any behaviour you want to change. Neutral wording,
 //      a pause timer, something to do instead, optional notes, your own patterns. No scores.
-//   2. Your private log from the earlier app, with the same data and the same key.
+//   2. Your private log from the earlier app (the T log), with the same data and the same key.
+//      It is the first thing on the screen, as it was one tap from the eye icon before.
 // Everything stays in this browser. Nothing here is treatment.
 
 import * as store from '../store.js';
@@ -52,7 +53,7 @@ function logSection() {
   const draft = editing ? state.entries.find(entry => entry.id === editing) : null;
   return html`
     <p class="small muted">Your entries from the earlier app, in the same place and format. This records what you did, not advice on what to do. No automatic or catch-up entries.</p>
-    <div class="note" aria-live="polite"><p>${reference ? html`<strong>${INTERVAL_HOURS}-hour reference:</strong> ${fmtDay(local(reference).slice(0, 10), { weekday: 'short', day: 'numeric', month: 'short' })}, ${fmtTime(reference)}. Counted from your newest entry.` : 'No entries yet. The reference time appears after the first one.'}</p></div>
+    <div class="note" aria-live="polite"><p>${reference ? html`<strong>${INTERVAL_HOURS}-hour reference:</strong> ${fmtDay(local(reference).slice(0, 10), { weekday: 'short', day: 'numeric', month: 'short' })}, ${fmtTime(reference)}, counted from your newest entry.` : 'No entries yet. The reference time appears after the first one.'}</p></div>
     <form class="stack" data-form="plog">
       <div class="grid2"><label class="field"><span class="field__l">Actual date and time</span><input class="input" type="datetime-local" id="plAt" required value="${draft ? local(draft.at) : local(new Date())}" max="${local(new Date())}"></label>
         <label class="field"><span class="field__l">Amount (mg)</span><input class="input input--num" type="number" id="plAmt" min="0.1" max="10000" step="0.1" inputmode="decimal" required value="${draft ? draft.amountMg : entries[0]?.amountMg ?? ''}"></label></div>
@@ -95,6 +96,8 @@ export function render(ctx) {
     <a class="linkish linkish--quiet" href="#/you">${icon('arrow-left', 'ic--sm')} You</a>
     <header><p class="eyebrow">${icon('lock', 'ic--sm')} Stays on this device</p><h1 class="display display--l">Private</h1><p class="muted">Not encrypted, not password-protected, but kept off every main screen and out of sight unless you open it.</p></header>
 
+    <details class="fold" ${hasLog || editing || ctx.query.has('log') ? 'open' : ''}><summary>T log</summary><div class="fold__b">${logSection()}</div></details>
+
     ${!priv.enabled ? html`<section class="frame"><div class="frame__head"><span>A minute</span><span>Off</span></div><div class="frame__body">
       <p class="title">Support for a behaviour you want to change.</p>
       <p class="small">Anything: scrolling, vaping, late-night snacking, something you would rather not name. You get one neutral button, "I need a minute", that starts a pause timer and shows what you decided to do instead. Optional notes build a picture of your own patterns. No streak counters, no badges, no judgement.</p>
@@ -105,7 +108,7 @@ export function render(ctx) {
 
       <section class="frame"><div class="frame__head"><span>Your setup</span><span>Only you see this</span></div><div class="frame__body">
         <label class="field"><span class="field__l">What this is for (private, optional)</span><input class="input" id="pvLabel" maxlength="60" value="${priv.label}" placeholder="Leave blank if you prefer" data-change="label"></label>
-        <label class="field"><span class="field__l">What I will do instead</span><input class="input" id="pvInstead" maxlength="120" value="${priv.instead}" placeholder="Walk to the end of the street. Ten push-ups. Text my brother." data-change="instead"><span class="hint">Decide it now, while it is easy. "If the urge shows up, I will do this."</span></label>
+        <label class="field"><span class="field__l">What I will do instead</span><input class="input" id="pvInstead" maxlength="120" value="${priv.instead}" placeholder="Walk to the end of the street" data-change="instead"><span class="hint">Decide it now, while it is easy. "If the urge shows up, I will do this."</span></label>
         <div class="spread"><div><p class="eyebrow">Pause length</p><p class="tiny muted">Pick a length you can get through. You can add five minutes at a time.</p></div><span class="stepper"><button type="button" data-act="pmin" data-d="-1" aria-label="Shorter pause">−</button><output>${priv.pauseMin} min</output><button type="button" data-act="pmin" data-d="1" aria-label="Longer pause">+</button></span></div>
       </div></section>
 
@@ -123,13 +126,10 @@ export function render(ctx) {
       <div class="list">${SUPPORT.map(item => html`<div class="list__i"><span class="list__m"><span class="title">${extLink(item.url, item.name)}</span><span class="small" style="display:block">${item.how} · ${item.when}</span><span class="tiny muted" style="display:block">${item.what}</span></span></div>`)}</div>
       <p class="tiny muted">${SUPPORT_NOTE} Details checked 16 to 17 Nov 2026.</p></div></section>
 
-    ${hasLog || ctx.query.has('log') ? html`<details class="fold" ${editing || ctx.query.has('log') ? 'open' : ''}><summary>Private log</summary><div class="fold__b"><h2 class="display display--s">T Log</h2>${logSection()}</div></details>`
-    : html`<p class="tiny muted">The private log from the earlier app appears here once it has an entry. <a href="#/private?log=1">Open it</a></p>`}
-
-    ${priv.enabled ? html`<section aria-label="Controls">${sec('Controls')}
+    ${priv.enabled ? html`<section class="stack" aria-label="Controls">${sec('Controls')}
       <button class="switch" type="button" role="switch" aria-checked="${priv.hideOnToday ? 'true' : 'false'}" data-act="hide"><span class="switch__t"><span class="title" style="font-size:.98rem">Keep it off Today</span><span class="tiny muted" style="display:block">No button on the home screen. Reach it from the + button ("A minute") or from You.</span></span><span class="switch__k"></span></button>
       <button class="switch" type="button" role="switch" aria-checked="${priv.hideEntry ? 'true' : 'false'}" data-act="hideentry"><span class="switch__t"><span class="title" style="font-size:.98rem">Hide the eye icon</span><span class="tiny muted" style="display:block">Removes the small shortcut at the top of Today.</span></span><span class="switch__k"></span></button>
-      <div class="row row--wrap" style="margin-top:10px"><button class="btn btn--quiet btn--sm grow" type="button" data-act="export">Export my check-ins</button><button class="btn btn--quiet btn--sm grow" type="button" data-act="wipe">${icon('trash', 'ic--sm')} Delete all</button></div>
+      <div class="row row--wrap"><button class="btn btn--quiet btn--sm grow" type="button" data-act="export">Export my check-ins</button><button class="btn btn--quiet btn--sm grow" type="button" data-act="wipe">${icon('trash', 'ic--sm')} Delete all</button></div>
       <button class="linkish linkish--quiet tiny" type="button" data-act="disable">Turn "A minute" off (keeps your check-ins)</button></section>` : ''}
 
     <details class="fold"><summary>Why a pause and a plan</summary><div class="fold__b">${URGE_CLAIMS.map(claim => html`<p class="small">${claim.text} <span class="muted">${claim.level}. ${extLink(SOURCES[claim.src].url, SOURCES[claim.src].cite.split('.')[0])}, ${SOURCES[claim.src].date}.</span></p>`)}<p class="tiny muted">This is self-management support. It is not addiction treatment and not a substitute for it.</p></div></details>

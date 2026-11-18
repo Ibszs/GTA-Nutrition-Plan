@@ -1,6 +1,6 @@
 # Forme 4.0 handoff
 
-Written 17 Nov 2026 on the branch `fable/forme-rebuild`. The work is committed on that branch in two commits (the 4.0 rebuild, then the third design pass). Nothing is pushed, so the published copy and your phone are still on Form & Fuel 3.0.
+Written 17 Nov 2026 on the branch `fable/forme-rebuild`. The work is committed on that branch (the 4.0 rebuild, the third design pass, the final review, then a follow-up pass on light mode and text). Nothing is pushed, so the published copy and your phone are still on Form & Fuel 3.0.
 
 ## What changed
 
@@ -28,7 +28,7 @@ Written 17 Nov 2026 on the branch `fable/forme-rebuild`. The work is committed o
 | Move | 7-day practice with a Day 7 choice and an opt-in 30-day plan, guided player, 18 teaching cards, evidence page, "when to get checked". |
 | Habits | Create and edit, days of week, count or yes/no, skip, yesterday, undo, mute streaks, reminders while the app is open. |
 | Reset | Four editable actions and an evening check-in. |
-| Private | Opt-in "A minute" pause tool, plus the earlier private log unchanged. |
+| Private | The T log from the earlier app, first on the screen, with the same data. Below it, the opt-in "A minute" pause tool. |
 | Play | Stickers, side quest, Night Drive, the month at a glance, weekly replay with a cover made from what you cooked. |
 | You | Goal mode and targets, trends, appearance, motion, backup, credits. |
 | Everywhere | Quick add (the red button), search, toasts with undo. |
@@ -102,6 +102,16 @@ Every route (about 70) was opened at phone size in both dark and light: no error
 - **Fixed during the review:** the browser bar colour lagged one screen behind a theme or paper change; "1 sets" and "1 weeks"; two fridge chips both reading "Plain Greek yogurt"; the top bar was cramped when the private shortcut showed; a squeezed stepper on the oil meter; an unsized header photo on Habits and Reset; three leftover slogan headings.
 - **Looked at as pictures with data in them:** Today, Habits, Reset, Use it first, Progress, Private, the month, the replay and a teaching card, on top of the screens listed above.
 - **Still not checked:** the handover from the 3.0 service worker to this one on a real phone, your real data going through the first-run copy, backup export and import by hand in this pass (the automated tests cover them), animations by eye, Safari, and a screen reader.
+
+## Follow-up pass (17 Nov 2026): light mode, text, the T log
+
+- **The T log was never removed.** It kept its data and its storage key. It had been moved to the bottom of You, Private, inside a closed fold that only appeared once the log had an entry, which made it look gone on a fresh copy. It is now the first thing on Private, always there, open when it has entries. The eye icon on Today still appears once the log has an entry and opens straight to it.
+- **Light mode.** It already existed under Settings but was hard to find. There is now a sun or moon switch in the top bar on tablet and PC widths, and a Dark, Light, Match device control at the top of You on every width. On PC the side rail is paper with an ink rule in light mode instead of black. Dark is still the default on first run.
+- **Text faults fixed, PC:** the Train headline split mid-word ("LOWE / R"), because it was sized from the window instead of its own column; reading text ran 105 to 157 characters a line and now stops at about 85; the top bar drifted out of line with the page on wide monitors; the start button in the lead block now sits level with the foot of the photograph.
+- **Text faults fixed, phone:** screen names in the top bar were cut off with dots on recipe pages (the bar now shows the name or the date, and Today keeps the date); headings sat flush against the paragraph under them on eleven screens; the Controls rows on Private and Stickers had no space between them; "Start fresh" wrapped onto two lines; one placeholder was too long for its box.
+- **Wording faults fixed:** "1 servings", "1 reps", "1 habits", "1 stickers"; "Halal Chicken breast" is now "Halal chicken breast" on the grocery list; a double full stop after the T log reference time.
+- **Checked:** `npm test`, 628 passing. All 39 seeded routes measured at 390 and 1280 wide for clipped text, wrapped controls, headings touching paragraphs, over-long lines and anything off the side: none left, apart from two evidence lists that are citations. Looked at as pictures in light mode: Today, Train, Kitchen, a recipe, Week plan, Groceries, Move, the evidence page, Progress, Stickers, You, Settings and Private at phone width, and Today, Train, Kitchen, a recipe, the evidence page and Settings at PC width, plus Today at 1920. The switch and the T log (add an entry, see it listed, open it from the eye icon) were driven in a browser.
+- **Not checked:** the Sky, Butter and Grey papers after this pass, tablet widths between 600 and 900 as pictures, and everything in the earlier "not checked" list.
 
 ## Updating your phone
 

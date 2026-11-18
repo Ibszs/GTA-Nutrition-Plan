@@ -80,6 +80,15 @@ body {
 }
 h1, h2, h3, h4, p, ul, ol, figure, dl, dd { margin: 0; padding: 0; }
 ul, ol { list-style: none; }
+/* Line breaks: headings split evenly, reading text avoids a last line of one word. */
+p, li, dd { text-wrap: pretty; }
+h1, h2, h3, .title, .dish, .slab__sub { text-wrap: balance; }
+/* A heading never sits flush against the line above or below it. */
+:where(h1, .display) + p { margin-top: 10px; }
+.eyebrow + :where(h1) { margin-top: 4px; }
+/* Reading text stops at about 85 characters a line, however wide the column is. */
+.wrap :where(p:not(.slab__k, .pr__kick, .spread, .row, .center, .data, .clock, .display), dd, .dots li, .steps li > span:last-child, .hint, .list__m > span, .switch__t > span) { max-width: 74ch; }
+.wrap .kv:not(.kv--stack) dd { max-width: none; }
 img, svg, video { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; border: 0; background: none; padding: 0; border-radius: 0; -webkit-tap-highlight-color: transparent; }
@@ -99,8 +108,9 @@ a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: 3px
 .wordmark { font: italic 900 1.95rem/1 var(--f-head); text-transform: uppercase; letter-spacing: -.01em; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; padding-right: 2px; flex: none; }
 .topbar__where { font: 700 .8rem/1 var(--f-data); letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 10px; border-left: 1px solid var(--line-2); }
 .topbar__where:empty { display: none; }
-/* When the private shortcut is showing there is no room for the screen name, and Today does not need one. */
-.topbar:has(#privateLink:not([hidden])) .topbar__where { display: none; }
+/* On a phone the bar has room for the screen name or the date, not both. Today has no name, so it keeps the date.
+   The appearance switch sits in the bar from tablet width up; on a phone it is the first thing on You. */
+@media (max-width: 599px) { .topbar__where:not(:empty) ~ .stamp, #themeToggle { display: none; } }
 .topbar__spacer { flex: 1; min-width: 4px; }
 .stamp { font: 700 .8rem/1 var(--f-data); letter-spacing: .07em; text-transform: uppercase; font-variant-numeric: tabular-nums; color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; white-space: nowrap; text-decoration: none; }
 .icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 50%; color: var(--ink); flex: none; position: relative; }
@@ -133,7 +143,7 @@ p > .ic, .title > .ic { display: inline-block; vertical-align: -.18em; margin-ri
 
 /* ---------- Type ---------- */
 /* Headlines. The two big sizes lean; the small ones stand upright so they can label things. */
-.display { font-family: var(--f-head); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: .8; letter-spacing: -.012em; font-size: clamp(3.3rem, 18.5vw, 5.4rem); text-wrap: balance; overflow-wrap: anywhere; padding-top: .06em; }
+.display { font-family: var(--f-head); font-weight: 900; font-style: italic; text-transform: uppercase; line-height: .8; letter-spacing: -.012em; font-size: clamp(3.3rem, 18.5vw, 5.4rem); text-wrap: balance; overflow-wrap: break-word; padding-top: .06em; }
 .display--xl { font-size: clamp(5.2rem, 37vw, 10.4rem); line-height: .74; letter-spacing: -.02em; margin-left: -.03em; }
 .display--l { font-size: clamp(2.5rem, 12.5vw, 3.8rem); line-height: .84; }
 .display--m { font-size: 1.8rem; line-height: .92; font-style: normal; font-weight: 800; letter-spacing: 0; padding-top: 0; }
@@ -165,6 +175,7 @@ p > .ic, .title > .ic { display: inline-block; vertical-align: -.18em; margin-ri
 .row--wrap { flex-wrap: wrap; }
 .row--top { align-items: flex-start; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.spread > .btn { flex: none; white-space: nowrap; }
 .grow { flex: 1; min-width: 0; }
 .stack > * + * { margin-top: 10px; }
 .stack--s > * + * { margin-top: 6px; }
@@ -202,6 +213,8 @@ p > .ic, .title > .ic { display: inline-block; vertical-align: -.18em; margin-ri
 /* ---------- Slab. The inverse block: paper at night, ink by day. One per screen, for the thing to do now. ---------- */
 :is(.slab, .tonight, .pr, .replay__end, .cover, .rp__hero, .reset__head, .fr--today, .daytabs button[aria-selected="true"]) { background: var(--bg); color: var(--ink); }
 .slab { position: relative; }
+/* The lead block sizes its headline from its own width, so a narrow column never splits a word. */
+.slab--lead { container-type: inline-size; }
 .slab--bleed { margin-inline: calc(var(--pad) * -1); padding: 14px var(--pad) var(--pad); }
 .wrap > .slab--bleed:first-child { margin-top: -18px; }
 .slab__k { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 24px; font: 700 .82rem/1.2 var(--f-data); letter-spacing: .07em; text-transform: uppercase; }
@@ -449,6 +462,13 @@ dialog.sheet--center[open] { animation: pop-in var(--t-2) var(--ease-out) both; 
   .display { font-size: clamp(4rem, 8vw, 7.4rem); }
   .display--xl { font-size: clamp(8rem, 15vw, 14rem); }
   .display--l { font-size: clamp(3rem, 5vw, 4.6rem); }
+  /* The bar lines up with the widest page column instead of the window edge. */
+  .topbar { padding-left: max(var(--pad), calc((100% - 1120px) / 2 + var(--pad))); padding-right: max(6px, calc((100% - 1120px) / 2 + var(--pad) - 6px)); }
+  /* Day edition: the rail is paper with an ink rule, so the page is not boxed in by black. */
+  [data-theme="light"] .dock { background: var(--bg); border-right: var(--rule) solid var(--ink); }
+  [data-theme="light"] .dock__item { color: var(--ink-2); }
+  [data-theme="light"] .dock__item[aria-current="page"] { color: var(--ink); }
+  [data-theme="light"] .dock__item[aria-current="page"]::before { background: var(--ink); }
 }
 @media (max-width: 359px) {
   :root { --pad: 12px; }

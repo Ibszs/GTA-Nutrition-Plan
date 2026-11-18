@@ -81,7 +81,7 @@ function hub() {
 
     ${fun.replays.length ? html`<section aria-label="Kept replays">${sec('Kept', plural(fun.replays.length, 'replay'))}<div class="list">${[...fun.replays].reverse().map(item => html`<a class="list__i list__i--tap" href="#/fun/replay?w=${item.start}"><span class="list__m"><span class="title">Week ${weekNumber(item.start)} · ${fmtDay(item.start, { day: 'numeric', month: 'short' })}</span><span class="tiny muted" style="display:block">${item.line}</span></span><span class="list__e">▶</span></a>`)}</div></section>` : ''}
 
-    <section aria-label="Controls">${sec('Controls')}
+    <section class="stack" aria-label="Controls">${sec('Controls')}
       <button class="switch" type="button" role="switch" aria-checked="${fun.hidden?.toasts ? 'true' : 'false'}" data-act="quiet"><span class="switch__t"><span class="title" style="font-size:.98rem">No sticker pop-ups</span><span class="tiny muted" style="display:block">Stickers are still collected here.</span></span><span class="switch__k"></span></button>
       <button class="linkish linkish--quiet" type="button" data-act="disable">Turn stickers, quests and replays off</button></section>
   </div>`;
@@ -102,7 +102,7 @@ function sheetPage() {
       ${DOW.map(name => html`<span class="csheet__h" role="columnheader">${name}</span>`)}
       ${cells.map((day, index) => { const act = acts[index]; const inMonth = day.slice(0, 7) === month;
     if (!inMonth) return html`<span class="fr fr--off" style="opacity:.25" role="gridcell" aria-hidden="true"><span class="fr__n">${Number(day.slice(8))}</span></span>`;
-    return html`<button class="fr ${day === today() ? 'fr--today' : ''} ${act?.kinds ? 'fr--lit' : ''}" role="gridcell" type="button" data-act="day" data-d="${day}" ${day > today() ? 'disabled' : ''} aria-label="${fmtDay(day)}${act ? `: ${act.train.length ? 'trained, ' : ''}${act.cooked.length ? 'cooked, ' : ''}${act.move.length ? 'movement, ' : ''}${act.habits.done ? `${act.habits.done} habits` : ''}` : ''}">
+    return html`<button class="fr ${day === today() ? 'fr--today' : ''} ${act?.kinds ? 'fr--lit' : ''}" role="gridcell" type="button" data-act="day" data-d="${day}" ${day > today() ? 'disabled' : ''} aria-label="${fmtDay(day)}${act ? `: ${act.train.length ? 'trained, ' : ''}${act.cooked.length ? 'cooked, ' : ''}${act.move.length ? 'movement, ' : ''}${act.habits.done ? plural(act.habits.done, 'habit') : ''}` : ''}">
           <span class="fr__n">${Number(day.slice(8))}</span>
           <span class="fr__s">${act?.train.length ? raw('<i class="t"></i>') : ''}${act?.cooked.length ? raw('<i class="e"></i>') : ''}${act?.move.length ? raw('<i class="m"></i>') : ''}${act?.habits.done ? raw('<i class="h"></i>') : ''}</span>${act && act.kinds >= 2 ? loop(false, index) : ''}</button>`; })}
     </div>
@@ -136,7 +136,7 @@ function replayPage(start) {
         <span class="fr__s">${day.train.length ? raw('<i class="t"></i>') : ''}${day.cooked.length ? raw('<i class="e"></i>') : ''}${day.move.length ? raw('<i class="m"></i>') : ''}${day.habits.done ? raw('<i class="h"></i>') : ''}</span>${day.kinds >= 2 ? loop(false, index) : ''}</div>`)}</div>
       <div class="replay__end"><p class="eyebrow">Week of ${fmtDay(start, { day: 'numeric', month: 'long' })}</p><p class="display display--l">${stats.active} of 7 days logged</p>
         <div class="statrow"><div class="stat"><div class="stat__v num">${stats.sessions}</div><div class="stat__l">Lifts</div></div><div class="stat"><div class="stat__v num">${stats.sets}</div><div class="stat__l">Sets</div></div><div class="stat"><div class="stat__v num">${stats.cooked.length}</div><div class="stat__l">Cooked</div></div><div class="stat"><div class="stat__v num">${stats.moveMinutes}</div><div class="stat__l">Move min</div></div></div>
-        ${best ? html`<p class="small"><span class="tag tag--mark">New best</span> ${best.load > 0 ? `${fmt(best.load, 1)} ${best.unit} × ${best.reps}` : `${best.reps} reps`}</p>` : ''}
+        ${best ? html`<p class="small"><span class="tag tag--mark">New best</span> ${best.load > 0 ? `${fmt(best.load, 1)} ${best.unit} × ${best.reps}` : plural(best.reps, 'rep')}</p>` : ''}
         ${stats.weight ? html`<p class="tiny muted">Average weigh-in ${fmt(stats.weight, 1)} lb.</p>` : ''}</div>
     </div>
     <div class="row row--wrap"><button class="btn grow" type="button" data-act="again">${icon('rotate-ccw')} Play again</button>${kept ? html`<button class="btn btn--quiet" type="button" data-act="unkeep">Stop keeping it</button>` : html`<button class="btn btn--quiet" type="button" data-act="keep" data-line="${line}">Keep this one</button>`}</div>

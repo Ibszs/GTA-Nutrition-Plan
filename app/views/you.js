@@ -24,8 +24,8 @@ function hub() {
     ['you/progress', 'chart-no-axes-combined', 'Progress', 'Weight, waist and lifts across weeks'],
     ['habits', 'check-check', 'Habits', `${plural(store.get('habits').habits.filter(habit => !habit.archived).length, 'habit')}`],
     ['reset', 'rotate-ccw', 'Reset', 'Short actions for a bad afternoon'],
-    ['private', 'lock', 'Private', priv.enabled ? 'A minute is on' : 'Opt-in, off the main screens'],
-    ['fun', 'sparkles', 'Stickers, quests and replays', fun.enabled ? `${Object.keys(fun.stickers).length} stickers` : 'Off'],
+    ['private', 'lock', 'Private', priv.enabled ? 'Private log · A minute is on' : 'Private log and A minute'],
+    ['fun', 'sparkles', 'Stickers, quests and replays', fun.enabled ? plural(Object.keys(fun.stickers).length, 'sticker') : 'Off'],
     ['you/settings', 'sliders-horizontal', 'Settings', 'Appearance, diet, motion, sound'],
     ['you/data', 'download', 'Backup and data', 'Export, import, what is stored'],
     ['you/credits', 'info', 'Credits and sources', 'Photos, creators, studies'],
@@ -33,6 +33,7 @@ function hub() {
   return html`<div class="wrap cut">
     <header><p class="eyebrow">You</p><h1 class="display display--l">${profile.name || 'Forme'}</h1>
       <p class="muted">${profile.weight ? `${fmt(profile.weight, 1)} lb · ` : ''}${MODES[profile.mode].name}. Everything is stored in this browser only.</p></header>
+    <div class="segc" role="group" aria-label="Appearance">${[['dark', 'Dark'], ['light', 'Light'], ['auto', 'Match device']].map(([id, label]) => html`<button type="button" aria-pressed="${(store.get('ui').theme ?? 'dark') === id ? 'true' : 'false'}" data-act="theme" data-v="${id}">${label}</button>`)}</div>
     <div class="list">${rows.map(([route, glyph, title, note]) => html`<a class="list__i list__i--tap" href="#/${route}"><span class="icon-btn icon-btn--line" aria-hidden="true">${icon(glyph)}</span><span class="list__m"><span class="title">${title}</span><span class="tiny muted" style="display:block">${note}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>
     <p class="tiny muted">Forme ${VERSION}. Rebuilt from Form & Fuel 3.0; your earlier journals are intact.</p>
   </div>`;

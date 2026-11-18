@@ -102,7 +102,7 @@ function home(ctx, info) {
         <div class="frame__head"><span>Records</span><span>${plural(records.length, 'record')}</span></div>
         <div class="frame__body">${records.length ? (() => { const record = records.at(-1); return html`
           <p class="eyebrow">${fmtDay(record.date)}</p><p class="title">${EXERCISES[record.exerciseId].name}</p>
-          <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="tag tag--amber" style="margin-left:6px">▶ Replay</span></p>`; })()
+          <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : plural(record.reps, 'rep')} <span class="tag tag--amber" style="margin-left:6px">▶ Replay</span></p>`; })()
     : html`<p class="title">No records yet</p><p class="tiny muted">Forme starts comparing from the second time you log a movement. Records are listed here, each with a replay.</p>`}</div>
       </a>
     </div>
@@ -212,7 +212,7 @@ function sessionPage(ctx, info, id) {
     <div class="statrow statrow--3"><div class="stat"><div class="stat__v num">${stats.sets}</div><div class="stat__l">Sets</div></div><div class="stat"><div class="stat__v num">${stats.exercises}</div><div class="stat__l">Movements</div></div><div class="stat"><div class="stat__v num">${fmt(stats.volume)}<small>${session.unit}</small></div><div class="stat__l">Load × reps</div></div></div>
     ${records.map(record => html`<button class="frame frame--press" type="button" data-act="replay" data-id="${id}" data-ex="${record.exerciseId}">
       <div class="frame__head"><span>Record</span><span>▶ Replay</span></div><div class="frame__body"><p class="title">${EXERCISES[record.exerciseId].name}</p>
-      <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`} <span class="muted">· was ${record.previous.load > 0 ? `${fmt(record.previous.load, 1)} × ${record.previous.reps}` : `${record.previous.reps} reps`}</span></p></div></button>`)}
+      <p class="data">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : plural(record.reps, 'rep')} <span class="muted">· was ${record.previous.load > 0 ? `${fmt(record.previous.load, 1)} × ${record.previous.reps}` : plural(record.previous.reps, 'rep')}</span></p></div></button>`)}
     <div class="list">${session.exercises.map(entry => html`<div class="list__i"><span class="list__m"><span class="title">${variantName(entry)}</span>
       <span class="data num" style="display:block">${entry.sets.map(set => `${fmt(set.load, 1)}×${set.reps}`).join('   ')}</span>${entry.setup ? html`<span class="tiny muted">${entry.setup}</span>` : ''}</span></div>`)}</div>
     <button class="btn btn--quiet btn--block" type="button" data-act="repeat" data-id="${id}">${icon('rotate-ccw')} Repeat this lineup</button>
@@ -233,7 +233,7 @@ function recordsPage(info) {
   return html`<div class="wrap cut"><a class="linkish linkish--quiet" href="#/train">${icon('arrow-left', 'ic--sm')} Train</a>
     <h1 class="display display--l">Records</h1><p class="muted">A record is a set that beats your best estimated max for that exact movement and setup. The first log of a movement is a baseline, not a record.</p>
     ${records.length ? html`<div class="list">${records.map(record => html`<button class="list__i list__i--tap" type="button" data-act="replay" data-id="${record.sessionId}" data-ex="${record.exerciseId}"><span class="list__m"><span class="title">${EXERCISES[record.exerciseId].name}</span>
-      <span class="data num" style="display:block">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`}</span><span class="tiny muted">${fmtDay(record.date)}</span></span><span class="list__e"><span class="tag tag--amber">▶ Replay</span></span></button>`)}</div>`
+      <span class="data num" style="display:block">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : plural(record.reps, 'rep')}</span><span class="tiny muted">${fmtDay(record.date)}</span></span><span class="list__e"><span class="tag tag--amber">▶ Replay</span></span></button>`)}</div>`
     : html`<div class="empty"><p class="empty__t">No records yet</p><p class="muted small">Log a movement twice and Forme starts comparing.</p></div>`}</div>`;
 }
 
@@ -244,7 +244,7 @@ function hamsPage(info) {
   const now = weeks.at(-1).sets;
   return html`<div class="wrap cut"><a class="linkish linkish--quiet" href="#/train">${icon('arrow-left', 'ic--sm')} Train</a>
     <header><p class="eyebrow">Focus view</p><h1 class="display display--l">Legs and hamstrings</h1><p class="muted">Completed leg sets per week, counted from your journal.</p></header>
-    ${LEG_GROUPS.map(group => html`<section class="frame"><div class="frame__head"><span>${group}</span><span>${now[group] ?? 0} sets this week</span></div><div class="frame__body">
+    ${LEG_GROUPS.map(group => html`<section class="frame"><div class="frame__head"><span>${group}</span><span>${plural(now[group] ?? 0, 'set')} this week</span></div><div class="frame__body">
       <div class="row" style="align-items:flex-end;gap:6px;height:72px" role="img" aria-label="${group} sets per week, oldest first: ${weeks.map(row => row.sets[group] ?? 0).join(', ')}">${weeks.map((row, index) => html`<span style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:3px;align-items:center"><span class="data" style="font-size:.56rem">${row.sets[group] ?? 0}</span><span style="width:100%;background:${index === weeks.length - 1 ? 'var(--accent)' : 'var(--line-2)'};height:${Math.max(3, ((row.sets[group] ?? 0) / max) * 74)}%;border-radius:1px"></span></span>`)}</div>
     </div></section>`)}
     <div class="note"><p><strong>Reading it.</strong> Your five-day plan gives hamstrings about 8 sets a week across Lower and Legs (Romanian deadlift and leg curl). If the hamstring bar sits well under the quads bar most weeks, the simplest fix is one extra set of leg curls on each leg day. Forme offers that inside the workout.</p></div>
@@ -335,7 +335,7 @@ function replay(state, sessionId, exerciseId) {
   const body = () => html`<div class="pr ${motionOK() ? 'pr--play' : ''}" aria-live="polite">
       <div class="pr__kick"><span>Record</span><span>${fmtDay(record.date, { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
       <p class="eyebrow">${EXERCISES[record.exerciseId].name}</p>
-      <p class="display display--l">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : `${record.reps} reps`}</p>
+      <p class="display display--l">${record.load > 0 ? `${fmt(record.load, 1)} ${record.unit} × ${record.reps}` : plural(record.reps, 'rep')}</p>
       <div class="pr__bars"><div><span class="eyebrow">Before</span><div class="pr__bar pr__bar--old" style="--w:${(oldValue / newValue) * 100}%"></div><span class="data">${label(oldValue)}</span></div>
         <div><span class="eyebrow">This set</span><div class="pr__bar pr__bar--new" style="--w:100%"></div><span class="data">${label(newValue)}</span></div></div>
       <p class="muted small">Up ${fmt(((newValue - oldValue) / oldValue) * 100, 1)}% on your previous best for this exact setup.</p></div>`;
