@@ -20,7 +20,8 @@ const ROUTES = [
   { test: () => true, load: () => import('./views/today.js'), nav: 'today' },
 ];
 
-const PAPERS = ['rosa', 'sky', 'butter', 'news'];
+const PAPERS = ['rosa', 'sky', 'butter', 'news', 'mint', 'lilac', 'ember', 'lime'];
+const GROUNDS = ['graphite', 'midnight', 'plum', 'black'];
 const root = document.documentElement;
 const view = document.getElementById('view');
 let current = null; // { route, module, screen, dispose, key }
@@ -51,8 +52,16 @@ function applySettings() {
   toggle.setAttribute('aria-label', light ? 'Switch to dark appearance' : 'Switch to light appearance');
   toggle.title = light ? 'Dark appearance' : 'Light appearance';
   toggle.querySelector('use').setAttribute('href', `assets/icons.svg#${light ? 'moon' : 'sun'}`);
-  // The paper stock. Pink is the default and needs no attribute.
+  // The accent colour. Pink is the default and needs no attribute.
   if (PAPERS.includes(ui.paper) && ui.paper !== 'rosa') root.dataset.paper = ui.paper; else delete root.dataset.paper;
+  // The dark ground. Graphite is the default and needs no attribute.
+  if (GROUNDS.includes(ui.ground) && ui.ground !== 'graphite') root.dataset.ground = ui.ground; else delete root.dataset.ground;
+  // Lead cards. "auto" keeps the colour block on the light page and uses the soft card on the dark one.
+  root.dataset.hero = ui.hero === 'block' || ui.hero === 'soft' ? ui.hero : (light ? 'block' : 'soft');
+  if (ui.shape === 'sharp') root.dataset.shape = 'sharp'; else delete root.dataset.shape;
+  if (ui.photos === 'mono') root.dataset.photos = 'mono'; else delete root.dataset.photos;
+  // Lift demos loop between their two photographs unless that is switched off or motion is reduced.
+  if (ui.demo === 'still' || prefs.motion === 'reduced') root.dataset.demo = 'still'; else delete root.dataset.demo;
 }
 
 /**
@@ -70,7 +79,7 @@ function pageColour() {
     context.fillStyle = colour; context.fillRect(0, 0, 1, 1);
     const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
     return `#${[r, g, b].map(value => value.toString(16).padStart(2, '0')).join('')}`;
-  } catch { return root.dataset.theme === 'light' ? '#ffffff' : '#131012'; }
+  } catch { return root.dataset.theme === 'light' ? '#ffffff' : '#111113'; }
 }
 
 function paintShell(screen, route, path) {
@@ -188,6 +197,14 @@ matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', () => {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) queueRender(); });
 document.getElementById('themeToggle').addEventListener('click', () => store.update('ui', ui => { ui.theme = root.dataset.theme === 'light' ? 'dark' : 'light'; }));
 document.getElementById('recButton').addEventListener('click', async () => { const quick = await import('./quick.js'); quick.openQuick(); });
+// Any "i" button, on a screen or inside a sheet, opens its explanation.
+document.addEventListener('click', async event => {
+  const button = event.target.closest?.('[data-explain]');
+  if (!button) return;
+  event.preventDefault();
+  const { explain } = await import('./explain.js');
+  explain(button.dataset.explain, button.dataset.body ? { title: button.dataset.title, body: button.dataset.body } : null);
+});
 document.addEventListener('keydown', event => {
   if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
   const tag = document.activeElement?.tagName;

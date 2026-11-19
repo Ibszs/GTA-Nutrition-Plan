@@ -168,6 +168,67 @@ You asked for recipes at 1 g of fat to 2 g of protein, ideally 1 to 3, with noth
 - **Checked:** `npm test`, 636 passing. Contrast measured on 41 routes with data in them, in light and in dark: every piece of text passes except the days of the neighbouring months on the month sheet, which are faded on purpose and hidden from screen readers. Driven in a browser on an empty profile: the eye shows on Today and not on Train, opens the T log, an entry saves and lists, the hide switch removes the eye and brings it back. Looked at as pictures in light: Today, Train, Kitchen, a recipe, a movement card, the month, Private at phone width; Today and Settings at PC width; Today on the Sky paper. Today in dark on an empty profile.
 - **Not checked:** an iPhone, Safari, the Butter and Grey papers in the new light mode, tablet widths, and sheets and dialogs as pictures in the new light mode (they were measured for contrast only where a route opens them).
 
+## Forme 5: plans, pictures, popups and a new look (19 Nov 2026, version 5.0.0)
+
+You asked for more workout plans and more to customise, pictures where there were blanks, popups in place of long text, and a dark mode that does not look cheap. This pass does those four things. Your journal, its storage key and its format are unchanged.
+
+**Training**
+
+- **Eight plans instead of one.** Hybrid 5 (the rotation you had), Push Pull Legs (6 days), Upper Lower (4), Legs First (4, hamstrings and glutes lead, 12 direct hamstring sets a week against 8 before), Full Body 3, Express (3 short sessions of four movements), Dumbbells Only (3) and Your Own Week (empty, you fill it). Train, Change plan. Each plan card shows its lifts, days, weekly sets and hamstring sets; the detail sheet lists every session and the sets per muscle.
+- **Edit week.** Put any session, from any plan, on any day, or make a day a rest. "Put the plan's week back" undoes it. "Slide the whole week" is the old Shift rotation.
+- **Edit sessions.** Change movements, order, sets, rep range and variation, rename the session, add or remove a movement. Your version is used every time that session comes up, and "Put the plan's version back" undoes it.
+- **Training settings.** Rest timer (automatic, 1:00, 1:30, 2:00, 3:00 or off), how much one tap of + or minus changes the load, lift demos looping or still, lift photographs in colour or black and white.
+- **The logger.** The open movement shows its demo (the two photographs of the lift fading into each other). Every row has its photograph. Progress is a ring. The rest timer is a capsule. Finishing shows a Saved card with the three numbers.
+- **How it is stored.** The 19 new sessions are added to `assets/training-program.js` beside the original five, under new versioned ids, so the journal's own validator accepts workouts logged from them. Which plan you use, a rearranged week and edited sessions are in a new Forme section, `forme.train.v1`. It is in backups. An edited session is logged the way an adapted workout already was (`customized`), so the saved format did not change.
+
+**Pictures**
+
+- **Lifts.** Photographs now appear on the Train lead card, the plan cards, session lists, the logger, history, records, the leg view and the lift library (which is a photo grid now). They are the same 76 audited photographs as before, still shown only for the exact variation they picture.
+- **The four dishes with no photograph** (smash burger bowl, hot honey beef bowl, cheeseburger pasta, pita box) each have a drawn plate, built in code from the recipe and labelled "Illustration". The last pass could not find a licensed photograph that matched them and I did not download anything in this one, so these are drawings, not photographs.
+- **Empty screens** (no history, no records, no workout in progress) show a photograph and one next step.
+
+**Popups in place of text**
+
+- A small "i" opens an explanation in a sheet. The text behind it is the text that used to sit on the page: reps in reserve, what counts as a record, lighter sessions, changing plan, units, the rest timer, the demos, fat to protein, where the numbers come from, maintenance, where your data is kept, how the look is built.
+- **Recipe pages** are about a quarter shorter. Reheating and storage, taste and swaps, the creator credit and the ingredient-by-ingredient numbers are four tiles under the method; each opens its own sheet. Nothing was deleted. "Reheating" still has the Health Canada limits inside it.
+- **Kitchen.** The craving cards are a short list that opens a sheet. Search is one field. Filters scroll sideways.
+- **You, Goal, Progress, Backup, Week plan**: the explanatory paragraphs are behind an "i".
+- Researched wording was moved, not rewritten.
+
+**The look**
+
+- **Why dark looked cheap.** The page was near pure black and the largest thing on every screen was a flat pink block. Pink was also mixed into the text. That is the most saturated colour on the largest area at the highest contrast.
+- **What changed.** The dark page is graphite in four steps, so cards sit on it. Text is a neutral off-white. The lead card is a soft dark card and the photograph carries the colour. Pink is spent on the one button you press, the tab you are on, progress and today. The quick-add button is pink; it turns red only while a workout is recording, which is what red was meant for.
+- **Light mode** keeps what you liked: white page, black ink, pink lead block. It gets the same shapes.
+- **Shape.** Rounded corners on a small scale, hairlines instead of 2px ink rules, a glass top bar, a floating glass dock, sheets with a grab handle, pill chips, a segmented control with a raised pill, round checkmarks.
+- **Settings, Appearance** is where you change it: 8 accents (Pink, Ember, Butter, Lime, Mint, Sky, Lilac, Grey), 4 dark grounds (Graphite, Midnight, Plum, Black for OLED), lead cards (Automatic, Soft, Colour block), corners (Rounded or Square), and "Back to the default look". Square corners with Colour block is close to the 4.0 look if you want it back.
+
+**Checked**
+
+- **Automated:** `npm test`, 671 tests, all passing. 35 are new: the plan library and its sessions through the unchanged journal, the calendar under each plan and under a shifted week, a journal still on the four-session plan, rearranged weeks, edited sessions (including twelve kinds of bad edit that must be ignored), leg-day detection, the popups (every "i" has its text, every text is used) and the four drawn plates.
+- **In a browser, phone width (390 x 844), throwaway data:**
+  - 40 routes in dark and in light: no errors, no sideways scroll, nothing off the right edge, no clipped button, chip or tag, no `undefined` or `NaN`.
+  - Contrast measured on 26 routes in dark and light, about 2,000 pieces of text each: all pass AA (4.5 to 1, or 3 to 1 for large text). The lowest of the ones I read off by hand was a rest-day label in the plan card at 4.56. Text over photographs was not measured; it sits on a dark gradient.
+  - Driven by hand: switch plan, edit the week, reset it, slide it; edit a session (rename, add, swap, reorder, remove, change sets), save, reset; start, enter and tick sets, rest timer, finish as partial, Saved card; lighter session; log a past workout and discard it; rest off and a 2.5 step; a journal on the old four-session plan adopting a plan; recipe tiles, craving sheet, search, lean filter, servings, add to groceries, log as cooked; Today shortcuts; the movement start. No errors.
+  - Typing in the lift search keeps the cursor in the field while the grid filters.
+  - The offline copy installs as `forme-v5.0.0` with 158 files, including the four new modules.
+- **Looked at as pictures:** dark: Today, Train, the logger, the Saved card, plan library, a plan, week editor, session editor, a recipe with a photo, a recipe with a drawing, all four plates at card and thumbnail size, Kitchen, Week plan, Move, Habits, Stickers, Settings, a reheating sheet, an explanation sheet. Light: Today, Train, Kitchen, Search, You. Also Today on Midnight with Mint, Today with square corners and the colour block, cook mode, and Today, Train and quick add at 1280 wide.
+- **Fixed during QA:** a focus ring drew down the whole left edge of the screen after a keyboard press and a route change (it was there before this pass); a partial workout listed and counted the movements you never reached; the plan cards all showed the same three lifts.
+
+**Not checked**
+
+- **A real phone, Safari, a screen reader.** Same as every pass before.
+- **Glass on older phones.** The top bar, dock, toast and rest timer use `backdrop-filter`. Where it is missing they fall back to a slightly see-through solid, which I did not look at.
+- **Animations by eye, mostly.** The window was hidden for most of this work, so the sheet slide, the demo loop and the tap feedback were confirmed running in a few screenshots, not watched.
+- **Your real data.** The update adds a section and changes nothing in the journal, and the tests cover that, but I never opened the address your records live on.
+- **Tablet widths (600 to 900), Butter, Lime, Lilac, Ember, Sky and Grey accents, Plum and Black grounds, black and white photographs** as pictures. They are token changes and measured the same in code.
+- **Going back to 4.0.2 after logging from a new plan.** The old code does not know the new session ids and would report the journal as unreadable. It would not delete anything, and 5.0.0 would read it again. Do not roll back without exporting first.
+
+**Two things I would do next, with your say-so**
+
+- **Real photographs for the four drawn dishes.** That needs me to download licensed images, which I did not do without asking. Or take the photos yourself the next time you cook them.
+- **Real demo video.** The loops are two stills. Short clips would be better but need a source with clear rights.
+
 ## Update rehearsal, old app to new (17 Nov 2026)
 
 The handover from Form & Fuel 3.0 to Forme had never been run. It has now been rehearsed in a real Chromium browser (headless Edge) with service workers: the old app was installed with a workout and a T log entry in it, the served files were swapped for 4.0.1, and the app was opened again.

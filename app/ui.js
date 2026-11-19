@@ -207,6 +207,11 @@ export const switchRow = (act, checked, label, hint = '', data = '') => html`
 export const meter = (ratio, extra = '') => html`<div class="meter ${extra}" aria-hidden="true"><i style="width:${round(clamp(ratio, 0, 1) * 100, 1)}%"></i></div>`;
 export const ticks = (value, max = 5, extra = '') => html`<span class="ticks ${extra}" aria-hidden="true" style="width:${max * 14}px">${Array.from({ length: max }, (_, i) => raw(`<i class="${i < value ? 'on' : ''}"></i>`))}</span>`;
 export const extLink = (href, label) => html`<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+/**
+ * The small "i" that opens an explanation in a sheet instead of printing it on the page. `id` names
+ * an entry in explain.js. Pass `title` and `body` instead for text that is worked out on the spot.
+ */
+export const why = (id, label = '', { title = '', body = '' } = {}) => html`<button class="info ${label ? 'info--row' : ''}" type="button" data-explain="${id}" ${title ? raw(`data-title="${esc(title)}"`) : ''} ${body ? raw(`data-body="${esc(body)}"`) : ''} aria-label="${label || title || 'What this means'}">${icon('info')}${label}</button>`;
 
 export function download(filename, text, type = 'application/json') {
   try {

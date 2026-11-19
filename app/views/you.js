@@ -1,7 +1,7 @@
 // You: goal mode and targets, multi-week progress, settings, backup, and where everything came from.
 
 import * as store from '../store.js';
-import { html, raw, icon, sheet, ask, toast, today, addDays, fmtDay, sec, plural, fmt, round, num, download, extLink, meter } from '../ui.js';
+import { html, raw, icon, sheet, ask, toast, today, addDays, fmtDay, sec, plural, fmt, round, num, download, extLink, meter, why } from '../ui.js';
 import { logBody } from '../actions.js';
 import { MODES, activeTargets, suggestTargets, guessMaintenance, weeklyAverages, weightTrend, readTrend, LB_PER_KG } from '../logic/nutrition.js';
 import { GOAL_CLAIMS, GOAL_NOTE, SOURCES, CLAIMS, FOOD_SAFETY } from '../data/evidence.js';
@@ -11,10 +11,11 @@ import { EXERCISES } from '../data/exercises.js';
 import { liftHistory } from '../logic/lifts.js';
 import { EXERCISES as LIFTS } from '../../assets/training-data.js';
 
-export const VERSION = '4.0.2';
+export const VERSION = '5.0.0';
 let logDay = today();
 
-const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['sky', 'Sky', '#a9d3f2'], ['butter', 'Butter', '#f5dc7d'], ['news', 'Grey', '#d9d7d2']];
+const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['ember', 'Ember', '#ffb692'], ['butter', 'Butter', '#f5dc7d'], ['lime', 'Lime', '#d5ec78'], ['mint', 'Mint', '#a6e3c4'], ['sky', 'Sky', '#a9d3f2'], ['lilac', 'Lilac', '#cdbdf6'], ['news', 'Grey', '#d9d7d2']];
+const GROUNDS = [['graphite', 'Graphite', '#111113', '#242429'], ['midnight', 'Midnight', '#0c1118', '#1d2633'], ['plum', 'Plum', '#141015', '#2a222d'], ['black', 'Black', '#000000', '#1c1c1f']];
 const back = (label = 'You', to = 'you') => html`<a class="linkish linkish--quiet" href="#/${to}">${icon('arrow-left', 'ic--sm')} ${label}</a>`;
 
 function hub() {
@@ -31,11 +32,11 @@ function hub() {
     ['you/credits', 'info', 'Credits and sources', 'Photos, creators, studies'],
   ];
   return html`<div class="wrap cut">
-    <header><p class="eyebrow">You</p><h1 class="display display--l">${profile.name || 'Forme'}</h1>
-      <p class="muted">${profile.weight ? `${fmt(profile.weight, 1)} lb · ` : ''}${MODES[profile.mode].name}. Everything is stored in this browser only.</p></header>
+    <header><p class="eyebrow">You</p><div class="spread"><h1 class="display display--l">${profile.name || 'Forme'}</h1>${why('storage')}</div>
+      <p class="muted">${profile.weight ? `${fmt(profile.weight, 1)} lb · ` : ''}${MODES[profile.mode].name}</p></header>
     <div class="segc" role="group" aria-label="Appearance">${[['dark', 'Dark'], ['light', 'Light'], ['auto', 'Match device']].map(([id, label]) => html`<button type="button" aria-pressed="${(store.get('ui').theme ?? 'dark') === id ? 'true' : 'false'}" data-act="theme" data-v="${id}">${label}</button>`)}</div>
-    <div class="list">${rows.map(([route, glyph, title, note]) => html`<a class="list__i list__i--tap" href="#/${route}"><span class="icon-btn icon-btn--line" aria-hidden="true">${icon(glyph)}</span><span class="list__m"><span class="title">${title}</span><span class="tiny muted" style="display:block">${note}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>
-    <p class="tiny muted">Forme ${VERSION}. Rebuilt from Form & Fuel 3.0; your earlier journals are intact.</p>
+    <div class="list list--card">${rows.map(([route, glyph, title, note]) => html`<a class="list__i list__i--tap" href="#/${route}"><span class="icon-btn icon-btn--line" aria-hidden="true">${icon(glyph)}</span><span class="list__m"><span class="title">${title}</span><span class="tiny muted" style="display:block">${note}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}</div>
+    <p class="tiny muted center">Forme ${VERSION}</p>
   </div>`;
 }
 
@@ -47,21 +48,21 @@ function goalPage() {
   return html`<div class="wrap cut">${back()}
     <header><h1 class="display display--l">Goal</h1><p class="muted" style="margin-top:10px">Pick one of two. You can switch at any time and your logs, saved recipes and history are kept.</p></header>
     <div class="segc" role="group" aria-label="Goal mode">${Object.values(MODES).map(item => html`<button type="button" aria-pressed="${mode === item.id ? 'true' : 'false'}" data-act="mode" data-m="${item.id}">${item.name}</button>`)}</div>
-    <div class="cols">${Object.values(MODES).map(item => html`<section class="frame ${mode === item.id ? 'frame--lift' : ''}" style="${mode === item.id ? 'border-color:var(--accent)' : ''}"><div class="frame__head"><span>${item.name}</span><span>${mode === item.id ? 'Current' : 'Other option'}</span></div><div class="frame__body">
-      <p>${item.plain}</p><p class="small"><strong>Pace.</strong> ${item.pace}</p>
-      <p class="eyebrow">What you watch, over weeks</p><ul class="dots">${item.watch.map(line => html`<li>${line}</li>`)}</ul><p class="small"><strong>When to adjust.</strong> ${item.adjust}</p></div></section>`)}</div>
+    <div class="cols">${Object.values(MODES).map(item => html`<section class="frame ${mode === item.id ? 'is-on' : ''}"><div class="frame__head"><span>${item.name}</span><span>${mode === item.id ? 'Current' : 'Other option'}</span></div><div class="frame__body">
+      <p>${item.plain}</p>
+      <div class="row">${why('text', 'Pace, what to watch, when to adjust', { title: item.name, body: `Pace. ${item.pace}\nWhat you watch, over weeks: ${item.watch.join(' ')}\nWhen to adjust. ${item.adjust}` })}</div></div></section>`)}</div>
 
     <section class="frame" aria-label="Your numbers"><div class="frame__head"><span>Your numbers</span><span>All editable</span></div><div class="frame__body">
       <div class="grid2"><label class="field"><span class="field__l">Current weight (lb)</span><input class="input input--num" id="gWeight" inputmode="decimal" value="${profile.weight ?? ''}" placeholder="180" data-change="weight"></label>
         <label class="field"><span class="field__l">Maintenance guess (kcal)</span><input class="input input--num" id="gMaint" inputmode="numeric" value="${maintenance ?? ''}" placeholder="2900" data-change="maint"></label></div>
       <div><p class="eyebrow">Your day job</p><div class="segc" style="margin-top:6px" role="group" aria-label="Activity at work">${[['desk', 'Mostly seated'], ['feet', 'On my feet'], ['heavy', 'Heavy manual']].map(([id, label]) => html`<button type="button" aria-pressed="${profile.activity === id ? 'true' : 'false'}" data-act="activity" data-a="${id}">${label}</button>`)}</div></div>
-      <p class="tiny muted">Maintenance is a starting guess from your weight and how active your job is${profile.maintenance ? ' (you set this one yourself)' : ''}. It is a rough estimate. Two to four weeks of weigh-ins will correct it.${profile.maintenance ? html` <button class="linkish" style="min-height:0" type="button" data-act="unmaint">Use the guess again</button>` : ''}</p>
+      <div class="row row--wrap">${why('maintenance', profile.maintenance ? 'You set maintenance yourself' : 'How maintenance is guessed')}${profile.maintenance ? html`<button class="btn btn--quiet btn--xs" type="button" data-act="unmaint">Use the guess again</button>` : ''}</div>
     </div></section>
 
     ${Object.values(MODES).map(item => { const t = activeTargets(profile, item.id); const suggested = profile.weight && maintenance ? suggestTargets(profile.weight, maintenance, item.id) : null; const saved = profile.targets[item.id];
     return html`<section class="frame" aria-label="${item.name} targets"><div class="frame__head"><span>${item.name} targets</span><span>${!t ? 'Needs your weight' : t.source === 'carried' ? 'Carried from your old plan' : t.source === 'saved' ? 'Set by you' : 'Suggested'}</span></div><div class="frame__body">
         ${t ? html`<div class="grid2">${[['kcal', 'Calories'], ['protein', 'Protein (g)'], ['fat', 'Fat (g)'], ['carbs', 'Carbs (g)']].map(([key, label]) => html`<label class="field"><span class="field__l">${label}</span><input class="input input--num" inputmode="numeric" value="${t[key]}" data-change="target" data-m="${item.id}" data-k="${key}"></label>`)}</div>
-          ${kg ? html`<p class="tiny muted">That is ${fmt(t.protein / kg, 1)} g protein and ${fmt(t.fat / kg, 1)} g fat per kg of body weight. Reviews put protein for muscle gain at 1.6 to 2.2 g per kg and fat at 0.5 to 1.5 g per kg.</p>` : ''}
+          ${kg ? html`<div class="row">${why('text', `${fmt(t.protein / kg, 1)} g protein and ${fmt(t.fat / kg, 1)} g fat per kg`, { title: 'Per kg of body weight', body: `These targets work out to ${fmt(t.protein / kg, 1)} g protein and ${fmt(t.fat / kg, 1)} g fat per kg of body weight.\nReviews put protein for muscle gain at 1.6 to 2.2 g per kg and fat at 0.5 to 1.5 g per kg.` })}</div>` : ''}
           ${suggested && saved ? html`<p class="small">Forme’s suggestion from your weight: ${fmt(suggested.kcal)} kcal, ${suggested.protein} g protein, ${suggested.fat} g fat, ${suggested.carbs} g carbs. <button class="linkish" style="min-height:0" type="button" data-act="usesuggest" data-m="${item.id}">Use it</button></p>` : ''}
           ${t.source === 'carried' ? html`<p class="small muted">These came from your earlier 16-week plan, which aimed higher than a slow lean gain needs. Compare them with the suggestion before you keep them.</p>` : ''}`
     : html`<p class="muted small">Enter your weight above and Forme suggests a starting point. You can overwrite every number.</p>`}
@@ -99,12 +100,12 @@ function progressPage() {
   const days = Object.keys(entries).sort().reverse().slice(0, 14);
   const targets = activeTargets(profile);
   return html`<div class="wrap cut">${back()}
-    <header><h1 class="display display--l">Progress</h1><p class="muted" style="margin-top:10px">Weekly averages for weight and waist, and your top sets. All of it is optional. Forme does not forecast when you will reach a weight or how you will look.</p></header>
+    <header><div class="spread"><h1 class="display display--l">Progress</h1>${why('text', '', { title: 'What Progress shows', body: 'Weekly averages for weight and waist, and your top sets. All of it is optional.\nForme does not forecast when you will reach a weight or how you will look.\nWeigh after the bathroom, before breakfast. Measure the waist at the navel, relaxed. Calories and protein are only worth logging if you already track them.' })}</div></header>
 
     <section class="frame" aria-label="Log"><div class="frame__head"><span>Log</span><span>${fmtDay(logDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span></div><div class="frame__body">
       <div class="segc" role="group" aria-label="Day"><button type="button" aria-pressed="${logDay === addDays(today(), -1) ? 'true' : 'false'}" data-act="logday" data-d="${addDays(today(), -1)}">Yesterday</button><button type="button" aria-pressed="${logDay === today() ? 'true' : 'false'}" data-act="logday" data-d="${today()}">Today</button></div>
       <div class="grid2">${[['weight', 'Weight (lb)', 'decimal'], ['waist', 'Waist (in)', 'decimal'], ['sleep', 'Sleep (h)', 'decimal'], ['kcal', 'Calories eaten', 'numeric'], ['protein', 'Protein eaten (g)', 'numeric']].map(([key, label, modeAttr]) => html`<label class="field"><span class="field__l">${label}</span><input class="input input--num" inputmode="${modeAttr}" value="${entry[key] ?? ''}" data-change="body" data-k="${key}" id="b-${key}"></label>`)}</div>
-      <p class="tiny muted">Weigh after the bathroom, before breakfast. Measure the waist at the navel, relaxed. Calories and protein are only worth logging if you already track them.</p></div></section>
+      </div></section>
 
     <section class="frame" aria-label="Weight trend"><div class="frame__head"><span>Weight, weekly average</span><span>${trend.enough ? `${trend.perWeek > 0 ? '+' : ''}${fmt(trend.perWeek, 2)} lb a week` : 'Not enough yet'}</span></div><div class="frame__body">
       ${spark(weights.map(w => ({ v: w.avg })))}
@@ -137,12 +138,21 @@ function settingsPage() {
       <div class="switch" aria-disabled="true"><span class="switch__t"><span class="title" style="font-size:.98rem">No seafood</span><span class="tiny muted" style="display:block">Always on. No fish, shellfish, fish sauce, oyster sauce, anchovy or Worcestershire in any recipe, sauce or seasoning. Recipes warn where a store-bought item might hide it.</span></span><span class="tag">Locked on</span></div>
       <div><p class="eyebrow">How hot do you like it</p><div class="segc" style="margin-top:6px">${[[1, 'Mild'], [2, 'Medium'], [3, 'Hot']].map(([value, label]) => html`<button type="button" aria-pressed="${profile.diet.heat === value ? 'true' : 'false'}" data-act="heat" data-v="${value}">${label}</button>`)}</div></div>
     </div></section>
-    <section class="frame"><div class="frame__head"><span>Appearance</span><span>Applies to every screen</span></div><div class="frame__body">
-      <div class="segc" role="group" aria-label="Appearance">${[['dark', 'Dark'], ['light', 'Light'], ['auto', 'Match device']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.theme ?? 'dark') === id ? 'true' : 'false'}" data-act="theme" data-v="${id}">${label}</button>`)}</div>
-      <p class="tiny muted">Cook mode and the pause timer are always dark.${fun.enabled && fun.night ? ' Night Drive is on, which keeps everything dark until you turn it off.' : ''}</p>
-      <p class="field__l" style="margin-top:16px">Paper</p>
-      <div class="stocks" role="group" aria-label="Paper colour">${PAPERS.map(([id, label, swatch]) => html`<button class="stock" type="button" aria-pressed="${(ui.paper ?? 'rosa') === id ? 'true' : 'false'}" data-act="paper" data-v="${id}"><i style="--sw:${swatch}"></i>${label}</button>`)}</div>
-      <p class="tiny muted">The colour of the blocks you act on, in both appearances. Pink is the house colour.</p>
+    <section class="frame"><div class="frame__head"><span>Appearance</span><span>${why('appearance')}</span></div><div class="frame__body">
+      <div class="opt"><div class="segc" role="group" aria-label="Appearance">${[['dark', 'Dark'], ['light', 'Light'], ['auto', 'Match device']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.theme ?? 'dark') === id ? 'true' : 'false'}" data-act="theme" data-v="${id}">${label}</button>`)}</div>
+        ${fun.enabled && fun.night ? html`<p class="tiny muted">Night Drive is on, which keeps everything dark until you turn it off.</p>` : ''}</div>
+      <div class="opt"><p class="opt__l"><span>Accent</span></p>
+        <div class="stocks" role="group" aria-label="Accent colour">${PAPERS.map(([id, label, swatch]) => html`<button class="stock" type="button" aria-pressed="${(ui.paper ?? 'rosa') === id ? 'true' : 'false'}" data-act="paper" data-v="${id}"><i style="--sw:${swatch}"></i>${label}</button>`)}</div></div>
+      <div class="opt"><p class="opt__l"><span>Dark ground</span></p>
+        <div class="stocks" role="group" aria-label="Dark ground">${GROUNDS.map(([id, label, a, b]) => html`<button class="stock stock--ground" type="button" aria-pressed="${(ui.ground ?? 'graphite') === id ? 'true' : 'false'}" data-act="ground" data-v="${id}"><i style="--sw:${a};--sw2:${b}"></i>${label}</button>`)}</div></div>
+      <div class="opt"><p class="opt__l"><span>Lead cards</span></p>
+        <div class="segc" role="group" aria-label="Lead cards">${[['auto', 'Automatic'], ['soft', 'Soft'], ['block', 'Colour block']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.hero ?? 'auto') === id ? 'true' : 'false'}" data-act="hero" data-v="${id}">${label}</button>`)}</div></div>
+      <div class="opt"><p class="opt__l"><span>Corners</span></p>
+        <div class="segc" role="group" aria-label="Corners">${[['soft', 'Rounded'], ['sharp', 'Square']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.shape ?? 'soft') === id ? 'true' : 'false'}" data-act="shape" data-v="${id}">${label}</button>`)}</div></div>
+      <div class="opt"><p class="opt__l"><span>Lift photographs</span>${why('demos')}</p>
+        <div class="segc" role="group" aria-label="Lift photographs">${[['colour', 'Colour'], ['mono', 'Black and white']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.photos ?? 'colour') === id ? 'true' : 'false'}" data-act="photos" data-v="${id}">${label}</button>`)}</div>
+        <div class="segc" role="group" aria-label="Lift demos">${[['loop', 'Demos loop'], ['still', 'Demos stay still']].map(([id, label]) => html`<button type="button" aria-pressed="${(ui.demo ?? 'loop') === id ? 'true' : 'false'}" data-act="demo" data-v="${id}">${label}</button>`)}</div></div>
+      <button class="btn btn--quiet btn--sm btn--block" type="button" data-act="lookreset">${icon('rotate-ccw')} Back to the default look</button>
     </div></section>
     <section class="frame"><div class="frame__head"><span>Motion, sound, touch</span><span>All optional</span></div><div class="frame__body">
       <div><p class="eyebrow">Motion</p><div class="segc" style="margin-top:6px">${[['system', 'Follow device'], ['reduced', 'Reduced'], ['full', 'Full']].map(([id, label]) => html`<button type="button" aria-pressed="${ui.motion === id ? 'true' : 'false'}" data-act="motion" data-v="${id}">${label}</button>`)}</div><p class="tiny muted" style="margin-top:6px">Reduced swaps every animation for a plain state change. Timers and counts still update.</p></div>
@@ -163,12 +173,12 @@ function dataPage() {
   const counts = { workouts: store.training.read().value?.sessions?.length ?? 0, body: Object.keys(store.get('body').entries).length, cooked: Object.values(store.get('kitchen').recipes).reduce((sum, record) => sum + (record.cooked?.length ?? 0), 0), move: store.get('move').sessions.length, habits: store.get('habits').habits.length };
   const problems = store.SECTIONS.map(section => [section, store.sectionProblem(section)]).filter(([, problem]) => problem);
   return html`<div class="wrap cut">${back()}
-    <header><h1 class="display display--l">Backup and data</h1><p class="muted" style="margin-top:10px">Forme has no account, no server and no analytics. Your logs live in this browser on this device. That also means clearing browser data deletes them, so export a backup now and then.</p></header>
+    <header><div class="spread"><h1 class="display display--l">Backup and data</h1>${why('storage')}</div><p class="muted" style="margin-top:10px">Everything stays on this device. Export a backup now and then.</p></header>
     ${!store.isPersistent ? html`<div class="note note--bad"><p>This browser is blocking storage. Nothing you enter will survive closing the tab.</p></div>` : ''}
     ${problems.length ? html`<div class="note note--bad"><p><strong>Some saved data could not be read</strong> and has not been overwritten: ${problems.map(([section]) => section).join(', ')}. Export a backup, then restore an older one or reset those parts below.</p></div>` : ''}
     <section class="frame"><div class="frame__head"><span>On this device</span><span>${store.isPersistent ? 'Saved' : 'Temporary'}</span></div><div class="frame__body"><dl class="kv"><dt>Workouts</dt><dd>${counts.workouts}</dd><dt>Body-log days</dt><dd>${counts.body}</dd><dt>Meals cooked</dt><dd>${counts.cooked}</dd><dt>Movement sessions</dt><dd>${counts.move}</dd><dt>Habits</dt><dd>${counts.habits}</dd></dl>
       <div class="row row--wrap"><button class="btn grow" type="button" data-act="export">${icon('download')} Export everything</button><label class="btn btn--quiet grow" for="importFile">${icon('upload')} Import a backup</label><input class="vh" id="importFile" type="file" accept="application/json,.json" data-change="import"></div>
-      <p class="tiny muted">One file holds everything, including the private log and private check-ins, so keep it somewhere only you can reach. Imports are checked before anything is written and rolled back if a write fails. Backups from Form & Fuel (versions 1 and 2) still import.</p></div></section>
+      <p class="tiny muted">One file holds everything, including the private areas. Keep it somewhere only you can reach.</p></div></section>
     <section class="frame"><div class="frame__head"><span>From the earlier app</span><span>${report ? fmtDay(report.at.slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span></div><div class="frame__body">
       <ul class="dots"><li>Training journal: used as is. Same sessions, drafts and program.</li><li>Progress tracker: ${report?.bodyDays ? `${plural(report.bodyDays, 'day')} copied into the new body log` : 'no daily entries to copy'}. The original is still stored untouched.</li><li>Targets: ${report?.targets ? 'your calorie and protein targets were carried into Lean gain' : 'none carried over'}.</li><li>Whey label: ${report?.whey ? 'carried over' : 'using the assumed label'}.</li><li>Saved recipes and notes: readable in the <a href="#/eat/archive">recipe archive</a>.</li><li>Custom shopping lists: under Groceries, "Your earlier store lists".</li><li>Private log: under <a href="#/private">Private</a>, unchanged.</li></ul>
       ${report?.notes?.length ? html`<div class="note note--warn">${report.notes.map(note => html`<p>${note}</p>`)}</div>` : ''}
@@ -188,7 +198,7 @@ function creditsPage() {
     <div class="list">${creators.map(recipe => html`<div class="list__i"><span class="list__m"><span class="title">${recipe.source.creator}, ${recipe.source.outlet}</span><span class="small" style="display:block">${extLink(recipe.source.url, recipe.source.title)}</span><span class="tiny muted" style="display:block">Adapted as <a href="#/eat/r/${recipe.id}">${recipe.short}</a>. Instructions rewritten; quantities and nutrition recalculated.</span></span></div>`)}</div>
     ${sec('Photographs', plural(Object.keys(PHOTOS).length, 'photo'))}
     <div class="list">${Object.entries(PHOTOS).map(([key, photo]) => html`<div class="list__i"><img src="${photo.file}" alt="" width="56" height="56" loading="lazy" style="width:56px;height:56px;object-fit:cover;border-radius:2px"><span class="list__m"><span class="title">${extLink(photo.source, photo.title)}</span><span class="tiny muted" style="display:block">${photo.creator ?? 'Unnamed photographer'} · ${extLink(photo.licenceUrl, photo.licence)} · via ${photo.via} · ${photo.changes}</span></span></div>`)}</div>
-    <p class="tiny muted">Four dishes have no photo: no properly licensed picture matched them, so they use a designed text card instead of a stand-in.</p>
+    <p class="tiny muted">Four dishes have no photo: no properly licensed picture matched them, so Forme draws the plate from the recipe instead of using a stand-in. The drawings are original to Forme.</p>
     ${sec('Everything else')}
     <div class="list">${OTHER_CREDITS.map(item => html`<div class="list__i"><span class="list__m"><span class="title">${item.url ? extLink(item.url, item.what) : item.what}</span><span class="tiny muted" style="display:block">${item.detail}</span></span></div>`)}</div>
     ${sec('Movement demo videos', plural(EXERCISES.filter(exercise => exercise.video).length, 'link'))}
@@ -227,6 +237,12 @@ export function render(ctx) {
       motion: d => store.update('ui', ui => { ui.motion = d.v; }),
       theme: d => store.update('ui', ui => { ui.theme = d.v; }),
       paper: d => store.update('ui', ui => { ui.paper = d.v; }),
+      ground: d => store.update('ui', ui => { ui.ground = d.v; }),
+      hero: d => store.update('ui', ui => { ui.hero = d.v; }),
+      shape: d => store.update('ui', ui => { ui.shape = d.v; }),
+      photos: d => store.update('ui', ui => { ui.photos = d.v; }),
+      demo: d => store.update('ui', ui => { ui.demo = d.v; }),
+      lookreset: () => { store.update('ui', ui => { for (const key of ['paper', 'ground', 'hero', 'shape', 'photos', 'demo']) delete ui[key]; }); toast('Back to the default look.'); },
       haptics: () => store.update('ui', ui => { ui.haptics = ui.haptics === false; }),
       sound: () => store.update('ui', ui => { ui.sound = !ui.sound; }),
       fun: () => store.update('fun', fun => { fun.enabled = !fun.enabled; if (!fun.enabled) fun.night = false; }),

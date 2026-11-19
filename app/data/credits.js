@@ -29,6 +29,7 @@ export const OTHER_CREDITS = Object.freeze([
   { what: 'Interface icons', detail: '63 Lucide icons (ISC licence): 42 carried over from the earlier app and 21 added from lucide-static 1.73.0. One icon family throughout, bundled in a local sprite.', url: 'https://lucide.dev/license' },
   { what: 'App icon', detail: 'Drawn for Forme: a slab F with the record dot. No outside artwork.', url: null },
   { what: 'Gym movement photographs', detail: '76 unmodified photographs from Free Exercise DB (public domain, Unlicense), carried over from the earlier app and shown only for the exact variation they picture.', url: 'https://github.com/yuhonas/free-exercise-db' },
+  { what: 'Drawn plates', detail: 'The four dishes with no matching licensed photograph are drawn in code from their own recipes. The drawings are original to Forme and are labelled as illustrations.', url: null },
   { what: 'Movement illustrations', detail: 'The jointed figure, its poses and the red and blue target overlays are original to Forme, drawn in code. They are illustrative diagrams, not anatomical plates.', url: null },
   { what: 'Nutrition values', detail: 'USDA FoodData Central, SR Legacy release (April 2018), public domain. Each ingredient links to its record.', url: 'https://fdc.nal.usda.gov/' },
   { what: 'Demonstration videos', detail: 'Linked, never embedded, so nothing loads from a video service until you tap. Each link names the channel. Forme works fully without them.', url: null },

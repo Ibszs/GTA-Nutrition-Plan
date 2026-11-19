@@ -1,6 +1,6 @@
 import { EXERCISES, localToday, isRealDate, getWeek, getPrescription } from './training-data.js';
 
-import { PROGRAM_ID, NEW_SESSIONS, getSessionTemplate, getSessionPrescription, mondayAnchor, shiftDate, validateProgram } from './training-program.js';
+import { PROGRAM_ID, isModernSession, getSessionTemplate, getSessionPrescription, mondayAnchor, shiftDate, validateProgram } from './training-program.js';
 
 export const TRAINING_KEY = 'gtaNutrition.training.v1';
 const blankSet = () => ({ load: '', reps: '', rir: '', completed: false, clean: false });
@@ -20,7 +20,7 @@ export function createDraft(state, sessionId, date = localToday(), lightWeek = f
   const prescription = getSessionPrescription(state, sessionId, date, lightWeek);
   return {
     date, week, sessionId, unit: state.unit, lightWeek,
-    ...(NEW_SESSIONS.some(s => s.id === sessionId) ? { targetRir: prescription.rir } : {}),
+    ...(isModernSession(sessionId) ? { targetRir: prescription.rir } : {}),
     exercises: session.exercises.map(([exerciseId, count, repMin, repMax, initialVariantId]) => {
       const exercise = EXERCISES[exerciseId];
       const prescribedSets = Math.max(1, Math.ceil(count * prescription.setMultiplier));

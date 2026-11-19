@@ -16,6 +16,7 @@ import { photoBlock } from './eat.js';
 import { QUESTS, questFor } from '../data/fun.js';
 import { draftProgress, lastComparable, sessionStats } from '../logic/lifts.js';
 import { getSessionTemplate } from '../../assets/training-program.js';
+import { activePlan, sessionName } from '../logic/plans.js';
 
 let justTapped = null; // the habit whose mark should draw itself on the next paint
 
@@ -46,19 +47,19 @@ const render = {
   now() {
     const info = trainingInfo();
     if (info.error) return html`<a class="frame frame--press" href="#/train"><div class="frame__head"><span>Workout</span><span>Needs attention</span></div><div class="frame__body"><p class="title">The training journal could not be read.</p><p class="small muted">Nothing was overwritten. Open Train for options.</p></div></a>`;
-    const { state, planned, template, draft, draftTemplate } = info;
+    const { state, planned, template, draft, train } = info;
     const last = template ? lastComparable(state.sessions, template.id) : null;
-    const title = draft ? draftTemplate.name : planned?.kind === 'session' ? template.name : 'Rest day';
+    const title = draft ? sessionName(train, draft.sessionId) : planned?.kind === 'session' ? sessionName(train, template.id) : 'Rest day';
     const done = planned?.completed;
     const meta = draft ? `${draftProgress(draft).done} of ${draftProgress(draft).total} sets logged. Started ${relDay(draft.date).toLowerCase()}.`
       : planned?.kind === 'session' ? (done ? 'Logged for today.' : `${template.focus}.${last ? ` Last time: ${fmtDay(last.date, { day: 'numeric', month: 'short' })}, ${plural(sessionStats(last).sets, 'set')}.` : ''}`)
       : 'Nothing is planned in the gym today.';
     const kicker = draft ? html`<span class="tag tag--mark">Recording</span>` : done ? 'Done today' : planned?.kind === 'session' ? 'In the gym today' : 'Today';
     const go = draft ? html`<a class="btn btn--go btn--mark" href="#/train/go"><span>Resume workout</span>${icon('arrow-right')}</a>`
-      : planned?.kind === 'session' && !done ? html`<a class="btn btn--go" href="#/train"><span>Start ${template.name}</span>${icon('arrow-right')}</a>`
+      : planned?.kind === 'session' && !done ? html`<a class="btn btn--go" href="#/train"><span>Start ${title}</span>${icon('arrow-right')}</a>`
       : html`<a class="btn btn--go btn--ghost" href="#/train"><span>Open Train</span>${icon('arrow-right')}</a>`;
     return html`<section class="slab slab--bleed slab--lead" aria-label="Workout">
-      <p class="slab__k"><span>${kicker}</span><span>${planned ? `Day ${planned.cycleDay} of 7` : ''}</span></p>
+      <p class="slab__k"><span>${kicker}</span><span>${state.program ? activePlan(train).name : ''}</span></p>
       <h1 class="display ${title.length <= 6 ? 'display--xl' : ''} head-in">${title}</h1>
       <p class="slab__sub">${meta}</p>
       <figure class="slab__ph"><img src="assets/photos/street-toronto.jpg" alt="" width="1024" height="683" fetchpriority="high"></figure>

@@ -27,7 +27,15 @@ Sixteen photographs, all Creative Commons or public domain. Each was looked at b
 | `street-rain.jpg` | A rainy city street at night with a lit food truck and reflections on the pavement. | Brooklyn Street Scenes - Rainy Night, Food Truck | Steven Pisano | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Flickr](https://www.flickr.com/photos/45776673@N04/15568622684) | Re-encoded | 1024x1024, 222 KB |
 | `gym-rack.jpg` | A close view of a rack of black dumbbells in a gym. | A close-up view of a set of heavy dumbbells | Shixart1985 | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:A_close-up_view_of_a_set_of_heavy_dumbbells.jpg) | Cropped and re-encoded | 1280x1035, 143 KB |
 
-Where each is used: the twelve food photographs sit on their recipes; `street-toronto.jpg` is the Today header, `street-quiet.jpg` the Reset header, `street-rain.jpg` the Habits header and `gym-rack.jpg` the Train header.
+Where each is used: the twelve food photographs sit on their recipes; `street-toronto.jpg` is the Today header, `street-quiet.jpg` the Reset header, `street-rain.jpg` the Habits header and `gym-rack.jpg` the Train header on a rest day, the picture on empty Train screens and in two of the explanation sheets (since 5.0.0).
+
+## Drawn plates (since 5.0.0)
+
+Four recipes have no photograph because no properly licensed picture matched the dish: smash burger bowl, hot honey beef and sweet potato bowl, one-pot cheeseburger pasta, and the chicken and hummus pita box. Each has an illustration instead, drawn in code in `app/plates.js` from the recipe's own ingredients and how it is served. They are original to Forme, there is no outside artwork in them, and no file was downloaded for them. In the app each one is labelled "Illustration" and its recipe page explains why it is a drawing.
+
+## Gym photographs in more places (since 5.0.0)
+
+The 76 Free Exercise DB photographs listed under "Everything else" in the app are now also used as thumbnails and as a two-frame demo (start and finish, crossfaded) on Train. No photograph was added, changed or re-cropped; the rule that a lift only gets a picture when the photographs match that exact variation is unchanged.
 
 Notes on fit, also shown in the app beside the photo:
 

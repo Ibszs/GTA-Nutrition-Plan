@@ -1,7 +1,7 @@
 // Eat: the recipe index, a recipe page that shows every number it claims, and a hands-busy cook mode.
 
 import * as store from '../store.js';
-import { html, raw, icon, sheet, toast, haptic, blip, today, fmtDay, clock, sec, meter, ticks, plural, fmt, round, extLink, motionOK } from '../ui.js';
+import { html, raw, icon, sheet, toast, haptic, blip, today, fmtDay, clock, sec, meter, ticks, plural, fmt, round, extLink, motionOK, why } from '../ui.js';
 import { whey, recipeRecord, updateRecipe, markCooked, addBatch, award, textureScore } from '../actions.js';
 import { RECIPES, RECIPE_BY_ID, COLLECTIONS, FILTERS, CRAVINGS } from '../data/recipes.js';
 import { FOODS, foodSource, OIL_TBSP_G } from '../data/foods.js';
@@ -10,6 +10,7 @@ import { FOOD_SAFETY, SOURCES } from '../data/evidence.js';
 import { recipeTotals, compareVersions, household, metric, scaleLines, oilText, activeTargets, MODES, FAT_AIM, fatProtein, leanBuild, leanDefault, leanest } from '../logic/nutrition.js';
 import { DAYS, SLOTS, effectiveWeek } from '../logic/week.js';
 import { legacy } from '../store.js';
+import { plate, hasPlate } from '../plates.js';
 
 let query = '';
 let filters = new Set();
@@ -33,19 +34,20 @@ const reason = recipe => { const record = recipeRecord(recipe.id); if ((record.c
 export function photoBlock(recipe, { size = 'card', eager = false } = {}) {
   const photo = recipe.photo ? PHOTOS[recipe.photo] : null;
   if (photo) return html`<div class="shot shot--${size} bd-${recipe.backdrop}"><img src="${photo.file}" alt="${photo.alt}" width="${photo.w}" height="${photo.h}" ${eager ? raw('fetchpriority="high"') : ''} decoding="async"></div>`;
-  // No verified photo of this dish, so it gets a designed card in its own colour instead of a stand-in picture.
+  // No verified photo of this dish, so it gets a plate drawn from its own recipe instead of a stand-in picture.
+  if (hasPlate(recipe.id)) return html`<div class="shot shot--${size} plate bd-${recipe.backdrop}" role="img" aria-label="${recipe.name}: an illustration, not a photograph.">${raw(plate(recipe.id))}${size === 'thumb' ? '' : html`<span class="plate__note">Illustration</span>`}</div>`;
   if (size === 'thumb') return html`<div class="shot shot--thumb tcard bd-${recipe.backdrop}" aria-hidden="true"><span class="tcard__m dish">${recipe.short.split(' ').slice(0, 2).map(word => word.charAt(0)).join('')}</span></div>`;
   return html`<div class="shot shot--${size} tcard bd-${recipe.backdrop}" role="img" aria-label="${recipe.name}: ${recipe.kicker} No verified photo of this dish, so this is a text card.">
     <span class="tcard__k">${recipe.cuisine}</span><span class="tcard__t dish">${recipe.kicker}</span></div>`;
 }
 
 function card(recipe, wide = false) {
-  const lean = leanDefault(recipe, whey()); const per = lean.per; const record = recipeRecord(recipe.id); const why = reason(recipe);
+  const lean = leanDefault(recipe, whey()); const per = lean.per; const record = recipeRecord(recipe.id); const because = reason(recipe);
   return html`<a class="rcard ${wide ? 'rcard--wide' : ''}" href="#/eat/r/${recipe.id}" aria-label="${recipe.name}, ${recipe.time.total} minutes, ${round(per.kcal)} calories, ${round(per.protein)} grams protein, ${round(per.fat)} grams fat">
     ${photoBlock(recipe)}
     <span class="rcard__b"><span class="rcard__t dish">${recipe.short}</span>
       <span class="meta"><span>${recipe.time.total} min</span><span>${round(per.kcal / 10) * 10} kcal</span><span>${round(per.protein)} g protein</span></span>
-      <span class="rcard__tags">${fpTag(lean.fp)}${record.saved ? html`<span class="tag tag--amber">Saved</span>` : ''}${why && !record.saved ? html`<span class="tag tag--ghost">${why}</span>` : ''}${recipe.storage.freezes === 'well' ? html`<span class="tag tag--line">Freezes</span>` : ''}${recipe.fallback ? html`<span class="tag tag--line">Fallback</span>` : ''}</span></span></a>`;
+      <span class="rcard__tags">${fpTag(lean.fp)}${record.saved ? html`<span class="tag tag--amber">Saved</span>` : ''}${because && !record.saved ? html`<span class="tag tag--ghost">${because}</span>` : ''}${recipe.storage.freezes === 'well' ? html`<span class="tag tag--line">Freezes</span>` : ''}${recipe.fallback ? html`<span class="tag tag--line">Fallback</span>` : ''}</span></span></a>`;
 }
 
 // ---------- index ----------
@@ -79,15 +81,15 @@ function index() {
       <a class="qtile" href="#/eat/fridge">${icon('search')}<span>What can I make?</span><small>From what you have</small></a>
     </nav>
 
-    <label class="field"><span class="field__l">Search recipes, ingredients, creators</span><input class="input" id="eatq" type="search" value="${query}" placeholder="chicken, 15 minutes, freezer…" data-input="q" autocomplete="off"></label>
-    <div class="chips" role="group" aria-label="Filters">${[{ id: 'lean', label: '1:2 fat or leaner' }, ...FILTERS, { id: 'saved', label: 'Saved' }, { id: 'cooked', label: 'Cooked' }].map(filter => html`<button class="chip" type="button" aria-pressed="${filters.has(filter.id) ? 'true' : 'false'}" data-act="filter" data-f="${filter.id}">${filter.label}</button>`)}</div>
+    <div class="search__bar">${icon('search')}<input class="input" id="eatq" type="search" value="${query}" placeholder="Search recipes, ingredients, creators" aria-label="Search recipes, ingredients, creators" data-input="q" autocomplete="off"></div>
+    <div class="scroller" role="group" aria-label="Filters">${[{ id: 'lean', label: '1:2 fat or leaner' }, ...FILTERS, { id: 'saved', label: 'Saved' }, { id: 'cooked', label: 'Cooked' }].map(filter => html`<button class="chip" type="button" aria-pressed="${filters.has(filter.id) ? 'true' : 'false'}" data-act="filter" data-f="${filter.id}">${filter.label}</button>`)}</div>
 
     ${searching ? html`${sec(`${plural(list.length, 'recipe')}`, html`<button type="button" data-act="clear">Clear</button>`)}
       ${list.length ? html`<div class="rgrid">${list.map(recipe => card(recipe))}</div>` : html`<div class="empty"><p class="empty__t">Nothing matches that</p><p class="muted small">Try an ingredient you have, a time, or clear the filters.</p><button class="btn btn--sm" type="button" data-act="clear">Clear search</button></div>`}`
     : html`${COLLECTIONS.map(collection => { const items = RECIPES.filter(collection.test).sort((a, b) => score(b) - score(a)); return items.length ? html`<section aria-label="${collection.name}">${sec(collection.name, collection.note)}<div class="scroller" style="margin-top:10px">${items.map(recipe => card(recipe, true))}</div></section>` : ''; })}
       <section aria-label="All recipes">${sec('Everything', 'Sorted by what you save, rate and cook')}<div class="rgrid" style="margin-top:10px">${list.map(recipe => card(recipe))}</div></section>
       <section aria-label="Snack swaps">${sec('When a craving hits', 'What to have instead')}
-        <div class="stack" style="margin-top:10px">${CRAVINGS.map(item => html`<a class="frame frame--press" href="#/eat/r/${item.swap}"><div class="frame__head"><span>${item.want}</span><span>Try: ${RECIPE_BY_ID[item.swap].short}</span></div><div class="frame__body"><p>${item.why}</p><p class="tiny muted">${item.usual}</p><p class="tiny muted">Also works: ${item.also}</p></div></a>`)}</div></section>`}
+        <div class="list list--card" style="margin-top:10px">${CRAVINGS.map((item, index) => html`<button class="list__i list__i--tap" type="button" data-act="craving" data-i="${index}">${photoBlock(RECIPE_BY_ID[item.swap], { size: 'thumb' })}<span class="list__m"><span class="eyebrow">${item.want}</span><span class="title" style="display:block">${RECIPE_BY_ID[item.swap].short}</span></span><span class="list__e">${icon('chevron-right')}</span></button>`)}</div></section>`}
     ${legacySaved ? html`<a class="linkish linkish--quiet" href="#/eat/archive">${icon('book-open', 'ic--sm')} Your earlier recipe book (${plural(legacySaved, 'saved item')})</a>` : html`<a class="linkish linkish--quiet" href="#/eat/archive">${icon('book-open', 'ic--sm')} Earlier Form & Fuel recipes (archive)</a>`}
   </div>`;
 }
@@ -101,6 +103,7 @@ function recipePage(recipe) {
   const parts = [...new Set(lines.map(line => line.part || ''))];
   const targets = activeTargets(store.get('profile'));
   const photo = recipe.photo ? PHOTOS[recipe.photo] : null;
+  const pictured = Boolean(photo) || hasPlate(recipe.id);
   const oilBatch = totals.oil.g * (state.servings / recipe.yield.n);
   const usedG = state.oilTsp === null ? null : state.oilTsp * (OIL_TBSP_G / 3);
   const tex = textureScore(recipe.id);
@@ -109,9 +112,9 @@ function recipePage(recipe) {
   const fp = fatProtein(totals.per); const toOk = leanBuild(recipe, FAT_AIM.ok, w); const toIdeal = leanBuild(recipe, FAT_AIM.ideal, w); const closest = toOk ? null : leanest(recipe, w);
   return html`<article class="wrap kitchen rp">
     <a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>
-    <header class="rp__hero ${photo ? '' : 'rp__hero--text'}">${photo ? photoBlock(recipe, { size: 'hero', eager: true }) : ''}
+    <header class="rp__hero ${pictured ? '' : 'rp__hero--text'}">${pictured ? photoBlock(recipe, { size: 'hero', eager: true }) : ''}
       <div class="rp__title"><p class="meta"><span>${recipe.cuisine}</span><span>${recipe.time.total} min</span><span>Makes ${recipe.yield.n} ${recipe.yield.unit}</span></p><h1 class="dish rp__h head-in">${recipe.name}</h1><p>${recipe.kicker}</p></div></header>
-    ${recipe.photoNote ? html`<p class="tiny muted">${photo ? recipe.photoNote : ''}</p>` : !photo ? html`<p class="tiny muted">No properly licensed photo of this exact dish was found, so Forme shows no picture rather than a stand-in.</p>` : ''}
+    ${photo && recipe.photoNote ? html`<div class="row">${why('text', 'About this photo', { title: 'About this photo', body: recipe.photoNote })}</div>` : !photo ? html`<div class="row">${why('plates', 'Why a drawing')}</div>` : ''}
 
     <div class="rp__acts">
       <button class="btn btn--block" type="button" data-act="cook">${icon('cooking-pot')} Cook</button>
@@ -123,12 +126,13 @@ function recipePage(recipe) {
 
     <section class="frame" aria-label="Nutrition per serving"><div class="frame__head"><span>Per ${recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '')}</span><span>${state.version === 'light' ? 'Lighter version' : 'As written'}</span></div><div class="frame__body">
       <div class="statrow"><div class="stat"><div class="stat__v num">${round(totals.per.kcal)}</div><div class="stat__l">kcal</div></div><div class="stat"><div class="stat__v num">${round(totals.per.protein)}<small>g</small></div><div class="stat__l">Protein</div></div><div class="stat"><div class="stat__v num">${round(totals.per.carbs)}<small>g</small></div><div class="stat__l">Carbs</div></div><div class="stat"><div class="stat__v num">${round(totals.per.fat)}<small>g</small></div><div class="stat__l">Fat</div></div></div>
-      <div class="spread"><div><p class="eyebrow">Fat to protein</p><p class="tiny muted">The aim is 1 g of fat to 2 g of protein. 1 to 3 is ideal.</p></div>${fpTag(fp)}</div>
+      <div class="spread"><div class="row"><p class="eyebrow">Fat to protein</p>${why('ratio')}</div>${fpTag(fp)}</div>
       ${fp.grade === 'over' && toOk ? html`<div class="note"><p><strong>Over the aim as set.</strong> This recipe reaches ${toOk.fp.text} cooked this way: ${stepsText(toOk)}.</p><button class="btn btn--sm" type="button" data-act="lean" data-g="${FAT_AIM.ok}">Cook it that way</button></div>`
     : fp.grade === 'over' ? html`<div class="note note--bad"><p><strong>No version of this recipe reaches 1 g of fat to 2 g of protein.</strong> The closest it gets is ${closest.fp.text} (${stepsText(closest)}). Forme has not changed the recipe to force the number.</p>${sameBuild(closest, state) ? '' : html`<button class="btn btn--quiet btn--sm" type="button" data-act="closest">Cook the closest version</button>`}</div>`
     : fp.grade === 'ok' && toIdeal ? html`<p class="small">1 to 3 is within reach (${toIdeal.fp.text}): ${stepsText(toIdeal)}. <button class="linkish" style="min-height:0" type="button" data-act="lean" data-g="${FAT_AIM.ideal}">Cook it that way</button></p>`
-    : fp.grade === 'ok' ? html`<p class="tiny muted">No existing version of this recipe reaches 1 to 3.</p>` : ''}
-      <p class="tiny muted">${round(totals.addedFatPerServing)} g of the fat comes from added oil, butter, cream, mayo or nut butter, the rest from the food itself.${targets ? ` One serving is ${round((totals.per.kcal / targets.kcal) * 100)}% of your ${MODES[store.get('profile').mode].name.toLowerCase()} calories and ${round((totals.per.protein / targets.protein) * 100)}% of your protein.` : ''}</p>
+    : ''}
+      ${targets ? html`<div class="grid2"><div><p class="eyebrow">Of your calories</p>${meter(totals.per.kcal / targets.kcal, 'meter--amber')}<p class="data num" style="margin-top:4px">${round((totals.per.kcal / targets.kcal) * 100)}%</p></div><div><p class="eyebrow">Of your protein</p>${meter(totals.per.protein / targets.protein, 'meter--amber')}<p class="data num" style="margin-top:4px">${round((totals.per.protein / targets.protein) * 100)}%</p></div></div>` : ''}
+      <div class="row">${why('text', `${round(totals.addedFatPerServing)} g of the fat is added`, { title: 'Where the fat comes from', body: `${round(totals.addedFatPerServing)} g of the fat in one serving comes from added oil, butter, cream, mayo or nut butter. The rest is in the food itself.${fp.grade === 'ok' && !toIdeal ? '\nNo existing version of this recipe reaches 1 to 3.' : ''}` })}</div>
     </div></section>
 
     ${compare ? html`<section class="frame" aria-label="Standard and lighter versions"><div class="frame__head"><span>Two ways to cook it</span><span>Saves ${round(compare.saved.kcal)} kcal a serving</span></div><div class="frame__body">
@@ -157,7 +161,7 @@ function recipePage(recipe) {
 
     <section aria-label="Ingredients">${sec('Ingredients', html`<button type="button" data-act="togroceries">Add to groceries</button>`)}
       ${parts.map(part => html`${part ? html`<p class="eyebrow" style="margin-top:14px">${part}</p>` : ''}<ul class="ing">${lines.filter(line => (line.part || '') === part).map(line => html`<li class="${line.swapped ? 'ing--swap' : ''}"><span class="ing__q num">${metric(line.g, line.f)}</span><span class="ing__n">${foodName(line.f)}${line.n ? html`<small>, ${line.n}</small>` : ''}</span><span class="ing__h">${household(line.q, line.u)}</span></li>`)}</ul>`)}
-      <p class="tiny muted" style="margin-top:8px">Weights are raw or dry unless a line says cooked. ${store.get('profile').diet.halal ? 'Meat is listed as halal; change that in Settings.' : ''} No seafood, including in sauces.${recipe.seafood ? ` ${recipe.seafood}` : ''}</p>
+      <div class="row" style="margin-top:10px">${why('text', 'About these weights', { title: 'About the ingredient list', body: `Weights are raw or dry unless a line says cooked.\n${store.get('profile').diet.halal ? 'Meat is listed as halal. You can change that in Settings.\n' : ''}No seafood, including in sauces.${recipe.seafood ? ` ${recipe.seafood}` : ''}` })}</div>
     </section>
 
     <section aria-label="Method">${sec('Method', `${recipe.time.active} min hands-on · ${recipe.time.total} total`)}
@@ -168,35 +172,49 @@ function recipePage(recipe) {
       ${recipe.variations ? recipe.variations.map(variation => html`<div class="note" id="v-${variation.id}"><p><strong>${variation.name}.</strong> ${variation.text}</p></div>`) : ''}
     </section>
 
-    <section class="frame" aria-label="Taste profile"><div class="frame__head"><span>Taste</span><span>Out of five</span></div><div class="frame__body tastes">${[['Heat', 'heat'], ['Tang', 'tang'], ['Richness', 'rich'], ['Crunch', 'crunch'], ['Sweetness', 'sweet']].map(([label, key]) => html`<div class="spread"><span>${label}</span><span class="row">${ticks(recipe.taste[key], 5, 'ticks--mark')}<span class="vh">${recipe.taste[key]} of 5</span></span></div>`)}</div></section>
+    ${tex !== null && tex <= 2 ? html`<div class="note note--warn"><p><strong>Cook this one fresh.</strong> You rated its leftovers ${fmt(tex, 1)} out of 5. Halve the batch, or freeze what you will not eat the same day.</p></div>` : ''}
+    <section aria-label="More about this dish">${sec('More about this dish')}
+      <nav class="qrow" style="margin-top:10px" aria-label="More about this dish">
+        <button class="qtile" type="button" data-act="about" data-k="keep">${icon('fridge')}<span>Reheating</span><small>${recipe.storage.verdict} · ${recipe.storage.freezes === 'well' ? 'freezes well' : recipe.storage.freezes === 'ok' ? 'freezes okay' : 'does not freeze well'}</small></button>
+        <button class="qtile" type="button" data-act="about" data-k="taste">${icon('flame')}<span>Taste and swaps</span><small>Heat ${recipe.taste.heat} of 5 · ${plural(recipe.subs.length, 'swap')}</small></button>
+        <button class="qtile" type="button" data-act="about" data-k="credit">${icon('bookmark')}<span>${src.type === 'creator' ? 'Creator' : 'House recipe'}</span><small>${src.type === 'creator' ? src.creator : 'Written for Forme'}</small></button>
+        <button class="qtile" type="button" data-act="about" data-k="numbers">${icon('scale')}<span>The numbers</span><small>${round(totals.batch.kcal)} kcal in the batch, by ingredient</small></button>
+      </nav>
+    </section>
+    <button class="btn btn--quiet btn--block" type="button" data-act="cooked">${icon('check')} I cooked this</button>
+  </article>`;
+}
 
-    <details class="fold"><summary>Swaps and flavour notes</summary><div class="fold__b"><ul class="dots">${recipe.subs.map(item => html`<li>${item}</li>`)}</ul><p class="eyebrow">Flavour without more fat</p><ul class="dots">${recipe.tips.map(item => html`<li>${item}</li>`)}</ul></div></details>
-
-    <section class="frame" aria-label="Leftovers"><div class="frame__head"><span>Worth reheating?</span><span>${recipe.storage.freezes === 'well' ? 'Freezes well' : recipe.storage.freezes === 'ok' ? 'Freezes okay' : 'Does not freeze well'}</span></div><div class="frame__body">
-      <p class="title">${recipe.storage.verdict}. <span style="font-weight:420">${recipe.storage.line}</span></p>
-      ${tex !== null && tex <= 2 ? html`<div class="note note--warn"><p><strong>Cook this one fresh.</strong> You rated its leftovers ${fmt(tex, 1)} out of 5. Halve the batch, or freeze what you will not eat the same day.</p></div>` : ''}
-      ${recipe.storage.parts.map(part => html`<div class="part"><p class="tag">${part.name}</p><dl class="kv"><dt>Fridge</dt><dd>${part.fridge}</dd><dt>Freezer</dt><dd>${part.freezer}</dd><dt>Reheat</dt><dd>${part.reheat}</dd><dt>Texture</dt><dd>${part.texture}</dd></dl></div>`)}
+/** The long parts of a recipe page, each in its own sheet: reheating, taste and swaps, the credit, the numbers. */
+function aboutSheet(recipe, key) {
+  const state = viewState(recipe.id); const w = whey(); const src = recipe.source;
+  const totals = recipeTotals(recipe, { version: state.version, levers: state.levers }, w);
+  const photo = recipe.photo ? PHOTOS[recipe.photo] : null;
+  const unit = recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '');
+  if (key === 'keep') return sheet({ title: 'Worth reheating?', eyebrow: recipe.short, body: html`
+      <p class="lead"><strong>${recipe.storage.verdict}.</strong> ${recipe.storage.line}</p>
+      ${recipe.storage.parts.map(part => html`<div class="frame"><div class="frame__head"><span>${part.name}</span><span></span></div><div class="frame__body"><dl class="kv kv--stack"><dt>Fridge</dt><dd>${part.fridge}</dd><dt>Freezer</dt><dd>${part.freezer}</dd><dt>Reheat</dt><dd>${part.reheat}</dd><dt>Texture</dt><dd>${part.texture}</dd></dl></div></div>`)}
       <p class="small">${recipe.storage.fresh}</p>
       ${recipe.storage.better ? html`<p class="small">Want something from this family that reheats better? <a href="#/eat/r/${recipe.storage.better}">${RECIPE_BY_ID[recipe.storage.better].name}</a>.</p>` : ''}
-      <details class="fold"><summary>Safety limits (Health Canada)</summary><div class="fold__b"><p class="small">${FOOD_SAFETY.split}</p><dl class="kv kv--stack">${FOOD_SAFETY.rules.map(rule => html`<dt>${rule.k}</dt><dd>${rule.v} ${extLink(SOURCES[rule.src].url, `Source, ${SOURCES[rule.src].date.toLowerCase()}`)}</dd>`)}</dl></div></details>
-      <button class="btn btn--quiet btn--block btn--sm" type="button" data-act="cooked">${icon('check')} I cooked this</button>
-    </div></section>
-
-    <section class="frame" aria-label="Where this recipe came from"><div class="frame__head"><span>${src.type === 'creator' ? 'Creator credit' : 'House recipe'}</span><span>${src.type === 'creator' ? 'Adapted' : 'Forme'}</span></div><div class="frame__body">
-      ${src.type === 'creator' ? html`<p class="title">${src.creator}, ${src.outlet}</p><p class="small muted">${src.where}. ${src.rating}.</p>
-        <p>${extLink(src.url, `“${src.title}”`)}</p>
+      <details class="fold"><summary>Safety limits (Health Canada)</summary><div class="fold__b"><p class="small">${FOOD_SAFETY.split}</p><dl class="kv kv--stack">${FOOD_SAFETY.rules.map(rule => html`<dt>${rule.k}</dt><dd>${rule.v} ${extLink(SOURCES[rule.src].url, `Source, ${SOURCES[rule.src].date.toLowerCase()}`)}</dd>`)}</dl></div></details>` });
+  if (key === 'taste') return sheet({ title: 'Taste and swaps', eyebrow: recipe.short, body: html`
+      <div class="frame"><div class="frame__head"><span>Taste</span><span>Out of five</span></div><div class="frame__body tastes">${[['Heat', 'heat'], ['Tang', 'tang'], ['Richness', 'rich'], ['Crunch', 'crunch'], ['Sweetness', 'sweet']].map(([label, taste]) => html`<div class="spread"><span>${label}</span><span class="row">${ticks(recipe.taste[taste], 5, 'ticks--mark')}<span class="vh">${recipe.taste[taste]} of 5</span></span></div>`)}</div></div>
+      <div><p class="eyebrow" style="margin-bottom:8px">Swaps</p><ul class="dots">${recipe.subs.map(item => html`<li>${item}</li>`)}</ul></div>
+      <div><p class="eyebrow" style="margin-bottom:8px">Flavour without more fat</p><ul class="dots">${recipe.tips.map(item => html`<li>${item}</li>`)}</ul></div>` });
+  if (key === 'credit') return sheet({ title: src.type === 'creator' ? src.creator : 'House recipe', eyebrow: src.type === 'creator' ? `${src.outlet} · adapted` : 'Forme', body: html`
+      ${src.type === 'creator' ? html`<p class="small muted">${src.where}. ${src.rating}.</p>
+        <p class="lead">${extLink(src.url, `“${src.title}”`)}</p>
         ${src.second ? html`<p class="small">Also drawn on: ${src.second.creator}, ${extLink(src.second.url, `“${src.second.title}”`)}.</p>` : ''}
-        <p class="small"><strong>What Forme changed.</strong> ${src.adapted}</p>
-        <p class="small"><strong>Checking the numbers.</strong> ${src.check}</p>
-        ${src.claimed ? html`<p class="tiny muted">Creator’s card: ${[src.claimed.kcal ? `${src.claimed.kcal} kcal` : '', src.claimed.protein ? `${src.claimed.protein} g protein` : '', src.claimed.carbs ? `${src.claimed.carbs} g carbs` : '', src.claimed.fat ? `${src.claimed.fat} g fat` : ''].filter(Boolean).join(', ')} per ${src.claimed.per}. Forme: ${round(recipeTotals(recipe, {}, w).per.kcal)} kcal, ${round(recipeTotals(recipe, {}, w).per.protein)} g protein per ${recipe.yield.unit.replace(/s$/, '').replace(/ \(.*/, '')}.</p>` : ''}
+        <div class="explain"><h3>What Forme changed</h3><p>${src.adapted}</p><h3>Checking the numbers</h3><p>${src.check}</p></div>
+        ${src.claimed ? html`<div class="note"><p>Creator’s card: ${[src.claimed.kcal ? `${src.claimed.kcal} kcal` : '', src.claimed.protein ? `${src.claimed.protein} g protein` : '', src.claimed.carbs ? `${src.claimed.carbs} g carbs` : '', src.claimed.fat ? `${src.claimed.fat} g fat` : ''].filter(Boolean).join(', ')} per ${src.claimed.per}.</p><p>Forme: ${round(recipeTotals(recipe, {}, w).per.kcal)} kcal, ${round(recipeTotals(recipe, {}, w).per.protein)} g protein per ${unit}.</p></div>` : ''}
         <p class="tiny muted">Instructions here are written from scratch. The idea and the credit belong to the creator.</p>`
-    : html`<p>${src.note}</p>`}
-      ${photo ? html`<p class="tiny muted">Photo: “${photo.title}” by ${photo.creator ?? 'an unnamed photographer'}, ${extLink(photo.licenceUrl, photo.licence)}, via ${extLink(photo.source, photo.via)}. ${photo.changes}.</p>` : ''}
-      <details class="fold"><summary>Where every number comes from</summary><div class="fold__b"><p class="small muted">Per 100 g values from USDA FoodData Central (SR Legacy). These are estimates. If your package label differs, use the label.</p>
-        <table class="cmp cmp--left"><thead><tr><th scope="col">Ingredient</th><th scope="col">Amount</th><th scope="col">kcal</th><th scope="col">P</th></tr></thead><tbody>${totals.lines.map(line => { const source = foodSource(FOODS[line.f]); return html`<tr><th scope="row">${source.url ? extLink(source.url, FOODS[line.f].name) : FOODS[line.f].name}</th><td>${metric(line.g, line.f)}</td><td>${round(line.nut.kcal)}</td><td>${round(line.nut.protein, 1)}</td></tr>`; })}
-          <tr class="cmp__sum"><th scope="row">Batch of ${recipe.yield.n}</th><td></td><td>${round(totals.batch.kcal)}</td><td>${round(totals.batch.protein)}</td></tr></tbody></table></div></details>
-    </div></section>
-  </article>`;
+    : html`<p class="lead">${src.note}</p>`}
+      ${photo ? html`<p class="tiny muted">Photo: “${photo.title}” by ${photo.creator ?? 'an unnamed photographer'}, ${extLink(photo.licenceUrl, photo.licence)}, via ${extLink(photo.source, photo.via)}. ${photo.changes}.</p>` : html`<p class="tiny muted">The picture is a drawing made for Forme from this recipe. No properly licensed photograph matched the dish.</p>`}` });
+  return sheet({ title: 'The numbers', eyebrow: `${recipe.short} · ${state.version === 'light' ? 'lighter version' : 'as written'}`, body: html`
+      <p class="small muted">Per 100 g values from USDA FoodData Central (SR Legacy). These are estimates. If your package label differs, use the label.</p>
+      <table class="cmp cmp--left"><thead><tr><th scope="col">Ingredient</th><th scope="col">Amount</th><th scope="col">kcal</th><th scope="col">P</th></tr></thead><tbody>${totals.lines.map(line => { const source = foodSource(FOODS[line.f]); return html`<tr><th scope="row">${source.url ? extLink(source.url, FOODS[line.f].name) : FOODS[line.f].name}</th><td>${metric(line.g, line.f)}</td><td>${round(line.nut.kcal)}</td><td>${round(line.nut.protein, 1)}</td></tr>`; })}
+        <tr class="cmp__sum"><th scope="row">Batch of ${recipe.yield.n}</th><td></td><td>${round(totals.batch.kcal)}</td><td>${round(totals.batch.protein)}</td></tr></tbody></table>
+      <div class="row">${why('macros', 'How Forme checks them')}</div>` });
 }
 
 // ---------- cook mode ----------
@@ -332,6 +350,10 @@ export function render(ctx) {
       oil: d => { const state = viewState(recipe.id); const totals = recipeTotals(recipe, { version: state.version, levers: state.levers }, whey()); const base = (totals.oil.g * (state.servings / recipe.yield.n)) / (OIL_TBSP_G / 3); state.oilTsp = Math.max(0, round((state.oilTsp ?? Math.round(base)) + Number(d.d), 0)); ctx.refresh(); },
       togroceries: () => { const state = viewState(recipe.id); store.update('kitchen', kitchen => { kitchen.adds = [...(kitchen.adds ?? []).filter(item => item.r !== recipe.id), { r: recipe.id, servings: state.servings, ver: state.version }]; }); flyToList(document.getElementById('view')); haptic('set'); toast(`Ingredients for ${fmt(state.servings)} ${recipe.yield.unit} are on the grocery list.`, { action: 'Open list', onAction: () => { location.hash = '#/eat/list'; } }); },
       addweek: () => weekSheet(recipe),
+      about: d => aboutSheet(recipe, d.k),
+      craving: d => { const item = CRAVINGS[Number(d.i)]; if (!item) return; const swap = RECIPE_BY_ID[item.swap];
+        sheet({ title: item.want, eyebrow: 'When a craving hits', body: html`<a class="dinner dinner--sheet" href="#/eat/r/${swap.id}">${photoBlock(swap, { size: 'thumb' })}<span class="grow"><span class="eyebrow">Try instead · ${swap.time.total} min</span><span class="dinner__t">${swap.short}</span></span>${icon('chevron-right')}</a>
+          <p class="lead">${item.why}</p><div class="explain"><h3>The usual</h3><p>${item.usual}</p><h3>Also works</h3><p>${item.also}</p></div>`, footer: html`<a class="btn" href="#/eat/r/${swap.id}">Open ${swap.short}</a>` }); },
       rmore: () => moreSheet(recipe),
       cooked: () => cookedSheet(recipe),
       cook: () => { cook = { id: recipe.id, step: 0, timerEnd: null, timerTotal: 0 }; location.hash = `#/eat/cook/${recipe.id}`; },

@@ -17,7 +17,7 @@ import { validatePersonalState } from '../assets/personal-state.js';
 import { TRAINING_KEY, createTrainingState, validateTrainingState } from '../assets/training-state.js';
 
 export const LEGACY = Object.freeze({ ...DATA_KEYS });
-export const SECTIONS = Object.freeze(['profile', 'body', 'kitchen', 'move', 'habits', 'priv', 'reset', 'fun', 'ui']);
+export const SECTIONS = Object.freeze(['profile', 'body', 'kitchen', 'move', 'habits', 'priv', 'reset', 'fun', 'ui', 'train']);
 const keyOf = section => `forme.${section}.v1`;
 
 const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -41,6 +41,9 @@ export const DEFAULTS = Object.freeze({
   reset: () => ({ version: 1, actions: null, oneThing: null, evenings: {} }),
   fun: () => ({ version: 1, enabled: true, night: false, stickers: {}, quests: {}, replays: [], hidden: {} }),
   ui: () => ({ version: 1, modules: null, theme: 'dark', motion: 'system', sound: false, haptics: true, migrated: null, intro: false, lastRoute: '' }),
+  // Which plan is in use, any week you rearranged, any session you edited, and logger preferences.
+  // The training journal itself stays under its original key.
+  train: () => ({ version: 1, plan: 'hybrid-5', weeks: {}, edits: {}, rest: 'auto', step: 'auto' }),
 });
 
 const { storage, persistent } = createStorage();

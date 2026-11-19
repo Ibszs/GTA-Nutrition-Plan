@@ -3,13 +3,12 @@
 
 import * as store from './store.js';
 import { today, addDays, dayDiff, uid, toast } from './ui.js';
-import { getProgramDay, getSessionTemplate } from '../assets/training-program.js';
+import { getSessionTemplate } from '../assets/training-program.js';
 import { STICKER_BY_ID } from './data/fun.js';
 import { RECIPE_BY_ID } from './data/recipes.js';
 import { todayList } from './logic/habits.js';
 import { todaySession } from './logic/movement.js';
-
-const LEG_SESSIONS = new Set(['hybrid5-lower-v1', 'hybrid5-legs-v1', 'lower-a', 'lower-b']);
+import { planDay, isLegSession } from './logic/plans.js';
 
 export const whey = () => store.get('profile').whey;
 export const go = route => { location.hash = `#/${route}`; };
@@ -53,14 +52,16 @@ export function trainingInfo(day = today()) {
   const read = store.training.read();
   const state = read.value;
   if (read.error) return { error: read.error, state, saved: true, planned: null, template: null, draft: null };
+  const train = store.get('train');
   let planned = null;
-  try { planned = getProgramDay(state, day); } catch { planned = null; }
+  try { planned = planDay(state, train, day); } catch { planned = null; }
   const template = planned?.sessionId ? getSessionTemplate(planned.sessionId) : null;
   const isSession = planned?.kind === 'session';
+  const legs = isSession && isLegSession(train, planned.sessionId);
   return {
-    error: null, state, saved: read.saved, planned, template, draft: state.draft,
+    error: null, state, saved: read.saved, planned, template, draft: state.draft, train,
     draftTemplate: state.draft ? getSessionTemplate(state.draft.sessionId) : null,
-    legDay: isSession && LEG_SESSIONS.has(planned.sessionId), upperDay: isSession && !LEG_SESSIONS.has(planned.sessionId),
+    legDay: legs, upperDay: isSession && !legs,
   };
 }
 

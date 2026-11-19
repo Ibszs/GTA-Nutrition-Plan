@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forme-v4.0.2';
+const CACHE_NAME = 'forme-v5.0.0';
 const PRECACHE = [
   './',
   './index.html',
@@ -14,14 +14,18 @@ const PRECACHE = [
   './app/data/foods.js',
   './app/data/fun.js',
   './app/data/recipes.js',
+  './app/demo.js',
+  './app/explain.js',
   './app/figure.js',
   './app/logic/command.js',
   './app/logic/habits.js',
   './app/logic/lifts.js',
   './app/logic/movement.js',
   './app/logic/nutrition.js',
+  './app/logic/plans.js',
   './app/logic/week.js',
   './app/main.js',
+  './app/plates.js',
   './app/quick.js',
   './app/reminders.js',
   './app/store.js',

@@ -2,7 +2,7 @@
 // Use It First shelf, and "what can I make with what is in the fridge?".
 
 import * as store from '../store.js';
-import { html, raw, icon, sheet, ask, toast, haptic, today, addDays, fmtDay, sec, meter, plural, fmt, round, uid, extLink, dow, motionOK } from '../ui.js';
+import { html, raw, icon, sheet, ask, toast, haptic, today, addDays, fmtDay, sec, meter, plural, fmt, round, uid, extLink, dow, motionOK, why } from '../ui.js';
 import { whey, award, addBatch, batchClock, useBy, textureScore, touch } from '../actions.js';
 import { RECIPES, RECIPE_BY_ID, PREP_FLOWS } from '../data/recipes.js';
 import { FOODS, AISLES } from '../data/foods.js';
@@ -37,16 +37,15 @@ function weekPage() {
   const stuck = [...new Set(day.slots.filter(slot => slot.entry && !leanDefault(RECIPE_BY_ID[slot.entry.r], w).reaches).map(slot => RECIPE_BY_ID[slot.entry.r].short))];
   return html`<div class="wrap kitchen">
     <a class="linkish linkish--quiet" href="#/eat">${icon('arrow-left', 'ic--sm')} Kitchen</a>${tabs('week')}
-    <header><h1 class="display display--l">Week plan</h1><p class="muted" style="margin-top:10px">A sample week for each goal, built on mostly the same groceries. Swap a meal or change a portion and the totals and the grocery list follow.</p></header>
+    <header><div class="spread"><h1 class="display display--l">Week plan</h1>${why('text', '', { title: `${MODES[mode].name} week`, body: `A sample week for each goal, built on mostly the same groceries. Swap a meal or change a portion and the totals and the grocery list follow.\n${MODES[mode].plain}\n${MODE_RULES[mode].note}` })}</div></header>
     <div class="segc" role="group" aria-label="Goal mode">${Object.values(MODES).map(item => html`<button type="button" aria-pressed="${mode === item.id ? 'true' : 'false'}" data-act="mode" data-m="${item.id}">${item.name}</button>`)}</div>
-    <p class="small">${MODES[mode].plain} <span class="muted">${MODE_RULES[mode].note}</span></p>
 
     <section class="frame" aria-label="Week totals"><div class="frame__head"><span>Daily average</span><span>${targets ? `Target ${fmt(targets.kcal)} kcal · ${targets.protein} g protein` : 'No target set'}</span></div><div class="frame__body">
       <div class="statrow"><div class="stat"><div class="stat__v num">${fmt(round(summary.average.kcal / 10) * 10)}</div><div class="stat__l">kcal</div></div><div class="stat"><div class="stat__v num">${round(summary.average.protein)}<small>g</small></div><div class="stat__l">Protein</div></div><div class="stat"><div class="stat__v num">${round(summary.average.carbs)}<small>g</small></div><div class="stat__l">Carbs</div></div><div class="stat"><div class="stat__v num">${round(summary.average.fat)}<small>g</small></div><div class="stat__l">Fat</div></div></div>
       ${targets ? html`<div class="stack--s"><div class="spread tiny"><span>Calories vs target</span><span class="num">${round((summary.average.kcal / targets.kcal) * 100)}%</span></div>${meter(summary.average.kcal / targets.kcal, 'meter--amber')}<div class="spread tiny"><span>Protein vs target</span><span class="num">${round((summary.average.protein / targets.protein) * 100)}%</span></div>${meter(summary.average.protein / targets.protein)}</div>`
     : html`<div class="note"><p>Enter your weight to get targets for this mode. <a href="#/you/goal">Set goal and targets</a></p></div>`}
-      <div class="spread"><div><p class="eyebrow">Fat to protein, daily average</p><p class="tiny muted">The aim is 1 g of fat to 2 g of protein. 1 to 3 is ideal. Cooked as written, this week is ${fatProtein(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).average).text}.</p></div><span class="tag ${weekFp.grade === 'over' ? 'tag--mark' : weekFp.grade === 'ideal' ? 'tag--amber' : 'tag--line'}">${weekFp.text}</span></div>
-      <p class="small">${icon('oil', 'ic--sm')} <strong>Cooking oil this week: ${fmt(summary.oilG / 13.6, 1)} tbsp</strong>, about ${fmt(round(summary.oilG * 8.84 / 10) * 10)} kcal, or ${oilText(summary.oilG / 7)} a day. The same week cooked as written uses ${fmt(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).oilG / 13.6, 1)} tbsp.</p>
+      <div class="spread"><div class="row"><p class="eyebrow">Fat to protein, daily average</p>${why('text', '', { title: 'Fat to protein this week', body: `The aim is 1 g of fat to 2 g of protein. 1 to 3 is ideal.\nCooked as written, this week is ${fatProtein(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).average).text}. Forme plans each recipe the leanest way it needs to reach the aim, using only the versions already written into the recipe.` })}</div><span class="tag ${weekFp.grade === 'over' ? 'tag--mark' : weekFp.grade === 'ideal' ? 'tag--amber' : 'tag--line'}">${weekFp.text}</span></div>
+      <div class="spread"><div class="row"><p class="eyebrow">${icon('oil', 'ic--sm')} Cooking oil this week</p>${why('text', '', { title: 'Cooking oil this week', body: `${fmt(summary.oilG / 13.6, 1)} tbsp this week, about ${fmt(round(summary.oilG * 8.84 / 10) * 10)} kcal, or ${oilText(summary.oilG / 7)} a day.\nThe same week cooked as written uses ${fmt(weekSummary(effectiveWeek(mode, {}, {}, AS_WRITTEN), w).oilG / 13.6, 1)} tbsp.` })}</div><span class="data num">${fmt(summary.oilG / 13.6, 1)} tbsp</span></div>
       ${targets?.source === 'carried' ? html`<p class="tiny muted">Your target was carried over from your earlier plan. <a href="#/you/goal">Review it for this goal</a>.</p>` : ''}
     </div></section>
 

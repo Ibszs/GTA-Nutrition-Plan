@@ -9,7 +9,7 @@ import { RECIPE_BY_ID } from '../data/recipes.js';
 import { PHOTOS } from '../data/credits.js';
 import { EX } from '../data/exercises.js';
 import { findRecords, sessionStats } from '../logic/lifts.js';
-import { getSessionTemplate } from '../../assets/training-program.js';
+import { sessionName } from '../logic/plans.js';
 import { effectiveWeek } from '../logic/week.js';
 import { MODES } from '../logic/nutrition.js';
 
@@ -114,7 +114,7 @@ function daySheet(day) {
   const act = dayActivity(day);
   sheet({ title: fmtDay(day, { weekday: 'long', day: 'numeric', month: 'long' }), eyebrow: 'Day',
     body: html`${act.kinds || act.body ? html`<div class="list">
-      ${act.train.map(session => html`<a class="list__i list__i--tap" href="#/train/s/${session.id}" data-act="__close"><span class="list__m"><span class="title">${getSessionTemplate(session.sessionId).name}</span><span class="tiny muted" style="display:block">${plural(sessionStats(session).sets, 'set')}${session.partial ? ' · partial' : ''}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}
+      ${act.train.map(session => html`<a class="list__i list__i--tap" href="#/train/s/${session.id}" data-act="__close"><span class="list__m"><span class="title">${sessionName(store.get('train'), session.sessionId)}</span><span class="tiny muted" style="display:block">${plural(sessionStats(session).sets, 'set')}${session.partial ? ' · partial' : ''}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}
       ${act.cooked.map(id => html`<a class="list__i list__i--tap" href="#/eat/r/${id}" data-act="__close"><span class="list__m"><span class="title">Cooked: ${RECIPE_BY_ID[id].short}</span></span><span class="list__e">${icon('chevron-right')}</span></a>`)}
       ${act.move.map(session => html`<div class="list__i"><span class="list__m"><span class="title">Movement${session.short ? ', 2-minute version' : ''}</span><span class="tiny muted" style="display:block">${(session.drills ?? []).map(id => EX[id]?.name).filter(Boolean).join(', ')}</span></span></div>`)}
       ${act.habits.due ? html`<div class="list__i"><span class="list__m"><span class="title">Habits</span><span class="tiny muted" style="display:block">${act.habits.done} of ${act.habits.due} due</span></span></div>` : ''}
@@ -132,7 +132,7 @@ function replayPage(start) {
     <div class="replay ${motionOK() ? 'replay--play' : 'replay--still'}" id="replay" aria-label="Replay of the week of ${fmtDay(start)}">
       <div class="replay__bar"><span>Replay</span><span class="clock" id="replayTc">00:00:00</span><span>Week ${weekNumber(start)}</span></div>
       <div class="replay__reel">${stats.days.map((day, index) => html`<div class="replay__f" style="--i:${index}"><span class="replay__d">${DOW[index]}</span><span class="replay__n">${Number(day.day.slice(8))}</span>
-        <span class="replay__w">${day.train.length ? getSessionTemplate(day.train[0].sessionId).name : day.cooked.length ? RECIPE_BY_ID[day.cooked[0]].short : day.move.length ? 'Movement' : day.habits.done ? 'Habits' : day.day > today() ? 'Not yet' : 'Nothing'}</span>
+        <span class="replay__w">${day.train.length ? sessionName(store.get('train'), day.train[0].sessionId) : day.cooked.length ? RECIPE_BY_ID[day.cooked[0]].short : day.move.length ? 'Movement' : day.habits.done ? 'Habits' : day.day > today() ? 'Not yet' : 'Nothing'}</span>
         <span class="fr__s">${day.train.length ? raw('<i class="t"></i>') : ''}${day.cooked.length ? raw('<i class="e"></i>') : ''}${day.move.length ? raw('<i class="m"></i>') : ''}${day.habits.done ? raw('<i class="h"></i>') : ''}</span>${day.kinds >= 2 ? loop(false, index) : ''}</div>`)}</div>
       <div class="replay__end"><p class="eyebrow">Week of ${fmtDay(start, { day: 'numeric', month: 'long' })}</p><p class="display display--l">${stats.active} of 7 days logged</p>
         <div class="statrow"><div class="stat"><div class="stat__v num">${stats.sessions}</div><div class="stat__l">Lifts</div></div><div class="stat"><div class="stat__v num">${stats.sets}</div><div class="stat__l">Sets</div></div><div class="stat"><div class="stat__v num">${stats.cooked.length}</div><div class="stat__l">Cooked</div></div><div class="stat"><div class="stat__v num">${stats.moveMinutes}</div><div class="stat__l">Move min</div></div></div>
