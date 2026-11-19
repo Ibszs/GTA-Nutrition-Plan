@@ -11,7 +11,7 @@ import { EXERCISES } from '../data/exercises.js';
 import { liftHistory } from '../logic/lifts.js';
 import { EXERCISES as LIFTS } from '../../assets/training-data.js';
 
-export const VERSION = '5.0.0';
+export const VERSION = '5.0.1';
 let logDay = today();
 
 const PAPERS = [['rosa', 'Pink', '#f9bfcb'], ['ember', 'Ember', '#ffb692'], ['butter', 'Butter', '#f5dc7d'], ['lime', 'Lime', '#d5ec78'], ['mint', 'Mint', '#a6e3c4'], ['sky', 'Sky', '#a9d3f2'], ['lilac', 'Lilac', '#cdbdf6'], ['news', 'Grey', '#d9d7d2']];
@@ -198,7 +198,7 @@ function creditsPage() {
     <div class="list">${creators.map(recipe => html`<div class="list__i"><span class="list__m"><span class="title">${recipe.source.creator}, ${recipe.source.outlet}</span><span class="small" style="display:block">${extLink(recipe.source.url, recipe.source.title)}</span><span class="tiny muted" style="display:block">Adapted as <a href="#/eat/r/${recipe.id}">${recipe.short}</a>. Instructions rewritten; quantities and nutrition recalculated.</span></span></div>`)}</div>
     ${sec('Photographs', plural(Object.keys(PHOTOS).length, 'photo'))}
     <div class="list">${Object.entries(PHOTOS).map(([key, photo]) => html`<div class="list__i"><img src="${photo.file}" alt="" width="56" height="56" loading="lazy" style="width:56px;height:56px;object-fit:cover;border-radius:2px"><span class="list__m"><span class="title">${extLink(photo.source, photo.title)}</span><span class="tiny muted" style="display:block">${photo.creator ?? 'Unnamed photographer'} · ${extLink(photo.licenceUrl, photo.licence)} · via ${photo.via} · ${photo.changes}</span></span></div>`)}</div>
-    <p class="tiny muted">Four dishes have no photo: no properly licensed picture matched them, so Forme draws the plate from the recipe instead of using a stand-in. The drawings are original to Forme.</p>
+    <p class="tiny muted">Two dishes have no photo: no properly licensed picture matched them, so Forme draws the plate from the recipe instead of using a stand-in. The drawings are original to Forme.</p>
     ${sec('Everything else')}
     <div class="list">${OTHER_CREDITS.map(item => html`<div class="list__i"><span class="list__m"><span class="title">${item.url ? extLink(item.url, item.what) : item.what}</span><span class="tiny muted" style="display:block">${item.detail}</span></span></div>`)}</div>
     ${sec('Movement demo videos', plural(EXERCISES.filter(exercise => exercise.video).length, 'link'))}

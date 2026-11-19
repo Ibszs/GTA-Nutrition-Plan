@@ -229,6 +229,18 @@ You asked for more workout plans and more to customise, pictures where there wer
 - **Real photographs for the four drawn dishes.** That needs me to download licensed images, which I did not do without asking. Or take the photos yourself the next time you cook them.
 - **Real demo video.** The loops are two stills. Short clips would be better but need a source with clear rights.
 
+## Two of the drawn plates replaced by photographs (19 Nov 2026, version 5.0.1)
+
+You said yes to downloading licensed photographs for the four drawn dishes. Two were found. Two were not, and those keep their drawings.
+
+- **Smash burger bowl.** "Fast Friday Cheeseburger Bowls-" by jules:stonesoup, CC BY 2.0, from Flickr. The licence was read on the Flickr page itself, not only in the search index. Cropped to the bowl and re-encoded: 675 x 681, 97 KB.
+- **Cheeseburger pasta.** "Hamburger Helper" by LWYang, CC BY 2.0, from Wikimedia Commons. Cropped slightly, resized and re-encoded: 960 x 655, 118 KB.
+- **Neither is an exact picture of your recipe.** The bowl photograph has beef, cheese, pickle, tomato and a creamy sauce, but no lettuce and no fries. The pasta photograph is the boxed dinner the recipe replaces, made with elbow macaroni instead of shells. Each recipe page has an "About this photo" button that says so. That is the same standard the other twelve photographs were held to. If you would rather have the drawings back for either, it is a one-line change in `app/data/recipes.js`.
+- **Not found: the pita box and the hot honey beef bowl.** I searched Openverse (which covers Flickr and Wikimedia Commons) with about forty phrasings and looked at 23 candidates. The closest for the pita box were a child's lunchbox with crackers, strawberries and animal picks, and a hot chicken and hummus plate; neither is a cold packed box with pita, cucumber and tomato. Nothing showed ground beef with sweet potato and cottage cheese. A photo you take the next time you make them would beat anything I can find.
+- **What was downloaded.** 23 thumbnails to look at and the two photographs above, all into a temporary folder outside the repository. Only the two processed JPEGs are in the repository. Re-encoding removed the original metadata.
+- **Checked:** `npm test`, 671 passing. Both photographs looked at full size as files before use. The burger bowl was looked at as a picture on its recipe page. In the running app, read from the page itself: both photographs load on their recipe pages and Kitchen cards, each "About this photo" button shows its note, both credits are listed under You, Credits and sources, the two drawn plates are still on the pita box and the beef bowl, no image is broken, and the version reads 5.0.1. The offline list includes both files.
+- **Not checked:** the cheeseburger pasta photograph as a picture inside the app (the window was minimized and screenshots stopped working, so it was only confirmed as loaded at 960 x 655), the Kitchen cards and thumbnails as pictures, and both photographs on a real phone.
+
 ## Update rehearsal, old app to new (17 Nov 2026)
 
 The handover from Form & Fuel 3.0 to Forme had never been run. It has now been rehearsed in a real Chromium browser (headless Edge) with service workers: the old app was installed with a workout and a T log entry in it, the served files were swapped for 4.0.1, and the app was opened again.

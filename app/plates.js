@@ -1,7 +1,7 @@
-// Drawn plates. Four dishes have no properly licensed photograph that matches them, so each gets
-// an illustration built from its own recipe: what is in it, seen from above. They are drawings, and
-// every place they appear says so to a screen reader. Shapes are placed by a seeded generator, so a
-// plate is identical every time it is drawn.
+// Drawn plates. A dish with no properly licensed photograph that matches it gets an illustration
+// built from its own recipe: what is in it, seen from above. They are drawings, and every place they
+// appear says so to a screen reader. Shapes are placed by a seeded generator, so a plate is identical
+// every time it is drawn. Two dishes use one today: the hot honey beef bowl and the pita box.
 
 function seeded(seed) {
   let a = seed >>> 0;
@@ -34,18 +34,13 @@ const crumb = (rand, x, y, size, tones) => { const tone = pick(rand, tones);
   // A piece of browned mince: three lumps pressed together, darker underneath.
   return `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(between(rand, 0, 360))})"><circle r="${n(size * .78)}" fill="${tone[0]}"/><circle cx="${n(size * .62)}" cy="${n(size * .3)}" r="${n(size * .56)}" fill="${tone[0]}"/><circle cx="${n(-size * .44)}" cy="${n(size * .5)}" r="${n(size * .5)}" fill="${tone[0]}"/><circle cx="${n(-size * .12)}" cy="${n(-size * .16)}" r="${n(size * .46)}" fill="${tone[1]}"/><circle cx="${n(size * .56)}" cy="${n(size * .2)}" r="${n(size * .28)}" fill="${tone[1]}"/></g>`; };
 const BEEF = [['#6b3a22', '#8a4f30'], ['#5a2f1b', '#7a4428'], ['#7a4326', '#9a5c38']];
-const fry = (rand, x, y) => { const len = between(rand, 22, 34);
-  return `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(between(rand, -70, 70))})"><rect x="-3.6" y="${n(-len / 2)}" width="7.2" height="${n(len)}" rx="2.2" fill="#e2a02c"/><rect x="-2.2" y="${n(-len / 2 + 1.5)}" width="2.6" height="${n(len - 3)}" rx="1.3" fill="#f6cb5f"/></g>`; };
+/** A round slice with a pale centre and seeds: cucumber. */
 const pickle = (x, y, r = 8) => `<g transform="translate(${n(x)} ${n(y)})"><circle r="${r}" fill="#5f8526"/><circle r="${n(r * .78)}" fill="#a8c458"/><circle r="${n(r * .42)}" fill="#c3d87a"/>${[0, 72, 144, 216, 288].map(a => `<circle cx="${n(Math.cos(a * Math.PI / 180) * r * .5)}" cy="${n(Math.sin(a * Math.PI / 180) * r * .5)}" r=".9" fill="#f1f4c9"/>`).join('')}</g>`;
-const leaf = (rand, x, y) => `<ellipse cx="${n(x)}" cy="${n(y)}" rx="${n(between(rand, 9, 15))}" ry="${n(between(rand, 4, 7))}" transform="rotate(${n(between(rand, 0, 180))} ${n(x)} ${n(y)})" fill="${pick(rand, ['#7fb24a', '#93c45a', '#6aa03c', '#a6d06c'])}"/>`;
 const dice = (rand, x, y, size, tones) => { const tone = pick(rand, tones);
   return `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(between(rand, -30, 30))})"><rect x="${n(-size / 2)}" y="${n(-size / 2)}" width="${n(size)}" height="${n(size)}" rx="${n(size * .22)}" fill="${tone[0]}"/><rect x="${n(-size / 2 + 1.2)}" y="${n(-size / 2 + 1.2)}" width="${n(size * .56)}" height="${n(size * .5)}" rx="${n(size * .16)}" fill="${tone[1]}"/></g>`; };
-const TOMATO = [['#c9351f', '#e45a3c']];
 const SWEET = [['#c96a1d', '#ee9440'], ['#b85c16', '#e58634'], ['#d6792a', '#f4a455']];
 const drizzle = (path, colour, width = 4) => `<path d="${path}" fill="none" stroke="${colour}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"/>`;
 const fleck = (rand, points, colours, r = 1.3) => points.map(([x, y]) => `<circle cx="${n(x)}" cy="${n(y)}" r="${r}" fill="${pick(rand, colours)}"/>`).join('');
-const shell = (rand, x, y) => { const r = between(rand, 6, 8.5); const turn = between(rand, 0, 360);
-  return `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(turn)})"><path d="M ${n(-r)} 0 A ${n(r)} ${n(r)} 0 0 1 ${n(r)} 0" fill="none" stroke="#d99a2b" stroke-width="7.4" stroke-linecap="round"/><path d="M ${n(-r)} 0 A ${n(r)} ${n(r)} 0 0 1 ${n(r)} 0" fill="none" stroke="#f7d06a" stroke-width="4.4" stroke-linecap="round"/></g>`; };
 
 // ---------- vessels ----------
 const bowl = (key, inside, { rim = '#f7f2e8', well = '#ebe3d4' } = {}) => `
@@ -56,18 +51,7 @@ const bowl = (key, inside, { rim = '#f7f2e8', well = '#ebe3d4' } = {}) => `
   <g clip-path="url(#plate-${key})">${inside}</g>
   <circle cx="120" cy="100" r="72" fill="none" stroke="#000" stroke-width="5" opacity=".07"/>`;
 
-// ---------- the four plates ----------
-function burgerBowl() {
-  const rand = seeded(11);
-  const lettuce = scatter(rand, 60, inCircle(120, 100, 70), 7).map(([x, y]) => leaf(rand, x, y)).join('');
-  const beef = scatter(rand, 30, inWedge(200, 345, 60), 8).map(([x, y]) => crumb(rand, x, y, between(rand, 5.5, 8.5), BEEF)).join('');
-  const fries = scatter(rand, 13, inWedge(15, 120, 54, 10), 8).map(([x, y]) => fry(rand, x, y)).join('');
-  const pickles = [[104, 138], [122, 148], [138, 134], [118, 126]].map(([x, y]) => pickle(x, y, 8.5)).join('');
-  const tomato = scatter(rand, 8, inWedge(125, 195, 58, 30), 9).map(([x, y]) => dice(rand, x, y, 7.5, TOMATO)).join('');
-  const sauce = drizzle('M 70 76 Q 86 60 98 78 T 126 76 T 150 92 T 132 110 T 100 104', '#f3b089', 4.2) + drizzle('M 72 77 Q 86 62 97 78', '#f9cfb4', 1.6);
-  return bowl('burger', lettuce + beef + fries + tomato + pickles + sauce);
-}
-
+// ---------- the plates ----------
 function beefBowl() {
   const rand = seeded(23);
   const base = '<circle cx="120" cy="100" r="72" fill="#e9dcc3"/>';
@@ -78,23 +62,6 @@ function beefBowl() {
   const honey = drizzle('M 62 88 Q 80 70 96 90 T 130 84 T 164 96 T 150 122', '#d98a18', 3.4) + drizzle('M 64 88 Q 80 72 95 90', '#f3bd52', 1.3);
   const chili = fleck(rand, scatter(rand, 26, inCircle(120, 100, 64), 6), ['#b3261a', '#d1421f', '#8f1d12'], 1.25);
   return bowl('beef', base + sweet + beef + cheese + avocado + honey + chili, { rim: '#f3ede2' });
-}
-
-function pastaPot() {
-  const rand = seeded(37);
-  const shells = scatter(rand, 54, inCircle(120, 100, 66), 10).map(([x, y]) => shell(rand, x, y)).join('');
-  const beef = scatter(rand, 26, inCircle(120, 100, 62), 11).map(([x, y]) => crumb(rand, x, y, between(rand, 4, 6), BEEF)).join('');
-  const herbs = fleck(rand, scatter(rand, 34, inCircle(120, 100, 64), 5), ['#4e8a2c', '#6aa53a', '#3f7423'], 1.5);
-  const steam = drizzle('M 92 92 Q 104 80 116 94 T 142 92', '#f9dc8c', 2.2);
-  return `
-  <ellipse cx="125" cy="110" rx="94" ry="84" fill="#000" opacity=".22"/>
-  <rect x="14" y="88" width="34" height="24" rx="9" fill="#2a2629"/><rect x="192" y="88" width="34" height="24" rx="9" fill="#2a2629"/>
-  <circle cx="120" cy="100" r="86" fill="#2f2b2e"/><circle cx="120" cy="100" r="86" fill="none" stroke="#5a5458" stroke-width="2"/>
-  <circle cx="120" cy="100" r="76" fill="#1f1c1e"/>
-  <clipPath id="plate-pasta"><circle cx="120" cy="100" r="72"/></clipPath>
-  <circle cx="120" cy="100" r="72" fill="#e58b2a"/>
-  <g clip-path="url(#plate-pasta)"><circle cx="100" cy="82" r="46" fill="#f0a23c" opacity=".7"/>${shells}${beef}${steam}${herbs}</g>
-  <circle cx="120" cy="100" r="72" fill="none" stroke="#000" stroke-width="5" opacity=".12"/>`;
 }
 
 function pitaBox() {
@@ -112,7 +79,7 @@ function pitaBox() {
   ${chicken}${hummus}${pita}${cucumber}${tomatoes}`;
 }
 
-const DRAW = { 'smash-burger-bowl': burgerBowl, 'beef-sweet-potato-bowl': beefBowl, 'cheeseburger-pasta': pastaPot, 'pita-box': pitaBox };
+const DRAW = { 'beef-sweet-potato-bowl': beefBowl, 'pita-box': pitaBox };
 const cache = new Map();
 
 export const hasPlate = recipeId => Object.hasOwn(DRAW, recipeId);

@@ -1,6 +1,7 @@
 // Asset register. Every photograph in Forme: who made it, the licence, where it came from and
 // what was changed. All files are local copies, cropped or resized and re-encoded (which removes
-// the original metadata). Retrieved 17 Nov 2026. Each one was looked at beside the dish it stands for.
+// the original metadata). Retrieved 17 Nov 2026, the burger bowl and cheeseburger pasta on 19 Nov 2026.
+// Each one was looked at beside the dish it stands for.
 
 const P = (file, w, h, alt, title, creator, licence, licenceUrl, source, via, changes) => ({ file: `assets/photos/${file}.jpg`, w, h, alt, title, creator, licence, licenceUrl, source, via, changes });
 const BY2 = 'https://creativecommons.org/licenses/by/2.0/';
@@ -18,6 +19,8 @@ export const PHOTOS = Object.freeze({
   'butter-chicken': P('butter-chicken', 960, 643, 'Butter chicken in a creamy orange sauce beside plain white basmati rice on a white plate.', 'Butter chicken (6032497682)', 'Isabelle Hurbain-Palatin', 'CC BY-SA 2.0', 'https://creativecommons.org/licenses/by-sa/2.0/', 'https://commons.wikimedia.org/wiki/File:Butter_chicken_(6032497682).jpg', 'Wikimedia Commons', 'Resized and re-encoded; this version is shared under the same licence'),
   bark: P('bark', 960, 908, 'Pieces of frozen yogurt bark with a chocolate swirl, raspberries and almonds on a plate.', 'Yogurt Bark', 'Oatmealover', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/', 'https://commons.wikimedia.org/wiki/File:Yogurt_Bark.jpg', 'Wikimedia Commons', 'Cropped, resized and re-encoded; this version is shared under the same licence'),
   'spiced-chicken': P('spiced-chicken', 960, 1024, 'A grilled spiced chicken thigh on a white plate with rice and a chopped cucumber and tomato salad.', 'Liat Portal for Foodie Disorder - Homemade grilled chicken thighs with rice and Israeli salad', 'HaJunkiyada', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/', 'https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Homemade_grilled_chicken_thighs_with_rice_and_Israeli_salad.jpg', 'Wikimedia Commons', 'Cropped, resized and re-encoded; this version is shared under the same licence'),
+  'burger-bowl': P('burger-bowl', 675, 681, 'A stoneware bowl of browned ground beef with melted cheese, roasted tomato, pickle, a spoonful of creamy sauce and fresh parsley, on a wooden table.', 'Fast Friday Cheeseburger Bowls-', 'jules:stonesoup', 'CC BY 2.0', BY2, 'https://www.flickr.com/photos/58367355@N00/46771633274', 'Flickr', 'Cropped and re-encoded'),
+  'cheeseburger-pasta': P('cheeseburger-pasta', 960, 655, 'Elbow macaroni and ground beef in an orange cheese sauce on a white plate with a blue rim, a fork resting in it.', 'Hamburger Helper', 'LWYang', 'CC BY 2.0', BY2, 'https://commons.wikimedia.org/wiki/File:Hamburger_Helper.jpg', 'Wikimedia Commons', 'Cropped, resized and re-encoded'),
   'street-toronto': P('street-toronto', 1024, 683, 'A downtown Toronto street at night with a red taxi, streetcar tracks and lit office towers.', 'Toronto street at night', 'Eyad Elbayoumi', 'CC BY 2.0', BY2, 'https://www.flickr.com/photos/12769809@N00/25740563060', 'Flickr', 'Re-encoded'),
   'street-quiet': P('street-quiet', 1024, 683, 'A quiet Toronto side street at night, wet pavement under warm street lights.', 'Toronto by night', 'VV Nincic', 'CC BY 2.0', BY2, 'https://www.flickr.com/photos/133904091@N04/39569597192', 'Flickr', 'Re-encoded'),
   'street-rain': P('street-rain', 1024, 1024, 'A rainy city street at night with a lit food truck and reflections on the pavement.', 'Brooklyn Street Scenes - Rainy Night, Food Truck', 'Steven Pisano', 'CC BY 2.0', BY2, 'https://www.flickr.com/photos/45776673@N04/15568622684', 'Flickr', 'Re-encoded'),
@@ -29,10 +32,11 @@ export const OTHER_CREDITS = Object.freeze([
   { what: 'Interface icons', detail: '63 Lucide icons (ISC licence): 42 carried over from the earlier app and 21 added from lucide-static 1.73.0. One icon family throughout, bundled in a local sprite.', url: 'https://lucide.dev/license' },
   { what: 'App icon', detail: 'Drawn for Forme: a slab F with the record dot. No outside artwork.', url: null },
   { what: 'Gym movement photographs', detail: '76 unmodified photographs from Free Exercise DB (public domain, Unlicense), carried over from the earlier app and shown only for the exact variation they picture.', url: 'https://github.com/yuhonas/free-exercise-db' },
-  { what: 'Drawn plates', detail: 'The four dishes with no matching licensed photograph are drawn in code from their own recipes. The drawings are original to Forme and are labelled as illustrations.', url: null },
+  { what: 'Drawn plates', detail: 'The two dishes with no matching licensed photograph, the hot honey beef bowl and the pita box, are drawn in code from their own recipes. The drawings are original to Forme and are labelled as illustrations.', url: null },
   { what: 'Movement illustrations', detail: 'The jointed figure, its poses and the red and blue target overlays are original to Forme, drawn in code. They are illustrative diagrams, not anatomical plates.', url: null },
   { what: 'Nutrition values', detail: 'USDA FoodData Central, SR Legacy release (April 2018), public domain. Each ingredient links to its record.', url: 'https://fdc.nal.usda.gov/' },
   { what: 'Demonstration videos', detail: 'Linked, never embedded, so nothing loads from a video service until you tap. Each link names the channel. Forme works fully without them.', url: null },
 ]);
 
-export const TEXT_CARDS = Object.freeze(['smash-burger-bowl', 'beef-sweet-potato-bowl', 'cheeseburger-pasta', 'pita-box']);
+// Recipes with no photograph. Each one has a drawn plate (app/plates.js) in place of the old text card.
+export const TEXT_CARDS = Object.freeze(['beef-sweet-potato-bowl', 'pita-box']);

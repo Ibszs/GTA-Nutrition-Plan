@@ -6,7 +6,7 @@ The same register is shown inside the app at **You, Credits and sources**, gener
 
 ## Photographs
 
-Sixteen photographs, all Creative Commons or public domain. Each was looked at beside the thing it stands for before it was kept. Every file is a local copy that was cropped or resized and re-encoded as JPEG, which also strips the original metadata.
+Eighteen photographs, all Creative Commons or public domain. The last two in the table (the burger bowl and the cheeseburger pasta) were added on 19 Nov 2026 for version 5.0.1. Each was looked at beside the thing it stands for before it was kept. Every file is a local copy that was cropped or resized and re-encoded as JPEG, which also strips the original metadata.
 
 | File | Shows | Title at source | Creator | Licence | Source | Change | Size |
 |---|---|---|---|---|---|---|---|
@@ -26,12 +26,18 @@ Sixteen photographs, all Creative Commons or public domain. Each was looked at b
 | `street-quiet.jpg` | A quiet Toronto side street at night, wet pavement under warm street lights. | Toronto by night | VV Nincic | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Flickr](https://www.flickr.com/photos/133904091@N04/39569597192) | Re-encoded | 1024x683, 98 KB |
 | `street-rain.jpg` | A rainy city street at night with a lit food truck and reflections on the pavement. | Brooklyn Street Scenes - Rainy Night, Food Truck | Steven Pisano | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Flickr](https://www.flickr.com/photos/45776673@N04/15568622684) | Re-encoded | 1024x1024, 222 KB |
 | `gym-rack.jpg` | A close view of a rack of black dumbbells in a gym. | A close-up view of a set of heavy dumbbells | Shixart1985 | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:A_close-up_view_of_a_set_of_heavy_dumbbells.jpg) | Cropped and re-encoded | 1280x1035, 143 KB |
+| `burger-bowl.jpg` | A stoneware bowl of browned ground beef with melted cheese, roasted tomato, pickle, a spoonful of creamy sauce and fresh parsley, on a wooden table. | Fast Friday Cheeseburger Bowls- | jules:stonesoup | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Flickr](https://www.flickr.com/photos/58367355@N00/46771633274) | Cropped and re-encoded | 675x681, 97 KB |
+| `cheeseburger-pasta.jpg` | Elbow macaroni and ground beef in an orange cheese sauce on a white plate with a blue rim, a fork resting in it. | Hamburger Helper | LWYang | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hamburger_Helper.jpg) | Cropped, resized and re-encoded | 960x655, 118 KB |
 
-Where each is used: the twelve food photographs sit on their recipes; `street-toronto.jpg` is the Today header, `street-quiet.jpg` the Reset header, `street-rain.jpg` the Habits header and `gym-rack.jpg` the Train header on a rest day, the picture on empty Train screens and in two of the explanation sheets (since 5.0.0).
+Neither of the two new photographs is an exact picture of the recipe, and each recipe page says how it differs. The burger bowl photograph has no lettuce or fries and a different sauce. The pasta photograph is the boxed dinner the recipe replaces, made with elbow macaroni instead of shells.
+
+Where each is used: the fourteen food photographs sit on their recipes; `street-toronto.jpg` is the Today header, `street-quiet.jpg` the Reset header, `street-rain.jpg` the Habits header and `gym-rack.jpg` the Train header on a rest day, the picture on empty Train screens and in two of the explanation sheets (since 5.0.0).
 
 ## Drawn plates (since 5.0.0)
 
-Four recipes have no photograph because no properly licensed picture matched the dish: smash burger bowl, hot honey beef and sweet potato bowl, one-pot cheeseburger pasta, and the chicken and hummus pita box. Each has an illustration instead, drawn in code in `app/plates.js` from the recipe's own ingredients and how it is served. They are original to Forme, there is no outside artwork in them, and no file was downloaded for them. In the app each one is labelled "Illustration" and its recipe page explains why it is a drawing.
+Two recipes have no photograph because no properly licensed picture matched the dish: the hot honey beef and sweet potato bowl, and the chicken and hummus pita box. Each has an illustration instead, drawn in code in `app/plates.js` from the recipe's own ingredients and how it is served. They are original to Forme, there is no outside artwork in them, and no file was downloaded for them. In the app each one is labelled "Illustration" and its recipe page explains why it is a drawing.
+
+Version 5.0.0 drew four plates. Version 5.0.1 replaced two of them (smash burger bowl, cheeseburger pasta) with the photographs listed above. For the other two, a search of Openverse and Wikimedia Commons on 19 Nov 2026 found nothing close enough: the nearest for the pita box were a child's lunchbox with crackers and strawberries and a hot chicken and hummus plate, and nothing showed ground beef with sweet potato and cottage cheese.
 
 ## Gym photographs in more places (since 5.0.0)
 

@@ -54,7 +54,7 @@ export const EXPLAIN = {
     'Where a creator\'s own macro claim does not match the ingredient maths, the recipe shows both.',
   ] },
   plates: { eyebrow: 'Kitchen', title: 'Drawn plates', blocks: [
-    'Four dishes have no photograph, because no properly licensed picture matched the dish.',
+    'Two dishes have no photograph, because no properly licensed picture matched the dish.',
     'Rather than use a photo of something else, Forme draws the plate from the recipe: what is in it and how it is served. It is an illustration, not a photograph of your dinner.',
   ] },
   // ---------- you ----------

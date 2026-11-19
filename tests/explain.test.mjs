@@ -48,9 +48,9 @@ test('an "i" button carries its text safely and always has an accessible name', 
   assert.match(adhoc, /aria-label="Log as: &quot;one&quot; &lt;b&gt;"/);
 });
 
-test('the four dishes without a photograph each have a drawn plate, and no other recipe does', () => {
+test('each dish without a photograph has a drawn plate, and no other recipe does', () => {
   const unpictured = RECIPES.filter(recipe => !recipe.photo).map(recipe => recipe.id).sort();
-  assert.equal(unpictured.length, 4);
+  assert.deepEqual(unpictured, ['beef-sweet-potato-bowl', 'pita-box']);
   for (const recipe of RECIPES) assert.equal(hasPlate(recipe.id), !recipe.photo, recipe.id);
   for (const id of unpictured) {
     const svg = plate(id);

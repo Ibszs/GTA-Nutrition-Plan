@@ -77,7 +77,7 @@ export const RECIPES = [
   {
     id: 'smash-burger-bowl', name: 'Smash Burger Bowl', short: 'Smash burger bowl', kicker: 'Crusty beef, hot fries, cold pickles, burger sauce.',
     course: 'main', slots: ['dinner'], tags: ['quick', 'onepan', 'airfryer', 'comfort'], cuisine: 'Diner',
-    backdrop: 'tomato', photo: null,
+    backdrop: 'tomato', photo: 'burger-bowl', photoNote: 'Photo shows a cheeseburger bowl: browned beef with cheese, pickle, roasted tomato, parsley and a creamy sauce. Yours has shredded lettuce and hot fries in the bowl, and the sauce is yogurt, ketchup and mustard.',
     source: { type: 'creator', creator: 'Nicole Keshishian Modic', outlet: 'KaleJunkie', where: 'Short-form creator; this is the cross-post on her site', title: 'Ultimate Burger Bowls',
       url: 'https://kalejunkie.com/ultimate-burger-bowls/', rating: '5 from 4 votes', claimed: { protein: 30, per: 'bowl, 4 bowls' },
       adapted: 'Kept: 90/10 beef, smoked paprika, the Greek yogurt and pickle-juice sauce, fries in the bowl. Changed: three larger bowls, beef smashed for a crust instead of crumbled, pan oil measured.',
@@ -404,7 +404,7 @@ export const RECIPES = [
   {
     id: 'cheeseburger-pasta', name: 'One-Pot Cheeseburger Pasta', short: 'Cheeseburger pasta', kicker: 'The boxed dinner, made properly, in one pot.',
     course: 'main', slots: ['dinner', 'lunch'], tags: ['onepan', 'comfort', 'batch', 'shift'], cuisine: 'Weeknight',
-    backdrop: 'mustard', photo: null,
+    backdrop: 'mustard', photo: 'cheeseburger-pasta', photoNote: 'Photo shows the boxed dinner this recipe replaces, made with elbow macaroni. Yours uses shells and a tomato base, so it comes out a deeper red.',
     source: { type: 'creator', creator: 'Beth Moncel', outlet: 'Budget Bytes', where: 'Recipe creator; this is the recipe on her site', title: 'One Pot Cheeseburger Pasta',
       url: 'https://www.budgetbytes.com/skillet-cheeseburger-pasta/', rating: '4.35 from 144 votes', claimed: { kcal: 555, protein: 27, carbs: 53, fat: 26, per: 'serving, 4 servings' },
       adapted: 'Kept: one pot, tomato sauce, broth, shells, cheddar, relish. Changed: double the beef, a spoon each of mustard and ketchup for the burger-sauce note, oil measured.',

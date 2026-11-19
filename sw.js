@@ -1,4 +1,4 @@
-const CACHE_NAME = 'forme-v5.0.0';
+const CACHE_NAME = 'forme-v5.0.1';
 const PRECACHE = [
   './',
   './index.html',
@@ -48,8 +48,10 @@ const PRECACHE = [
   './assets/fonts/sofia-sans-extra-condensed.woff2',
   './assets/fonts/sofia-sans-extra-condensed-italic.woff2',
   './assets/photos/bark.jpg',
+  './assets/photos/burger-bowl.jpg',
   './assets/photos/burrito.jpg',
   './assets/photos/butter-chicken.jpg',
+  './assets/photos/cheeseburger-pasta.jpg',
   './assets/photos/gym-rack.jpg',
   './assets/photos/keema.jpg',
   './assets/photos/noodles.jpg',
